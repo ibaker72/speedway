@@ -12,14 +12,14 @@ export function StickyMobileCTA() {
           className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-zinc-900 active:bg-zinc-800 transition-colors"
         >
           <Phone className="h-4 w-4" />
-          Call Now
+          Call {BUSINESS.phone}
         </a>
         <a
           href="/inventory"
           className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-red-700 active:bg-red-800 transition-colors"
         >
           <Car className="h-4 w-4" />
-          Browse Cars
+          Browse {BUSINESS.stats.vehiclesInStock}+ Cars
         </a>
       </div>
     </div>

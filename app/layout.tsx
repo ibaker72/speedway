@@ -3,6 +3,7 @@ import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyMobileCTA } from "@/components/layout/StickyMobileCTA";
+import { AutoDealerJsonLd, FAQPageJsonLd } from "@/components/seo/JsonLd";
 import { BUSINESS } from "@/lib/constants";
 import "./globals.css";
 
@@ -15,19 +16,35 @@ export const metadata: Metadata = {
   keywords: [
     "used cars paterson nj",
     "used car dealer paterson",
+    "buy used car new jersey",
     "auto financing paterson nj",
+    "bad credit car loans nj",
     "trade in car paterson",
     "sell my car paterson nj",
     "speedway motors",
+    "used SUV paterson",
+    "used trucks paterson nj",
     "commercial vehicles paterson",
+    "honda dealer paterson",
+    "toyota dealer paterson",
+    "bmw dealer paterson",
   ],
+  alternates: { canonical: "https://www.speedwaymotorsnj.net/" },
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: BUSINESS.name,
     title: `${BUSINESS.shortName} | Quality Used Cars in Paterson, NJ`,
     description: BUSINESS.description,
+    url: "https://www.speedwaymotorsnj.net/",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BUSINESS.shortName} | Paterson NJ Used Car Dealer`,
+    description:
+      "Browse 180+ quality used cars, SUVs & trucks. Easy financing available.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -38,6 +55,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="min-h-full flex flex-col font-sans antialiased">
+        <AutoDealerJsonLd />
+        <FAQPageJsonLd />
         <AnnouncementBar />
         <Header />
         <main className="flex-1">{children}</main>

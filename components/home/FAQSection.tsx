@@ -1,0 +1,91 @@
+"use client";
+
+import { useState } from "react";
+import { SectionWrapper } from "@/components/shared/SectionWrapper";
+import { SectionHeading } from "@/components/shared/SectionHeading";
+
+const faqs = [
+  {
+    question: "What financing options does Speedway Motors offer?",
+    answer:
+      "We work with most major banks and lending institutions in NJ to offer affordable financing. We also provide sub-prime financing — bad credit, no credit, or first-time buyers are all welcome.",
+  },
+  {
+    question: "What brands does Speedway Motors carry?",
+    answer:
+      "We carry 20+ brands including Acura, Audi, BMW, Chevrolet, Dodge, Ford, Honda, Hyundai, INFINITI, Jeep, Land Rover, Mercedes-Benz, Nissan, Ram, Subaru, Toyota, Volkswagen, and Volvo.",
+  },
+  {
+    question: "Where is Speedway Motors located?",
+    answer:
+      "Our main showroom is at 302-304 22nd Ave, Paterson, NJ 07513. We serve all of Passaic County and surrounding areas throughout New Jersey.",
+  },
+  {
+    question: "Do you offer vehicle warranties?",
+    answer:
+      "Yes. Many of our vehicles are eligible for extended service contracts and warranties. Our team will walk you through available coverage options.",
+  },
+  {
+    question: "Can I sell or trade in my car at Speedway Motors?",
+    answer:
+      "Absolutely. We offer competitive trade-in values and also purchase vehicles directly — no trade required. Submit your details for a quick offer.",
+  },
+];
+
+function FAQItem({
+  question,
+  answer,
+  isOpen,
+  onToggle,
+}: {
+  question: string;
+  answer: string;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="border-b border-zinc-200 last:border-b-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center justify-between w-full py-5 text-left gap-4"
+      >
+        <span className="font-semibold text-zinc-900">{question}</span>
+        <span
+          className={`text-xl text-zinc-400 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-45" : ""}`}
+        >
+          +
+        </span>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-40 pb-5" : "max-h-0"}`}
+      >
+        <p className="text-sm text-zinc-600 leading-relaxed">{answer}</p>
+      </div>
+    </div>
+  );
+}
+
+export function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <SectionWrapper background="white">
+      <SectionHeading
+        title="Frequently Asked Questions"
+        subtitle="Answers to common questions about buying from Speedway Motors."
+      />
+      <div className="max-w-3xl mx-auto border-t border-zinc-200">
+        {faqs.map((faq, i) => (
+          <FAQItem
+            key={i}
+            question={faq.question}
+            answer={faq.answer}
+            isOpen={openIndex === i}
+            onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+          />
+        ))}
+      </div>
+    </SectionWrapper>
+  );
+}

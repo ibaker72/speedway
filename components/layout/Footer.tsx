@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, ExternalLink } from "lucide-react";
 import { BUSINESS, HOURS } from "@/lib/constants";
 import { locations } from "@/lib/data/locations";
 
@@ -29,12 +29,14 @@ export function Footer() {
         <div className="py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand column */}
           <div className="lg:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-7 h-7 bg-red-700 rounded-md flex items-center justify-center">
-                <span className="text-white font-black text-base leading-none">S</span>
+                <span className="text-white font-black text-base leading-none">
+                  S
+                </span>
               </div>
               <div>
-                <span className="text-base font-bold tracking-tight text-white leading-none block">
+                <span className="text-base font-bold font-display tracking-tight text-white leading-none block">
                   Speedway
                 </span>
                 <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-500 leading-none block mt-0.5">
@@ -42,6 +44,9 @@ export function Footer() {
                 </span>
               </div>
             </div>
+            <p className="text-xs text-amber-600/80 italic mb-4">
+              {BUSINESS.slogan}
+            </p>
             <p className="text-sm leading-relaxed mb-6 text-zinc-500">
               {BUSINESS.description}
             </p>
@@ -67,12 +72,21 @@ export function Footer() {
                   {mainLocation.state} {mainLocation.zip}
                 </span>
               </div>
+              <a
+                href={BUSINESS.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mt-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Facebook
+              </a>
             </div>
           </div>
 
           {/* Quick links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-amber-600 uppercase tracking-wider mb-4">
               Quick Links
             </h3>
             <ul className="space-y-2.5">
@@ -91,7 +105,7 @@ export function Footer() {
 
           {/* About links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-amber-600 uppercase tracking-wider mb-4">
               Dealership
             </h3>
             <ul className="space-y-2.5">
@@ -110,15 +124,12 @@ export function Footer() {
 
           {/* Hours */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-amber-600 uppercase tracking-wider mb-4">
               Showroom Hours
             </h3>
             <ul className="space-y-2">
               {HOURS.map((h) => (
-                <li
-                  key={h.day}
-                  className="flex justify-between text-sm"
-                >
+                <li key={h.day} className="flex justify-between text-sm">
                   <span className="text-zinc-500">{h.day}</span>
                   <span>
                     {h.open === "Closed" ? "Closed" : `${h.open} – ${h.close}`}
