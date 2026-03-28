@@ -10,10 +10,10 @@ interface AnimateInProps {
 }
 
 const variants = {
-  up: { hidden: "opacity-0 translate-y-8", visible: "opacity-100 translate-y-0" },
-  left: { hidden: "opacity-0 -translate-x-8", visible: "opacity-100 translate-x-0" },
-  right: { hidden: "opacity-0 translate-x-8", visible: "opacity-100 translate-x-0" },
-  scale: { hidden: "opacity-0 scale-95", visible: "opacity-100 scale-100" },
+  up: { hidden: "opacity-0 translate-y-4", visible: "opacity-100 translate-y-0" },
+  left: { hidden: "opacity-0 -translate-x-4", visible: "opacity-100 translate-x-0" },
+  right: { hidden: "opacity-0 translate-x-4", visible: "opacity-100 translate-x-0" },
+  scale: { hidden: "opacity-0 scale-97", visible: "opacity-100 scale-100" },
   fade: { hidden: "opacity-0", visible: "opacity-100" },
 };
 
@@ -30,7 +30,7 @@ export function AnimateIn({
     <div
       ref={ref}
       className={cn(
-        "transition-all duration-700 ease-out",
+        "transition-all duration-500 ease-out",
         isVisible ? v.visible : v.hidden,
         className
       )}

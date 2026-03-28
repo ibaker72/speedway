@@ -46,16 +46,15 @@ export default function SellYourCarPage() {
           title="Sell Your Car"
           subtitle="We purchase vehicles directly — no trade required. Quick, transparent, and hassle-free."
           as="h1"
-          label="Sell to Us"
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
           {steps.map((step, i) => (
             <AnimateIn key={step.title} delay={i * 120} variant="up">
-              <div className="premium-card p-7 text-center h-full">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/10 flex items-center justify-center mx-auto mb-4">
-                  <step.icon className="h-5 w-5 text-accent" />
+              <div className="simple-card p-7 text-center h-full">
+                <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                  <step.icon className="h-5 w-5 text-red-500" />
                 </div>
-                <div className="text-xs text-accent font-semibold mb-2">
+                <div className="text-xs text-red-500 font-semibold mb-2">
                   Step {i + 1}
                 </div>
                 <h3 className="font-semibold text-white mb-2 text-[15px]">
@@ -72,10 +71,10 @@ export default function SellYourCarPage() {
 
       <SectionWrapper background="white">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center mb-6">
+          <div className="w-16 h-16 mx-auto rounded-lg bg-red-50 flex items-center justify-center mb-6">
             <DollarSign className="h-8 w-8 text-red-700" />
           </div>
-          <h2 className="text-2xl font-display text-zinc-900 mb-4">
+          <h2 className="text-2xl font-bold text-zinc-900 mb-4">
             We Buy Cars, Trucks, SUVs & Vans
           </h2>
           <p className="text-zinc-500 mb-4 leading-relaxed">

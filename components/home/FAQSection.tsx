@@ -56,15 +56,15 @@ function FAQItem({
           {question}
         </span>
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
             isOpen
-              ? "bg-accent/10 rotate-180"
+              ? "bg-red-50 rotate-180"
               : "bg-zinc-100 group-hover:bg-zinc-200"
           }`}
         >
           <ChevronDown
-            className={`h-4 w-4 transition-colors duration-300 ${
-              isOpen ? "text-accent" : "text-zinc-400"
+            className={`h-4 w-4 transition-colors duration-200 ${
+              isOpen ? "text-red-600" : "text-zinc-400"
             }`}
           />
         </div>
@@ -88,12 +88,12 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <SectionWrapper background="light">
+    <SectionWrapper background="white">
       <SectionHeading
         title="Frequently Asked Questions"
         subtitle="Answers to common questions about buying from Speedway Motors."
       />
-      <div className="max-w-3xl mx-auto rounded-2xl border border-zinc-200/80 bg-white p-3 sm:p-6 shadow-sm">
+      <div className="max-w-3xl mx-auto rounded-lg border border-zinc-200 bg-white p-3 sm:p-6">
         <div className="px-3 sm:px-4">
           {faqs.map((faq, i) => (
             <FAQItem

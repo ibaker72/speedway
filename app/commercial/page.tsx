@@ -29,7 +29,6 @@ export default async function CommercialPage() {
           title="Commercial Fleet Vehicles"
           subtitle={`${total} work-ready trucks, vans, and fleet vehicles for your business.`}
           as="h1"
-          label="Commercial"
         />
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button href={BUSINESS.phoneHref} variant="primary" size="lg">
@@ -50,7 +49,7 @@ export default async function CommercialPage() {
       <SectionWrapper background="white">
         {vehicles.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-100 flex items-center justify-center mb-5">
+            <div className="w-16 h-16 mx-auto rounded-lg bg-zinc-100 flex items-center justify-center mb-5">
               <Truck className="h-7 w-7 text-zinc-300" />
             </div>
             <p className="text-lg text-zinc-500 mb-2">
@@ -70,7 +69,7 @@ export default async function CommercialPage() {
               <AnimateIn key={vehicle.id} delay={Math.min(i, 8) * 60} variant="up">
                 <Link
                   href={`/inventory/${vehicle.slug}`}
-                  className="group rounded-2xl border border-zinc-200/80 bg-white overflow-hidden hover:shadow-xl hover:border-zinc-300 transition-all duration-500 block"
+                  className="group rounded-lg border border-zinc-200 bg-white overflow-hidden hover:shadow-lg hover:border-zinc-300 transition-all duration-300 block"
                 >
                   <div className="aspect-[16/10] relative overflow-hidden bg-zinc-100">
                     <VehicleImage
@@ -78,9 +77,9 @@ export default async function CommercialPage() {
                       alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
                       make={vehicle.make}
                       model={vehicle.model}
-                      className="w-full h-full group-hover:scale-105 transition-transform duration-700"
+                      className="w-full h-full group-hover:scale-105 transition-transform duration-500"
                     />
-                    <span className="absolute top-3 left-3 bg-zinc-900/80 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10">
+                    <span className="absolute top-3 left-3 bg-zinc-900 text-white text-xs font-medium px-3 py-1.5 rounded-md">
                       Commercial
                     </span>
                   </div>
@@ -96,7 +95,7 @@ export default async function CommercialPage() {
                           </p>
                         )}
                       </div>
-                      <div className="text-lg font-display text-accent flex-shrink-0">
+                      <div className="text-lg font-bold text-red-700 flex-shrink-0">
                         {formatPrice(vehicle.price)}
                       </div>
                     </div>

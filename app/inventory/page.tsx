@@ -54,12 +54,12 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                 name="search"
                 defaultValue={filters.search}
                 placeholder="Search by make, model, or keyword..."
-                className="premium-input pl-11"
+                className="simple-input-dark pl-11"
               />
             </div>
             <button
               type="submit"
-              className="px-8 py-3 bg-gradient-to-r from-red-700 to-red-600 text-white rounded-xl text-sm font-semibold hover:from-red-800 hover:to-red-700 transition-all shadow-lg shadow-red-900/20"
+              className="px-8 py-3 bg-gradient-to-r from-red-700 to-red-600 text-white rounded-lg text-sm font-semibold hover:from-red-800 hover:to-red-700 transition-all"
             >
               Search
             </button>
@@ -75,7 +75,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
             <aside className="w-full lg:w-60 flex-shrink-0">
               <div className="sticky top-24 space-y-6">
                 {/* Sort */}
-                <div className="bg-white rounded-xl border border-zinc-200/80 p-4 shadow-sm">
+                <div className="bg-white rounded-lg border border-zinc-200 p-4">
                   <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-3">
                     Sort By
                   </h3>
@@ -107,7 +107,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
 
                 {/* Make filter */}
                 {filterOptions.makes.length > 0 && (
-                  <div className="bg-white rounded-xl border border-zinc-200/80 p-4 shadow-sm">
+                  <div className="bg-white rounded-lg border border-zinc-200 p-4">
                     <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-3">
                       Make
                     </h3>
@@ -146,7 +146,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
 
                 {/* Body Type filter */}
                 {filterOptions.bodyTypes.length > 0 && (
-                  <div className="bg-white rounded-xl border border-zinc-200/80 p-4 shadow-sm">
+                  <div className="bg-white rounded-lg border border-zinc-200 p-4">
                     <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-3">
                       Body Type
                     </h3>
@@ -184,7 +184,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                 )}
 
                 {/* Price Range filter */}
-                <div className="bg-white rounded-xl border border-zinc-200/80 p-4 shadow-sm">
+                <div className="bg-white rounded-lg border border-zinc-200 p-4">
                   <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-3">
                     Price Range
                   </h3>
@@ -241,8 +241,8 @@ export default async function InventoryPage({ searchParams }: PageProps) {
               </div>
 
               {vehicles.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-2xl border border-zinc-200/80">
-                  <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
+                <div className="text-center py-20 bg-white rounded-lg border border-zinc-200">
+                  <div className="w-16 h-16 mx-auto rounded-lg bg-zinc-100 flex items-center justify-center mb-4">
                     <Search className="h-7 w-7 text-zinc-300" />
                   </div>
                   <p className="text-lg text-zinc-500 mb-2">
@@ -261,7 +261,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                     <Link
                       key={vehicle.id}
                       href={`/inventory/${vehicle.slug}`}
-                      className="group rounded-2xl border border-zinc-200/80 bg-white overflow-hidden hover:shadow-xl hover:shadow-zinc-200/40 hover:border-zinc-300 transition-all duration-500"
+                      className="group rounded-lg border border-zinc-200 bg-white overflow-hidden hover:shadow-lg hover:border-zinc-300 transition-all duration-300"
                     >
                       <div className="aspect-[16/10] relative overflow-hidden bg-zinc-100">
                         <VehicleImage
@@ -269,22 +269,21 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                           alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
                           make={vehicle.make}
                           model={vehicle.model}
-                          className="w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
+                          className="w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
                         {vehicle.isFeatured && (
-                          <span className="absolute top-3 left-3 bg-zinc-900/80 text-accent text-xs font-semibold px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-1.5 border border-white/10">
-                            <Star className="h-3 w-3 fill-accent text-accent" />
+                          <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1.5">
+                            <Star className="h-3 w-3 fill-white text-white" />
                             Featured
                           </span>
                         )}
                         {vehicle.isNewArrival && !vehicle.isFeatured && (
-                          <span className="absolute top-3 left-3 bg-green-900/80 text-green-100 text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur-md border border-white/10">
+                          <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-medium px-3 py-1.5 rounded-md">
                             New Arrival
                           </span>
                         )}
-                        <div className="absolute bottom-3 right-3 bg-zinc-900/85 backdrop-blur-md rounded-lg px-3.5 py-2 border border-white/10">
-                          <span className="text-lg font-display text-accent">
+                        <div className="absolute bottom-3 right-3 bg-zinc-900 rounded-md px-3.5 py-2">
+                          <span className="text-lg font-bold text-white">
                             {formatPrice(vehicle.price)}
                           </span>
                         </div>
@@ -316,7 +315,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                         </div>
                         <span className="inline-flex items-center gap-2 text-sm font-semibold text-red-700 group-hover:text-red-800 transition-colors">
                           View Details
-                          <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1.5 transition-transform duration-300" />
+                          <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-200" />
                         </span>
                       </div>
                     </Link>
@@ -332,7 +331,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                         pathname: "/inventory",
                         query: { ...params, page: String(page - 1) },
                       }}
-                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 hover:border-zinc-300 transition-all shadow-sm"
+                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-all"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Previous
@@ -347,7 +346,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                         pathname: "/inventory",
                         query: { ...params, page: String(page + 1) },
                       }}
-                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 hover:border-zinc-300 transition-all shadow-sm"
+                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-all"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />

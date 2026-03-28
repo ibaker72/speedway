@@ -82,7 +82,7 @@ export function MakeLogo({
   return (
     <span
       className={cn(
-        "inline-flex items-center font-display tracking-[0.15em] uppercase whitespace-nowrap select-none",
+        "inline-flex items-center font-bold tracking-[0.15em] uppercase whitespace-nowrap select-none",
         variantColors[variant],
         className
       )}

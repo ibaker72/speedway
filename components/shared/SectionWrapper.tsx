@@ -9,12 +9,11 @@ interface SectionWrapperProps {
 
 const bgStyles = {
   white: "bg-white",
-  light: "pattern-light",
-  dark: "mesh-dark text-white grain-overlay relative",
-  charcoal: "mesh-charcoal text-white grain-overlay relative",
+  light: "bg-gray-50",
+  dark: "bg-zinc-950 text-white",
+  charcoal: "bg-zinc-900 text-white",
   accent: "bg-red-700 text-white",
-  gradient:
-    "bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white grain-overlay relative",
+  gradient: "bg-zinc-950 text-white",
 };
 
 export function SectionWrapper({

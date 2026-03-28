@@ -20,20 +20,16 @@ export function PriceRangeShortcuts() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {priceRanges.map((range, i) => (
-          <AnimateIn key={range.label} delay={i * 80} variant="up">
+          <AnimateIn key={range.label} delay={i * 60} variant="up">
             <Link
               href={range.href}
-              className="group relative p-6 md:p-7 bg-white rounded-2xl border border-zinc-200/80 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 text-center overflow-hidden"
+              className="group p-6 md:p-7 bg-white rounded-lg border border-zinc-200 hover:border-red-200 hover:shadow-md transition-all duration-200 text-center block"
             >
-              {/* Subtle accent glow on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/0 group-hover:from-accent/[0.02] group-hover:to-accent/[0.05] transition-all duration-500 rounded-2xl" />
-              <div className="relative">
-                <div className="font-display text-2xl md:text-3xl font-bold text-zinc-900 group-hover:text-accent transition-colors duration-300">
-                  {range.label}
-                </div>
-                <div className="text-xs text-zinc-500 mt-2">
-                  {range.estimate} vehicles
-                </div>
+              <div className="text-2xl md:text-3xl font-bold text-zinc-900 group-hover:text-red-700 transition-colors">
+                {range.label}
+              </div>
+              <div className="text-xs text-zinc-500 mt-2">
+                {range.estimate} vehicles
               </div>
             </Link>
           </AnimateIn>

@@ -1,12 +1,16 @@
-import { Shield, Car, Star, CheckCircle } from "lucide-react";
+import { MapPin, Star, Car, Users } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
-import { AnimateIn } from "@/components/shared/AnimateIn";
 
-const badges = [
+const stats = [
   {
-    icon: Shield,
-    value: `${BUSINESS.stats.yearsInBusiness}+`,
-    label: "Years in Business",
+    icon: MapPin,
+    value: "Paterson, NJ",
+    label: "Easy access from all of Passaic County",
+  },
+  {
+    icon: Star,
+    value: `${BUSINESS.stats.googleRating} Stars`,
+    label: `${BUSINESS.stats.totalReviews}+ Google Reviews`,
   },
   {
     icon: Car,
@@ -14,16 +18,9 @@ const badges = [
     label: "Vehicles in Stock",
   },
   {
-    icon: Star,
-    value: `${BUSINESS.stats.googleRating}`,
-    label: `Google Rating`,
-    sub: `${BUSINESS.stats.totalReviews}+ reviews`,
-    accent: true,
-  },
-  {
-    icon: CheckCircle,
+    icon: Users,
     value: BUSINESS.stats.customersServed,
-    label: "Customers Served",
+    label: "Happy Customers",
   },
 ];
 
@@ -31,31 +28,19 @@ export function TrustBadgesRow() {
   return (
     <section className="bg-white py-10 md:py-14 border-b border-zinc-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-          {badges.map((badge, i) => (
-            <AnimateIn key={badge.label} delay={i * 80} variant="up">
-              <div className="flex items-center gap-4 rounded-xl bg-zinc-50/80 border border-zinc-100 p-4 md:p-5 hover:border-accent/20 hover:shadow-sm transition-all duration-300 group">
-                <div className="flex-shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-800 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <badge.icon className="h-5 w-5 text-accent" />
-                </div>
-                <div>
-                  <div className="text-xl md:text-2xl font-display text-zinc-900 leading-none">
-                    {badge.value}
-                    {badge.accent && (
-                      <span className="text-amber-500 text-sm ml-0.5">★</span>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-zinc-500 mt-1 leading-tight">
-                    {badge.label}
-                  </div>
-                  {badge.sub && (
-                    <div className="text-[10px] text-zinc-400 leading-tight">
-                      {badge.sub}
-                    </div>
-                  )}
-                </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-red-50 mb-3">
+                <stat.icon className="h-5 w-5 text-red-600" />
               </div>
-            </AnimateIn>
+              <div className="text-xl md:text-2xl font-bold text-zinc-900">
+                {stat.value}
+              </div>
+              <div className="text-sm text-zinc-500 mt-1">
+                {stat.label}
+              </div>
+            </div>
           ))}
         </div>
       </div>

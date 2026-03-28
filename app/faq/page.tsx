@@ -1,5 +1,4 @@
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
-import { SectionHeading } from "@/components/shared/SectionHeading";
 import { FAQSection } from "@/components/home/FAQSection";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight } from "lucide-react";
@@ -16,9 +15,9 @@ export default function FAQPage() {
   return (
     <>
       <FAQSection />
-      <SectionWrapper background="white" className="py-12 md:py-16">
+      <SectionWrapper background="light" className="py-12 md:py-16">
         <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-xl font-display text-zinc-900 mb-3">
+          <h2 className="text-xl font-bold text-zinc-900 mb-3">
             Still have questions?
           </h2>
           <p className="text-sm text-zinc-500 mb-6">

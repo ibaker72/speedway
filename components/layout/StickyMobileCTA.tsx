@@ -6,13 +6,13 @@ import { BUSINESS } from "@/lib/constants";
 
 export function StickyMobileCTA() {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-zinc-950/95 backdrop-blur-xl border-t border-white/[0.06] shadow-[0_-4px_30px_rgba(0,0,0,0.4)]">
+    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-zinc-950/95 backdrop-blur-sm border-t border-white/[0.06] shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
       <div className="flex h-14">
         <a
           href={BUSINESS.phoneHref}
           className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white active:bg-white/5 transition-colors border-r border-white/[0.06]"
         >
-          <Phone className="h-4 w-4 text-accent" />
+          <Phone className="h-4 w-4 text-red-500" />
           Call Now
         </a>
         <Link

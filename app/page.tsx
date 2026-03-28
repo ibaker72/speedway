@@ -3,10 +3,8 @@ import { BrandMarquee } from "@/components/home/BrandMarquee";
 import { TrustBadgesRow } from "@/components/home/TrustBadgesRow";
 import { FeaturedInventory } from "@/components/home/FeaturedInventory";
 import { BodyTypeShortcuts } from "@/components/home/BodyTypeShortcuts";
-import { PriceRangeShortcuts } from "@/components/home/PriceRangeShortcuts";
-import { FinanceCTABand } from "@/components/home/FinanceCTABand";
-import { FinanceFormSection } from "@/components/home/FinanceFormSection";
 import { TradeSellCards } from "@/components/home/TradeSellCards";
+import { FinanceFormSection } from "@/components/home/FinanceFormSection";
 import { WhyBuySection } from "@/components/home/WhyBuySection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { FAQSection } from "@/components/home/FAQSection";
@@ -20,10 +18,8 @@ export default function HomePage() {
       <TrustBadgesRow />
       <FeaturedInventory />
       <BodyTypeShortcuts />
-      <PriceRangeShortcuts />
-      <FinanceCTABand />
-      <FinanceFormSection />
       <TradeSellCards />
+      <FinanceFormSection />
       <WhyBuySection />
       <TestimonialsSection />
       <FAQSection />
