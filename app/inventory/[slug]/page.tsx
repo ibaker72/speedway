@@ -1,6 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Phone, ChevronLeft, Gauge, Settings2, Fuel, Palette, Calendar, Hash, Shield, Star } from "lucide-react";
+import {
+  Phone,
+  ChevronLeft,
+  Gauge,
+  Settings2,
+  Fuel,
+  Palette,
+  Calendar,
+  Hash,
+  Shield,
+  Star,
+  ArrowRight,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { VehicleJsonLd } from "@/components/seo/VehicleJsonLd";
@@ -9,7 +22,9 @@ import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
-interface PageProps { params: Promise<{ slug: string }>; }
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -26,9 +41,15 @@ export default async function VehicleDetailPage({ params }: PageProps) {
   const vehicle = await getVehicleBySlug(slug);
   if (!vehicle) notFound();
 
-  const estPayment = vehicle.estimatedPayment || Math.round(vehicle.price * 0.02);
-  const { vehicles: related } = await getInventory({ bodyType: vehicle.bodyType, perPage: 4 });
-  const relatedVehicles = related.filter((v) => v.id !== vehicle.id).slice(0, 3);
+  const estPayment =
+    vehicle.estimatedPayment || Math.round(vehicle.price * 0.02);
+  const { vehicles: related } = await getInventory({
+    bodyType: vehicle.bodyType,
+    perPage: 4,
+  });
+  const relatedVehicles = related
+    .filter((v) => v.id !== vehicle.id)
+    .slice(0, 3);
 
   const specs = [
     { icon: Gauge, label: "Mileage", value: formatMileage(vehicle.mileage) },
@@ -45,83 +66,174 @@ export default async function VehicleDetailPage({ params }: PageProps) {
     <>
       <VehicleJsonLd vehicle={vehicle} />
       <div className="bg-zinc-50 min-h-screen">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/inventory" className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
-            <ChevronLeft className="h-4 w-4" />Back to Inventory
-          </Link>
+        {/* Breadcrumb */}
+        <div className="bg-white border-b border-zinc-100">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+            <Link
+              href="/inventory"
+              className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back to Inventory
+            </Link>
+          </div>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-3">
-              <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-zinc-100">
-                <VehicleImage src={vehicle.images[0]?.url} alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} make={vehicle.make} model={vehicle.model} priority />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
+            {/* Left: Image + Details */}
+            <div className="lg:col-span-3 space-y-6">
+              {/* Main image */}
+              <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-zinc-100 shadow-sm">
+                <VehicleImage
+                  src={vehicle.images[0]?.url}
+                  alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                  make={vehicle.make}
+                  model={vehicle.model}
+                  priority
+                />
                 {vehicle.isFeatured && (
                   <span className="absolute top-4 left-4 bg-zinc-900/80 text-accent text-sm font-semibold px-4 py-2 rounded-xl backdrop-blur-md flex items-center gap-2 border border-white/10">
-                    <Star className="h-4 w-4 fill-accent text-accent" />Featured
+                    <Star className="h-4 w-4 fill-accent text-accent" />
+                    Featured
                   </span>
                 )}
               </div>
 
+              {/* Description */}
               {vehicle.description && (
-                <div className="mt-8">
-                  <h2 className="text-lg font-display text-zinc-900 mb-3">About This Vehicle</h2>
-                  <p className="text-zinc-600 leading-relaxed">{vehicle.description}</p>
+                <div className="bg-white rounded-2xl border border-zinc-200/80 p-6 md:p-7 shadow-sm">
+                  <h2 className="text-lg font-display text-zinc-900 mb-3">
+                    About This Vehicle
+                  </h2>
+                  <p className="text-zinc-600 leading-relaxed text-[15px]">
+                    {vehicle.description}
+                  </p>
                 </div>
               )}
 
+              {/* Features */}
               {vehicle.features.length > 0 && (
-                <div className="mt-8">
-                  <h2 className="text-lg font-display text-zinc-900 mb-4">Features & Equipment</h2>
-                  <div className="grid grid-cols-2 gap-2.5">
+                <div className="bg-white rounded-2xl border border-zinc-200/80 p-6 md:p-7 shadow-sm">
+                  <h2 className="text-lg font-display text-zinc-900 mb-4">
+                    Features & Equipment
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {vehicle.features.map((f) => (
-                      <div key={f} className="flex items-center gap-2.5 text-sm text-zinc-600 bg-white rounded-lg px-3 py-2.5 border border-zinc-100">
-                        <Shield className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />{f}
+                      <div
+                        key={f}
+                        className="flex items-center gap-2.5 text-sm text-zinc-600 bg-zinc-50 rounded-lg px-3 py-2.5"
+                      >
+                        <CheckCircle className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+                        {f}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="mt-8 flex flex-wrap gap-6 text-sm text-zinc-500">
-                <div className="flex items-center gap-1.5"><Hash className="h-3.5 w-3.5" />VIN: {vehicle.vin}</div>
-                <div className="flex items-center gap-1.5"><Hash className="h-3.5 w-3.5" />Stock #: {vehicle.stockNumber}</div>
+              {/* VIN & Stock */}
+              <div className="flex flex-wrap gap-6 text-sm text-zinc-400 px-1">
+                <div className="flex items-center gap-1.5">
+                  <Hash className="h-3.5 w-3.5" />
+                  VIN: {vehicle.vin}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Hash className="h-3.5 w-3.5" />
+                  Stock #: {vehicle.stockNumber}
+                </div>
               </div>
             </div>
 
+            {/* Right: Pricing + Specs sidebar */}
             <div className="lg:col-span-2">
-              <div className="sticky top-24">
-                <div className="rounded-2xl border border-zinc-200/80 bg-white p-7 shadow-sm">
-                  <h1 className="text-2xl font-display text-zinc-900 mb-1">{vehicle.year} {vehicle.make} {vehicle.model}</h1>
-                  {vehicle.trim && <p className="text-zinc-500 mb-5">{vehicle.trim}</p>}
+              <div className="sticky top-24 space-y-5">
+                {/* Pricing card */}
+                <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 md:p-7 shadow-sm">
+                  <h1 className="text-2xl font-display text-zinc-900 mb-1">
+                    {vehicle.year} {vehicle.make} {vehicle.model}
+                  </h1>
+                  {vehicle.trim && (
+                    <p className="text-zinc-500 mb-5">{vehicle.trim}</p>
+                  )}
+
                   <div className="mb-6">
-                    <div className="text-3xl font-display text-accent">{formatPrice(vehicle.price)}</div>
+                    <div className="text-3xl font-display text-accent">
+                      {formatPrice(vehicle.price)}
+                    </div>
                     {vehicle.msrp && vehicle.msrp > vehicle.price && (
-                      <div className="text-sm text-zinc-400 line-through mt-1">MSRP {formatPrice(vehicle.msrp)}</div>
+                      <div className="text-sm text-zinc-400 line-through mt-1">
+                        MSRP {formatPrice(vehicle.msrp)}
+                      </div>
                     )}
-                    <div className="mt-3 px-4 py-3 bg-green-50 border border-green-200 rounded-xl">
-                      <p className="text-sm text-green-800 font-medium">Est. ${estPayment}/mo</p>
-                      <p className="text-xs text-green-600">Based on 72 months with approved credit</p>
+                    <div className="mt-3 px-4 py-3 bg-green-50 border border-green-200/80 rounded-xl">
+                      <p className="text-sm text-green-800 font-medium">
+                        Est. ${estPayment}/mo
+                      </p>
+                      <p className="text-xs text-green-600">
+                        Based on 72 months with approved credit
+                      </p>
                     </div>
                   </div>
-                  <div className="space-y-3 mb-6">
-                    <Button href={BUSINESS.phoneHref} variant="primary" size="lg" className="w-full">
-                      <Phone className="h-4 w-4" />Call About This Vehicle
+
+                  <div className="space-y-3 mb-5">
+                    <Button
+                      href={BUSINESS.phoneHref}
+                      variant="primary"
+                      size="lg"
+                      className="w-full"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Call About This Vehicle
                     </Button>
-                    <Button href="/finance" variant="outline" size="lg" className="w-full">Get Pre-Approved</Button>
+                    <Button
+                      href="/finance"
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                    >
+                      Get Pre-Approved
+                    </Button>
                   </div>
-                  <p className="text-xs text-zinc-400 text-center">Call {BUSINESS.phone} for availability</p>
+                  <p className="text-xs text-zinc-400 text-center">
+                    Call {BUSINESS.phone} for availability
+                  </p>
                 </div>
 
-                <div className="mt-6 rounded-2xl border border-zinc-200/80 bg-white p-7">
-                  <h2 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-5">Key Specs</h2>
+                {/* Specs card */}
+                <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 md:p-7 shadow-sm">
+                  <h2 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-5">
+                    Key Specs
+                  </h2>
                   <div className="grid grid-cols-2 gap-4">
                     {specs.map((spec) => (
                       <div key={spec.label}>
                         <div className="flex items-center gap-1.5 text-xs text-zinc-400 mb-0.5">
-                          <spec.icon className="h-3 w-3" />{spec.label}
+                          <spec.icon className="h-3 w-3" />
+                          {spec.label}
                         </div>
-                        <div className="text-sm font-medium text-zinc-900">{spec.value}</div>
+                        <div className="text-sm font-medium text-zinc-900">
+                          {spec.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Trust signals */}
+                <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm">
+                  <div className="space-y-3">
+                    {[
+                      { icon: Shield, text: "Quality inspected vehicle" },
+                      { icon: CheckCircle, text: "Financing available for all credit" },
+                      { icon: Star, text: "4.8★ rated dealership" },
+                    ].map((item) => (
+                      <div
+                        key={item.text}
+                        className="flex items-center gap-3 text-sm text-zinc-600"
+                      >
+                        <item.icon className="h-4 w-4 text-accent flex-shrink-0" />
+                        {item.text}
                       </div>
                     ))}
                   </div>
@@ -130,23 +242,44 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             </div>
           </div>
 
+          {/* Related vehicles */}
           {relatedVehicles.length > 0 && (
-            <div className="mt-16">
-              <h2 className="text-2xl font-display text-zinc-900 mb-6">Similar Vehicles</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="mt-14 md:mt-16">
+              <h2 className="text-2xl font-display text-zinc-900 mb-6">
+                Similar Vehicles
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {relatedVehicles.map((rv) => (
-                  <Link key={rv.id} href={`/inventory/${rv.slug}`}
-                    className="group rounded-2xl border border-zinc-200/80 bg-white overflow-hidden hover:shadow-lg transition-all duration-300">
-                    <div className="aspect-[16/10] relative overflow-hidden">
-                      <VehicleImage src={rv.images[0]?.url} alt={`${rv.year} ${rv.make} ${rv.model}`} make={rv.make} model={rv.model}
-                        className="group-hover:scale-105 transition-transform duration-700" />
+                  <Link
+                    key={rv.id}
+                    href={`/inventory/${rv.slug}`}
+                    className="group rounded-2xl border border-zinc-200/80 bg-white overflow-hidden hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="aspect-[16/10] relative overflow-hidden bg-zinc-100">
+                      <VehicleImage
+                        src={rv.images[0]?.url}
+                        alt={`${rv.year} ${rv.make} ${rv.model}`}
+                        make={rv.make}
+                        model={rv.model}
+                        className="group-hover:scale-105 transition-transform duration-700"
+                      />
                     </div>
                     <div className="p-4">
-                      <h3 className="font-semibold text-sm text-zinc-900 group-hover:text-red-700 transition-colors">{rv.year} {rv.make} {rv.model}</h3>
+                      <h3 className="font-semibold text-sm text-zinc-900 group-hover:text-red-700 transition-colors">
+                        {rv.year} {rv.make} {rv.model}
+                      </h3>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="font-display text-accent">{formatPrice(rv.price)}</span>
-                        <span className="text-xs text-zinc-500">{formatMileage(rv.mileage)}</span>
+                        <span className="font-display text-accent">
+                          {formatPrice(rv.price)}
+                        </span>
+                        <span className="text-xs text-zinc-500">
+                          {formatMileage(rv.mileage)}
+                        </span>
                       </div>
+                      <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-red-700">
+                        View Details
+                        <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                      </span>
                     </div>
                   </Link>
                 ))}

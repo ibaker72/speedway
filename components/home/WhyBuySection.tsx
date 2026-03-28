@@ -26,13 +26,13 @@ const pillars = [
     icon: Headphones,
     title: "Personal Service",
     description:
-      "Our team takes the time to understand what you need. We're here to help you find the right vehicle, not just make a sale.",
+      "Our team takes the time to understand what you need. We help you find the right vehicle, not just make a sale.",
   },
   {
     icon: Shield,
     title: "Extended Warranties",
     description:
-      "Many vehicles qualify for extended service contracts and warranty coverage, giving you added protection and peace of mind.",
+      "Many vehicles qualify for extended service contracts, giving you added protection and peace of mind on the road.",
   },
 ];
 
@@ -44,12 +44,12 @@ export function WhyBuySection() {
         subtitle="A straightforward approach to buying a used car."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-        {pillars.slice(0, 4).map((pillar, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+        {pillars.map((pillar, i) => (
           <AnimateIn key={pillar.title} delay={i * 100} variant="up">
-            <div className="text-center rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-7 hover:bg-white/[0.05] hover:border-accent/20 transition-all duration-300 h-full">
-              <div className="mx-auto w-14 h-14 rounded-2xl bg-accent/10 border border-accent/10 flex items-center justify-center mb-5">
-                <pillar.icon className="h-6 w-6 text-accent" />
+            <div className="premium-card p-7 h-full">
+              <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/10 flex items-center justify-center mb-5">
+                <pillar.icon className="h-5 w-5 text-accent" />
               </div>
               <h3 className="font-semibold text-white mb-2 text-base">
                 {pillar.title}
@@ -61,21 +61,6 @@ export function WhyBuySection() {
           </AnimateIn>
         ))}
       </div>
-
-      {/* 5th pillar centered */}
-      <AnimateIn delay={400} variant="up">
-        <div className="mt-6 max-w-sm mx-auto text-center rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-7 hover:bg-white/[0.05] hover:border-accent/20 transition-all duration-300">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-accent/10 border border-accent/10 flex items-center justify-center mb-5">
-            <Shield className="h-6 w-6 text-accent" />
-          </div>
-          <h3 className="font-semibold text-white mb-2 text-base">
-            {pillars[4].title}
-          </h3>
-          <p className="text-sm text-zinc-400 leading-relaxed">
-            {pillars[4].description}
-          </p>
-        </div>
-      </AnimateIn>
     </SectionWrapper>
   );
 }

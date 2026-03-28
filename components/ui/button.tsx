@@ -27,9 +27,9 @@ type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-red-700 to-red-600 text-white hover:from-red-800 hover:to-red-700 active:from-red-900 active:to-red-800 shadow-sm shadow-red-900/20",
+    "bg-gradient-to-r from-red-700 to-red-600 text-white hover:from-red-800 hover:to-red-700 active:from-red-900 active:to-red-800 shadow-sm shadow-red-900/20 hover:shadow-md hover:shadow-red-900/25",
   secondary:
-    "bg-zinc-900 text-white hover:bg-zinc-800 active:bg-zinc-700 shadow-sm",
+    "bg-zinc-900 text-white hover:bg-zinc-800 active:bg-zinc-700 shadow-sm hover:shadow-md",
   outline:
     "border border-zinc-300 text-zinc-900 hover:bg-zinc-50 active:bg-zinc-100",
   ghost: "text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200",
@@ -51,7 +51,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const classes = cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-250 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap",
     variantStyles[variant],
     sizeStyles[size],
     className
