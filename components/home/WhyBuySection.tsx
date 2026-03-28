@@ -1,6 +1,7 @@
 import { ShieldCheck, Banknote, Eye, Headphones, Shield } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
+import { AnimateIn } from "@/components/shared/AnimateIn";
 
 const pillars = [
   {
@@ -36,38 +37,45 @@ const pillars = [
 ];
 
 export function WhyBuySection() {
-  const FifthIcon = pillars[4].icon;
-
   return (
-    <SectionWrapper background="light">
+    <SectionWrapper background="gradient">
       <SectionHeading
         title="Why Speedway Motors"
         subtitle="A straightforward approach to buying a used car."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        {pillars.slice(0, 4).map((pillar) => (
-          <div key={pillar.title} className="text-center">
-            <div className="mx-auto w-12 h-12 rounded-lg bg-red-700/10 flex items-center justify-center mb-4">
-              <pillar.icon className="h-6 w-6 text-red-700" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+        {pillars.slice(0, 4).map((pillar, i) => (
+          <AnimateIn key={pillar.title} delay={i * 100} variant="up">
+            <div className="text-center rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-7 hover:bg-white/[0.05] hover:border-accent/20 transition-all duration-300 h-full">
+              <div className="mx-auto w-14 h-14 rounded-2xl bg-accent/10 border border-accent/10 flex items-center justify-center mb-5">
+                <pillar.icon className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="font-semibold text-white mb-2 text-base">
+                {pillar.title}
+              </h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                {pillar.description}
+              </p>
             </div>
-            <h3 className="font-semibold text-zinc-900 mb-2">{pillar.title}</h3>
-            <p className="text-sm text-zinc-500 leading-relaxed">
-              {pillar.description}
-            </p>
-          </div>
+          </AnimateIn>
         ))}
       </div>
+
       {/* 5th pillar centered */}
-      <div className="mt-8 max-w-xs mx-auto text-center">
-        <div className="mx-auto w-12 h-12 rounded-lg bg-red-700/10 flex items-center justify-center mb-4">
-          <FifthIcon className="h-6 w-6 text-red-700" />
+      <AnimateIn delay={400} variant="up">
+        <div className="mt-6 max-w-sm mx-auto text-center rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-7 hover:bg-white/[0.05] hover:border-accent/20 transition-all duration-300">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-accent/10 border border-accent/10 flex items-center justify-center mb-5">
+            <Shield className="h-6 w-6 text-accent" />
+          </div>
+          <h3 className="font-semibold text-white mb-2 text-base">
+            {pillars[4].title}
+          </h3>
+          <p className="text-sm text-zinc-400 leading-relaxed">
+            {pillars[4].description}
+          </p>
         </div>
-        <h3 className="font-semibold text-zinc-900 mb-2">{pillars[4].title}</h3>
-        <p className="text-sm text-zinc-500 leading-relaxed">
-          {pillars[4].description}
-        </p>
-      </div>
+      </AnimateIn>
     </SectionWrapper>
   );
 }

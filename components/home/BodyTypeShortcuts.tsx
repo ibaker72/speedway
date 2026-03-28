@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Car, Truck, CircleDot, Bus, Crown } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
+import { AnimateIn } from "@/components/shared/AnimateIn";
 
 const bodyTypes = [
   { label: "Sedans", icon: Car, href: "/inventory?type=sedan", count: "40+" },
@@ -13,27 +14,32 @@ const bodyTypes = [
 
 export function BodyTypeShortcuts() {
   return (
-    <SectionWrapper background="light">
+    <SectionWrapper background="dark">
       <SectionHeading
         title="Shop by Body Type"
         subtitle="Find the right vehicle for your lifestyle."
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {bodyTypes.map((type) => (
-          <Link
-            key={type.label}
-            href={type.href}
-            className="group flex flex-col items-center gap-3 p-6 bg-white rounded-xl border border-zinc-200 hover:border-red-200 hover:shadow-md transition-all duration-200"
-          >
-            <div className="w-14 h-14 rounded-full bg-zinc-100 group-hover:bg-red-50 flex items-center justify-center transition-colors">
-              <type.icon className="h-6 w-6 text-zinc-600 group-hover:text-red-700 transition-colors" />
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-zinc-900 text-sm">{type.label}</div>
-              <div className="text-xs text-zinc-500 mt-0.5">{type.count} available</div>
-            </div>
-          </Link>
+        {bodyTypes.map((type, i) => (
+          <AnimateIn key={type.label} delay={i * 80} variant="scale">
+            <Link
+              href={type.href}
+              className="group flex flex-col items-center gap-4 p-6 rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm hover:bg-white/[0.06] hover:border-accent/30 transition-all duration-300"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900 group-hover:from-accent/20 group-hover:to-accent/5 flex items-center justify-center transition-all duration-300 border border-white/[0.05] group-hover:border-accent/20">
+                <type.icon className="h-7 w-7 text-zinc-400 group-hover:text-accent transition-colors duration-300" />
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-white text-sm tracking-wide">
+                  {type.label}
+                </div>
+                <div className="text-xs text-zinc-500 mt-1">
+                  {type.count} available
+                </div>
+              </div>
+            </Link>
+          </AnimateIn>
         ))}
       </div>
     </SectionWrapper>

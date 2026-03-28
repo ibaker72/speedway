@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 
@@ -44,24 +45,26 @@ function FAQItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-zinc-200 last:border-b-0">
+    <div className="border-b border-zinc-200/80 last:border-b-0">
       <button
         suppressHydrationWarning
         type="button"
         onClick={onToggle}
-        className="flex items-center justify-between w-full py-5 text-left gap-4"
+        className="flex items-center justify-between w-full py-6 text-left gap-4 group"
       >
-        <span className="font-semibold text-zinc-900">{question}</span>
-        <span
-          className={`text-xl text-zinc-400 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-45" : ""}`}
-        >
-          +
+        <span className="font-semibold text-zinc-900 group-hover:text-red-700 transition-colors">
+          {question}
         </span>
+        <ChevronDown
+          className={`h-5 w-5 text-zinc-400 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-accent" : ""}`}
+        />
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-40 pb-5" : "max-h-0"}`}
+        className={`overflow-hidden transition-all duration-300 ease-out ${isOpen ? "max-h-40 pb-6" : "max-h-0"}`}
       >
-        <p className="text-sm text-zinc-600 leading-relaxed">{answer}</p>
+        <p className="text-sm text-zinc-500 leading-relaxed pr-10">
+          {answer}
+        </p>
       </div>
     </div>
   );
@@ -71,21 +74,23 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <SectionWrapper background="white">
+    <SectionWrapper background="light">
       <SectionHeading
         title="Frequently Asked Questions"
         subtitle="Answers to common questions about buying from Speedway Motors."
       />
-      <div className="max-w-3xl mx-auto border-t border-zinc-200">
-        {faqs.map((faq, i) => (
-          <FAQItem
-            key={i}
-            question={faq.question}
-            answer={faq.answer}
-            isOpen={openIndex === i}
-            onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-          />
-        ))}
+      <div className="max-w-3xl mx-auto rounded-2xl border border-zinc-200/80 bg-white p-2 sm:p-4">
+        <div className="px-4">
+          {faqs.map((faq, i) => (
+            <FAQItem
+              key={i}
+              question={faq.question}
+              answer={faq.answer}
+              isOpen={openIndex === i}
+              onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+            />
+          ))}
+        </div>
       </div>
     </SectionWrapper>
   );

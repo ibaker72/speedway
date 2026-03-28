@@ -45,11 +45,11 @@ export const NAV_LINKS = [
 export function isOpenNow(): boolean {
   const now = new Date();
   const day = now.getDay();
-  if (day === 0) return false; // Sunday
+  if (day === 0) return false;
   const hours = now.getHours();
   const minutes = now.getMinutes();
   const currentTime = hours * 60 + minutes;
-  const openTime = 9 * 60 + 30; // 9:30 AM
-  const closeTime = 19 * 60; // 7:00 PM
+  const openTime = 9 * 60 + 30;
+  const closeTime = 19 * 60;
   return currentTime >= openTime && currentTime < closeTime;
 }

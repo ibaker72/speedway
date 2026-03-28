@@ -23,8 +23,7 @@ export const locations: Location[] = [
     zip: "07513",
     phone: "(862) 264-2777",
     phoneHref: "tel:+18622642777",
-    mapUrl:
-      "https://www.google.com/maps/dir/?api=1&destination=302+22nd+Ave+Paterson+NJ+07513",
+    mapUrl: "https://www.google.com/maps/dir/?api=1&destination=302+22nd+Ave+Paterson+NJ+07513",
     coordinates: { lat: 40.9168, lng: -74.1718 },
   },
   {
@@ -37,8 +36,7 @@ export const locations: Location[] = [
     zip: "07503",
     phone: "(862) 264-2777",
     phoneHref: "tel:+18622642777",
-    mapUrl:
-      "https://www.google.com/maps/dir/?api=1&destination=198+East+Railway+Ave+Paterson+NJ+07503",
+    mapUrl: "https://www.google.com/maps/dir/?api=1&destination=198+East+Railway+Ave+Paterson+NJ+07503",
     coordinates: { lat: 40.9085, lng: -74.1621 },
   },
   {
@@ -51,8 +49,7 @@ export const locations: Location[] = [
     zip: "07503",
     phone: "(862) 264-2777",
     phoneHref: "tel:+18622642777",
-    mapUrl:
-      "https://www.google.com/maps/dir/?api=1&destination=84+Illinois+Ave+Paterson+NJ+07503",
+    mapUrl: "https://www.google.com/maps/dir/?api=1&destination=84+Illinois+Ave+Paterson+NJ+07503",
     coordinates: { lat: 40.9078, lng: -74.1585 },
   },
 ];

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Tag } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
+import { AnimateIn } from "@/components/shared/AnimateIn";
 
 const priceRanges = [
   { label: "Under $10K", href: "/inventory?priceMax=10000", estimate: "25+" },
@@ -12,31 +13,32 @@ const priceRanges = [
 
 export function PriceRangeShortcuts() {
   return (
-    <SectionWrapper background="white">
+    <SectionWrapper background="light">
       <SectionHeading
         title="Shop by Price"
         subtitle="Find a quality vehicle that fits your budget."
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {priceRanges.map((range) => (
-          <Link
-            key={range.label}
-            href={range.href}
-            className="group flex flex-col items-center gap-3 p-6 bg-zinc-50 rounded-xl border border-zinc-200 hover:border-amber-300 hover:shadow-md transition-all duration-200"
-          >
-            <div className="w-12 h-12 rounded-full bg-amber-50 group-hover:bg-amber-100 flex items-center justify-center transition-colors">
-              <Tag className="h-5 w-5 text-amber-700" />
-            </div>
-            <div className="text-center">
-              <div className="font-bold font-display text-zinc-900 text-lg">
-                {range.label}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        {priceRanges.map((range, i) => (
+          <AnimateIn key={range.label} delay={i * 80} variant="up">
+            <Link
+              href={range.href}
+              className="group flex flex-col items-center gap-4 p-7 bg-white rounded-2xl border border-zinc-200/80 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 group-hover:from-accent/15 group-hover:to-accent/5 flex items-center justify-center transition-all duration-300">
+                <Tag className="h-6 w-6 text-accent" />
               </div>
-              <div className="text-xs text-zinc-500 mt-0.5">
-                {range.estimate} vehicles
+              <div className="text-center">
+                <div className="font-display text-xl font-bold text-zinc-900 group-hover:text-accent transition-colors duration-300">
+                  {range.label}
+                </div>
+                <div className="text-xs text-zinc-500 mt-1">
+                  {range.estimate} vehicles
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </AnimateIn>
         ))}
       </div>
     </SectionWrapper>

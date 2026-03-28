@@ -6,9 +6,5 @@ interface PageContainerProps {
 }
 
 export function PageContainer({ children, className }: PageContainerProps) {
-  return (
-    <main className={cn("flex-1", className)}>
-      {children}
-    </main>
-  );
+  return <main className={cn("flex-1", className)}>{children}</main>;
 }

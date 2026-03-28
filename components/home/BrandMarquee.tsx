@@ -9,11 +9,11 @@ function BrandList() {
   return (
     <>
       {brands.map((brand) => (
-        <span key={brand} className="flex items-center gap-6 flex-shrink-0">
-          <span className="text-sm sm:text-base font-display tracking-wide text-zinc-300 whitespace-nowrap">
+        <span key={brand} className="flex items-center gap-8 flex-shrink-0">
+          <span className="text-sm sm:text-base font-display tracking-widest text-zinc-500 whitespace-nowrap uppercase">
             {brand}
           </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-700/60 flex-shrink-0" />
+          <span className="w-1 h-1 rounded-full bg-accent/40 flex-shrink-0" />
         </span>
       ))}
     </>
@@ -22,8 +22,13 @@ function BrandList() {
 
 export function BrandMarquee() {
   return (
-    <section className="bg-zinc-950 border-y border-amber-900/10 py-5 overflow-hidden">
-      <div className="flex animate-marquee gap-6">
+    <section className="relative bg-zinc-950 py-6 overflow-hidden">
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+      {/* Bottom accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+
+      <div className="flex animate-marquee gap-8">
         <BrandList />
         <BrandList />
       </div>

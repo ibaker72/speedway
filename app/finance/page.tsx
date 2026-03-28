@@ -4,8 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Auto Financing",
-  description:
-    "Get pre-approved for auto financing at Speedway Motors. All credit levels welcome. Quick decisions and competitive rates from trusted NJ lenders.",
+  description: "Get pre-approved for auto financing at Speedway Motors. All credit levels welcome. Quick decisions and competitive rates from trusted NJ lenders.",
 };
 
 export default function FinancePage() {
