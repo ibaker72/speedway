@@ -2,11 +2,9 @@
 
 import { Search, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BUSINESS, isOpenNow } from "@/lib/constants";
+import { BUSINESS } from "@/lib/constants";
 
 export function HeroSection() {
-  const open = isOpenNow();
-
   return (
     <section className="relative bg-zinc-950 text-white overflow-hidden">
       {/* Warm golden radial gradient */}
@@ -76,17 +74,6 @@ export function HeroSection() {
               </span>
               <span className="block mt-0.5">Customers Served</span>
             </div>
-            {open && (
-              <div className="flex items-center gap-2 self-center">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-                </span>
-                <span className="text-green-400 text-sm font-medium">
-                  Open Now
-                </span>
-              </div>
-            )}
           </div>
         </div>
       </div>

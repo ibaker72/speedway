@@ -46,6 +46,7 @@ function FAQItem({
   return (
     <div className="border-b border-zinc-200 last:border-b-0">
       <button
+        suppressHydrationWarning
         type="button"
         onClick={onToggle}
         className="flex items-center justify-between w-full py-5 text-left gap-4"

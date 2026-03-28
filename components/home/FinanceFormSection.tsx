@@ -13,6 +13,7 @@ const benefits = [
 
 export function FinanceFormSection() {
   const [submitted, setSubmitted] = useState(false);
+  const hydrationGuard = { suppressHydrationWarning: true };
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,7 +60,7 @@ export function FinanceFormSection() {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" suppressHydrationWarning>
               <h3 className="text-lg font-bold text-white mb-1">
                 Get Pre-Approved
               </h3>
@@ -68,12 +69,14 @@ export function FinanceFormSection() {
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <input
+                  {...hydrationGuard}
                   type="text"
                   placeholder="First Name"
                   required
                   className="col-span-1 rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-700"
                 />
                 <input
+                  {...hydrationGuard}
                   type="text"
                   placeholder="Last Name"
                   required
@@ -81,18 +84,21 @@ export function FinanceFormSection() {
                 />
               </div>
               <input
+                {...hydrationGuard}
                 type="email"
                 placeholder="Email Address"
                 required
                 className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-700"
               />
               <input
+                {...hydrationGuard}
                 type="tel"
                 placeholder="Phone Number"
                 required
                 className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-700"
               />
               <select
+                {...hydrationGuard}
                 required
                 defaultValue=""
                 className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-700"
@@ -107,6 +113,7 @@ export function FinanceFormSection() {
                 <option value="no-credit">No Credit History</option>
               </select>
               <select
+                {...hydrationGuard}
                 defaultValue=""
                 className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-700"
               >
@@ -121,6 +128,7 @@ export function FinanceFormSection() {
                 <option value="unsure">Not Sure Yet</option>
               </select>
               <button
+                {...hydrationGuard}
                 type="submit"
                 className="w-full rounded-lg bg-red-700 hover:bg-red-800 text-white font-semibold py-3 text-sm transition-colors"
               >
