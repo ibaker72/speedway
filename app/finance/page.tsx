@@ -42,14 +42,13 @@ export default function FinancePage() {
           title="Auto Financing"
           subtitle="Flexible financing options designed to work for you. Get pre-approved in minutes with no impact to your credit score."
           as="h1"
-          label="Financing"
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
           {highlights.map((h, i) => (
             <AnimateIn key={h.title} delay={i * 100} variant="up">
-              <div className="premium-card p-6 text-center h-full">
-                <div className="w-11 h-11 rounded-xl bg-accent/10 border border-accent/10 flex items-center justify-center mx-auto mb-4">
-                  <h.icon className="h-5 w-5 text-accent" />
+              <div className="simple-card p-6 text-center h-full">
+                <div className="w-11 h-11 rounded-lg bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+                  <h.icon className="h-5 w-5 text-red-500" />
                 </div>
                 <h3 className="font-semibold text-white text-sm mb-1.5">
                   {h.title}

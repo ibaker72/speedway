@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
+import { ConfidenceBanner } from "@/components/layout/ConfidenceBanner";
 import { Footer } from "@/components/layout/Footer";
 import { StickyMobileCTA } from "@/components/layout/StickyMobileCTA";
 import { AutoDealerJsonLd, FAQPageJsonLd } from "@/components/seo/JsonLd";
@@ -62,7 +63,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=DM+Serif+Display&display=swap"
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&display=swap"
           rel="stylesheet"
         />
       </head>
@@ -71,6 +72,7 @@ export default function RootLayout({
         <FAQPageJsonLd />
         <AnnouncementBar />
         <Header />
+        <ConfidenceBanner />
         <main className="flex-1">{children}</main>
         <Footer />
         <StickyMobileCTA />

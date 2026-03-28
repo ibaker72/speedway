@@ -48,20 +48,19 @@ export default function ContactPage() {
           title="Contact Us"
           subtitle="We'd love to hear from you. Reach out by phone, email, or visit us in person."
           as="h1"
-          label="Get in Touch"
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
           {contactMethods.map((m, i) => (
             <AnimateIn key={m.title} delay={i * 100} variant="up">
-              <div className="premium-card p-7 text-center h-full">
-                <div className="w-12 h-12 mx-auto rounded-xl bg-accent/10 border border-accent/10 flex items-center justify-center mb-4">
-                  <m.icon className="h-5 w-5 text-accent" />
+              <div className="simple-card p-7 text-center h-full">
+                <div className="w-12 h-12 mx-auto rounded-lg bg-red-500/10 flex items-center justify-center mb-4">
+                  <m.icon className="h-5 w-5 text-red-500" />
                 </div>
                 <h3 className="font-semibold text-white mb-2">{m.title}</h3>
                 {m.href ? (
                   <a
                     href={m.href}
-                    className="text-sm text-zinc-300 hover:text-accent transition-colors break-all"
+                    className="text-sm text-zinc-300 hover:text-red-400 transition-colors break-all"
                   >
                     {m.value}
                   </a>
@@ -78,14 +77,14 @@ export default function ContactPage() {
       </SectionWrapper>
 
       <SectionWrapper background="light">
-        <h2 className="text-2xl font-display text-center mb-8">
+        <h2 className="text-2xl font-bold text-center mb-8">
           Our Locations
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
           {locations.map((loc, i) => (
             <AnimateIn key={loc.id} delay={i * 100} variant="up">
-              <div className="rounded-2xl border border-zinc-200/80 p-7 bg-white hover:shadow-md transition-all duration-300 h-full">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent mb-4">
+              <div className="rounded-lg border border-zinc-200 p-7 bg-white hover:shadow-md transition-shadow h-full">
+                <div className="text-sm font-bold uppercase tracking-wider text-red-600 mb-4">
                   {typeLabels[loc.type]}
                 </div>
                 <div className="space-y-2.5 text-sm text-zinc-600">
@@ -119,7 +118,7 @@ export default function ContactPage() {
           ))}
         </div>
 
-        <div className="rounded-2xl overflow-hidden border border-zinc-200/80 shadow-sm">
+        <div className="rounded-lg overflow-hidden border border-zinc-200">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3015.8!2d-74.1718!3d40.9168!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s302+22nd+Ave+Paterson+NJ+07513!5e0!3m2!1sen!2sus!4v1"
             width="100%"
@@ -133,10 +132,10 @@ export default function ContactPage() {
         </div>
 
         <div className="mt-10 max-w-md mx-auto">
-          <h3 className="text-lg font-display text-center mb-4">
+          <h3 className="text-lg font-bold text-center mb-4">
             Showroom Hours
           </h3>
-          <div className="rounded-2xl border border-zinc-200/80 bg-white overflow-hidden shadow-sm">
+          <div className="rounded-lg border border-zinc-200 bg-white overflow-hidden">
             {HOURS.map((h) => (
               <div
                 key={h.day}

@@ -84,7 +84,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             {/* Left: Image + Details */}
             <div className="lg:col-span-3 space-y-6">
               {/* Main image */}
-              <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-zinc-100 shadow-sm">
+              <div className="aspect-[16/10] rounded-lg overflow-hidden relative bg-zinc-100">
                 <VehicleImage
                   src={vehicle.images[0]?.url}
                   alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
@@ -93,8 +93,8 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   priority
                 />
                 {vehicle.isFeatured && (
-                  <span className="absolute top-4 left-4 bg-zinc-900/80 text-accent text-sm font-semibold px-4 py-2 rounded-xl backdrop-blur-md flex items-center gap-2 border border-white/10">
-                    <Star className="h-4 w-4 fill-accent text-accent" />
+                  <span className="absolute top-4 left-4 bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2">
+                    <Star className="h-4 w-4 fill-white text-white" />
                     Featured
                   </span>
                 )}
@@ -102,8 +102,8 @@ export default async function VehicleDetailPage({ params }: PageProps) {
 
               {/* Description */}
               {vehicle.description && (
-                <div className="bg-white rounded-2xl border border-zinc-200/80 p-6 md:p-7 shadow-sm">
-                  <h2 className="text-lg font-display text-zinc-900 mb-3">
+                <div className="bg-white rounded-lg border border-zinc-200 p-6 md:p-7">
+                  <h2 className="text-lg font-bold text-zinc-900 mb-3">
                     About This Vehicle
                   </h2>
                   <p className="text-zinc-600 leading-relaxed text-[15px]">
@@ -114,8 +114,8 @@ export default async function VehicleDetailPage({ params }: PageProps) {
 
               {/* Features */}
               {vehicle.features.length > 0 && (
-                <div className="bg-white rounded-2xl border border-zinc-200/80 p-6 md:p-7 shadow-sm">
-                  <h2 className="text-lg font-display text-zinc-900 mb-4">
+                <div className="bg-white rounded-lg border border-zinc-200 p-6 md:p-7">
+                  <h2 className="text-lg font-bold text-zinc-900 mb-4">
                     Features & Equipment
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -149,8 +149,8 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             <div className="lg:col-span-2">
               <div className="sticky top-24 space-y-5">
                 {/* Pricing card */}
-                <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 md:p-7 shadow-sm">
-                  <h1 className="text-2xl font-display text-zinc-900 mb-1">
+                <div className="rounded-lg border border-zinc-200 bg-white p-6 md:p-7">
+                  <h1 className="text-2xl font-bold text-zinc-900 mb-1">
                     {vehicle.year} {vehicle.make} {vehicle.model}
                   </h1>
                   {vehicle.trim && (
@@ -158,7 +158,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   )}
 
                   <div className="mb-6">
-                    <div className="text-3xl font-display text-accent">
+                    <div className="text-3xl font-bold text-red-700">
                       {formatPrice(vehicle.price)}
                     </div>
                     {vehicle.msrp && vehicle.msrp > vehicle.price && (
@@ -166,7 +166,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         MSRP {formatPrice(vehicle.msrp)}
                       </div>
                     )}
-                    <div className="mt-3 px-4 py-3 bg-green-50 border border-green-200/80 rounded-xl">
+                    <div className="mt-3 px-4 py-3 bg-green-50 border border-green-200 rounded-lg">
                       <p className="text-sm text-green-800 font-medium">
                         Est. ${estPayment}/mo
                       </p>
@@ -201,7 +201,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Specs card */}
-                <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 md:p-7 shadow-sm">
+                <div className="rounded-lg border border-zinc-200 bg-white p-6 md:p-7">
                   <h2 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-5">
                     Key Specs
                   </h2>
@@ -221,7 +221,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Trust signals */}
-                <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm">
+                <div className="rounded-lg border border-zinc-200 bg-white p-5">
                   <div className="space-y-3">
                     {[
                       { icon: Shield, text: "Quality inspected vehicle" },
@@ -232,7 +232,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         key={item.text}
                         className="flex items-center gap-3 text-sm text-zinc-600"
                       >
-                        <item.icon className="h-4 w-4 text-accent flex-shrink-0" />
+                        <item.icon className="h-4 w-4 text-red-600 flex-shrink-0" />
                         {item.text}
                       </div>
                     ))}
@@ -245,7 +245,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           {/* Related vehicles */}
           {relatedVehicles.length > 0 && (
             <div className="mt-14 md:mt-16">
-              <h2 className="text-2xl font-display text-zinc-900 mb-6">
+              <h2 className="text-2xl font-bold text-zinc-900 mb-6">
                 Similar Vehicles
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -253,7 +253,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   <Link
                     key={rv.id}
                     href={`/inventory/${rv.slug}`}
-                    className="group rounded-2xl border border-zinc-200/80 bg-white overflow-hidden hover:shadow-lg transition-all duration-300"
+                    className="group rounded-lg border border-zinc-200 bg-white overflow-hidden hover:shadow-lg transition-all duration-300"
                   >
                     <div className="aspect-[16/10] relative overflow-hidden bg-zinc-100">
                       <VehicleImage
@@ -261,7 +261,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         alt={`${rv.year} ${rv.make} ${rv.model}`}
                         make={rv.make}
                         model={rv.model}
-                        className="group-hover:scale-105 transition-transform duration-700"
+                        className="group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="p-4">
@@ -269,7 +269,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         {rv.year} {rv.make} {rv.model}
                       </h3>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="font-display text-accent">
+                        <span className="font-bold text-red-700">
                           {formatPrice(rv.price)}
                         </span>
                         <span className="text-xs text-zinc-500">

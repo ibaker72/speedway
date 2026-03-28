@@ -1,30 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { NAV_LINKS, BUSINESS } from "@/lib/constants";
+import type { NavLink } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { MobileMenu } from "./MobileMenu";
 
-export function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+function DesktopNavItem({ link }: { link: NavLink }) {
+  if (!link.children) {
+    return (
+      <Link
+        href={link.href}
+        className="px-3.5 py-2 text-[13px] font-medium text-zinc-300 hover:text-white rounded-lg transition-colors"
+      >
+        {link.label}
+      </Link>
+    );
+  }
 
   return (
-    <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/95 backdrop-blur-xl shadow-[0_1px_20px_rgba(0,0,0,0.06)] border-b border-zinc-200/60"
-          : "bg-white/90 backdrop-blur-xl border-b border-zinc-200/40"
-      }`}
-    >
+    <div className="relative group">
+      <Link
+        href={link.href}
+        className="flex items-center gap-1 px-3.5 py-2 text-[13px] font-medium text-zinc-300 hover:text-white rounded-lg transition-colors"
+      >
+        {link.label}
+        <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+      </Link>
+      <div className="absolute top-full left-0 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+        <div className="bg-zinc-900 border border-white/10 rounded-lg shadow-xl py-1.5 min-w-[180px]">
+          {link.children.map((child) => (
+            <Link
+              key={child.href}
+              href={child.href}
+              className="block px-4 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              {child.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Header() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header className="bg-[#0a0a0a] border-b border-white/[0.06] relative z-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[4.5rem]">
           {/* Logo */}
@@ -32,16 +58,16 @@ export function Header() {
             href="/"
             className="flex items-center gap-3 flex-shrink-0 group"
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300 ring-1 ring-black/5">
-              <span className="text-accent font-black text-xl leading-none font-display">
+            <div className="w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-xl leading-none">
                 S
               </span>
             </div>
             <div>
-              <span className="text-lg font-bold tracking-tight text-zinc-900 leading-none block font-display">
+              <span className="text-lg font-bold tracking-tight text-white leading-none block">
                 Speedway
               </span>
-              <span className="text-[9px] font-semibold tracking-[0.2em] uppercase text-zinc-400 leading-none block mt-0.5">
+              <span className="text-[9px] font-semibold tracking-[0.2em] uppercase text-zinc-500 leading-none block mt-0.5">
                 Motors LLC
               </span>
             </div>
@@ -50,14 +76,7 @@ export function Header() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-0.5">
             {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="relative px-3.5 py-2 text-[13px] font-medium text-zinc-600 hover:text-zinc-900 rounded-lg transition-all duration-200 group/nav"
-              >
-                {link.label}
-                <span className="absolute bottom-0.5 left-3.5 right-3.5 h-[2px] bg-accent rounded-full scale-x-0 group-hover/nav:scale-x-100 transition-transform duration-300 origin-left" />
-              </Link>
+              <DesktopNavItem key={link.href + link.label} link={link} />
             ))}
           </nav>
 
@@ -65,7 +84,7 @@ export function Header() {
           <div className="hidden lg:flex items-center gap-3">
             <a
               href={BUSINESS.phoneHref}
-              className="flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+              className="flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
             >
               <Phone className="h-3.5 w-3.5" />
               <span className="hidden xl:inline">{BUSINESS.phone}</span>
@@ -79,7 +98,7 @@ export function Header() {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2.5 -mr-2 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-colors"
+            className="lg:hidden p-2.5 -mr-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
           >
             {mobileOpen ? (

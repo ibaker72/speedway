@@ -38,7 +38,7 @@ const pillars = [
 
 export function WhyBuySection() {
   return (
-    <SectionWrapper background="gradient">
+    <SectionWrapper background="dark">
       <SectionHeading
         title="Why Speedway Motors"
         subtitle="A straightforward approach to buying a used car."
@@ -46,10 +46,10 @@ export function WhyBuySection() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
         {pillars.map((pillar, i) => (
-          <AnimateIn key={pillar.title} delay={i * 100} variant="up">
-            <div className="premium-card p-7 h-full">
-              <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/10 flex items-center justify-center mb-5">
-                <pillar.icon className="h-5 w-5 text-accent" />
+          <AnimateIn key={pillar.title} delay={i * 80} variant="up">
+            <div className="simple-card p-7 h-full">
+              <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mb-5">
+                <pillar.icon className="h-5 w-5 text-red-500" />
               </div>
               <h3 className="font-semibold text-white mb-2 text-base">
                 {pillar.title}

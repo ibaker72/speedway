@@ -32,15 +32,58 @@ export const HOURS = [
   { day: "Sunday", open: "Closed", close: "Closed" },
 ] as const;
 
-export const NAV_LINKS = [
-  { label: "Inventory", href: "/inventory" },
-  { label: "Finance", href: "/finance" },
-  { label: "Trade-In", href: "/trade" },
-  { label: "Sell Your Car", href: "/sell-your-car" },
+export interface NavChild {
+  label: string;
+  href: string;
+}
+
+export interface NavLink {
+  label: string;
+  href: string;
+  children?: NavChild[];
+}
+
+export const NAV_LINKS: NavLink[] = [
+  { label: "Home", href: "/" },
+  {
+    label: "Inventory",
+    href: "/inventory",
+    children: [
+      { label: "All Inventory", href: "/inventory" },
+      { label: "Sedans", href: "/inventory?type=sedan" },
+      { label: "SUVs", href: "/inventory?type=suv" },
+      { label: "Trucks", href: "/inventory?type=truck" },
+      { label: "Vans", href: "/inventory?type=van" },
+    ],
+  },
+  {
+    label: "Finance",
+    href: "/finance",
+    children: [
+      { label: "Apply Now", href: "/finance" },
+      { label: "Loan Calculator", href: "/finance#calculator" },
+    ],
+  },
+  {
+    label: "Trade/Sell",
+    href: "/trade",
+    children: [
+      { label: "Value Your Trade", href: "/trade" },
+      { label: "Sell Your Car", href: "/sell-your-car" },
+    ],
+  },
+  { label: "Service", href: "/contact" },
   { label: "Commercial", href: "/commercial" },
-  { label: "Reviews", href: "/reviews" },
-  { label: "Contact", href: "/contact" },
-] as const;
+  {
+    label: "About Us",
+    href: "/contact",
+    children: [
+      { label: "Reviews", href: "/reviews" },
+      { label: "Contact Us", href: "/contact" },
+      { label: "FAQ", href: "/faq" },
+    ],
+  },
+];
 
 export function isOpenNow(): boolean {
   const now = new Date();

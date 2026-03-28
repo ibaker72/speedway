@@ -26,13 +26,10 @@ export function FinanceFormSection() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
         <AnimateIn variant="left">
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="h-px w-8 bg-gradient-to-r from-transparent to-accent" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-                Financing
-              </span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display tracking-tight text-white mb-5">
+            <p className="text-sm font-semibold uppercase tracking-wider text-red-500 mb-3">
+              Financing
+            </p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-5">
               Financing Made Simple
             </h2>
             <p className="text-zinc-400 mb-10 leading-relaxed text-lg">
@@ -42,8 +39,8 @@ export function FinanceFormSection() {
             <ul className="space-y-5">
               {benefits.map((b) => (
                 <li key={b.text} className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <b.icon className="h-5 w-5 text-accent" />
+                  <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <b.icon className="h-5 w-5 text-red-500" />
                   </div>
                   <span className="text-zinc-300 leading-relaxed">
                     {b.text}
@@ -55,23 +52,23 @@ export function FinanceFormSection() {
         </AnimateIn>
 
         <AnimateIn variant="right" delay={150}>
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-7 sm:p-9 shadow-2xl shadow-black/20">
+          <div className="rounded-lg bg-white p-7 sm:p-9 shadow-xl">
             {submitted ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-5">
-                  <CheckCircle className="h-8 w-8 text-green-400" />
+                <div className="w-16 h-16 mx-auto rounded-lg bg-green-50 flex items-center justify-center mb-5">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
-                <h3 className="text-xl font-display text-white mb-2">
+                <h3 className="text-xl font-bold text-zinc-900 mb-2">
                   Thank You!
                 </h3>
-                <p className="text-zinc-400 text-sm">
+                <p className="text-zinc-500 text-sm">
                   We&apos;ve received your application. A member of our finance
                   team will be in touch shortly.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4" suppressHydrationWarning>
-                <h3 className="text-xl font-display text-white mb-1">
+                <h3 className="text-xl font-bold text-zinc-900 mb-1">
                   Get Pre-Approved
                 </h3>
                 <p className="text-xs text-zinc-500 mb-5">
@@ -83,14 +80,14 @@ export function FinanceFormSection() {
                     type="text"
                     placeholder="First Name"
                     required
-                    className="premium-input"
+                    className="simple-input"
                   />
                   <input
                     {...hydrationGuard}
                     type="text"
                     placeholder="Last Name"
                     required
-                    className="premium-input"
+                    className="simple-input"
                   />
                 </div>
                 <input
@@ -98,20 +95,20 @@ export function FinanceFormSection() {
                   type="email"
                   placeholder="Email Address"
                   required
-                  className="premium-input"
+                  className="simple-input"
                 />
                 <input
                   {...hydrationGuard}
                   type="tel"
                   placeholder="Phone Number"
                   required
-                  className="premium-input"
+                  className="simple-input"
                 />
                 <select
                   {...hydrationGuard}
                   required
                   defaultValue=""
-                  className="premium-input"
+                  className="simple-input"
                 >
                   <option value="" disabled>
                     Credit Range
@@ -125,7 +122,7 @@ export function FinanceFormSection() {
                 <select
                   {...hydrationGuard}
                   defaultValue=""
-                  className="premium-input"
+                  className="simple-input"
                 >
                   <option value="" disabled>
                     Vehicle Interest
@@ -140,11 +137,11 @@ export function FinanceFormSection() {
                 <button
                   {...hydrationGuard}
                   type="submit"
-                  className="w-full rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-3.5 text-sm transition-all duration-200 shadow-lg shadow-red-900/20 mt-2"
+                  className="w-full rounded-lg bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-3.5 text-sm transition-all duration-200 mt-2"
                 >
                   Submit Application
                 </button>
-                <p className="text-[11px] text-zinc-600 text-center mt-3">
+                <p className="text-[11px] text-zinc-400 text-center mt-3">
                   Your information is secure and will not be shared.
                 </p>
               </form>
