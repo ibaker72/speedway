@@ -7,6 +7,7 @@ interface SectionHeadingProps {
   className?: string;
   as?: "h1" | "h2" | "h3";
   accent?: boolean;
+  label?: string;
 }
 
 export function SectionHeading({
@@ -16,11 +17,12 @@ export function SectionHeading({
   className,
   as: Tag = "h2",
   accent = true,
+  label = "Speedway Motors",
 }: SectionHeadingProps) {
   return (
     <div
       className={cn(
-        "mb-12 md:mb-16",
+        "mb-10 md:mb-14",
         align === "center" && "text-center",
         className
       )}
@@ -33,15 +35,15 @@ export function SectionHeading({
           )}
         >
           <span className="h-px w-8 bg-gradient-to-r from-transparent to-accent" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-            Speedway Motors
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent">
+            {label}
           </span>
           <span className="h-px w-8 bg-gradient-to-l from-transparent to-accent" />
         </div>
       )}
       <Tag
         className={cn(
-          "text-3xl font-display tracking-tight sm:text-4xl lg:text-[2.75rem]",
+          "text-3xl font-display tracking-tight sm:text-4xl lg:text-[2.75rem] leading-tight",
           align === "center" && "mx-auto"
         )}
       >
@@ -50,7 +52,7 @@ export function SectionHeading({
       {subtitle && (
         <p
           className={cn(
-            "mt-4 text-lg max-w-2xl leading-relaxed",
+            "mt-4 text-base sm:text-lg max-w-2xl leading-relaxed",
             align === "center" && "mx-auto",
             "text-zinc-500"
           )}

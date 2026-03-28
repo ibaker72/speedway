@@ -45,26 +45,40 @@ function FAQItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-zinc-200/80 last:border-b-0">
+    <div className="border-b border-zinc-100 last:border-b-0">
       <button
         suppressHydrationWarning
         type="button"
         onClick={onToggle}
-        className="flex items-center justify-between w-full py-6 text-left gap-4 group"
+        className="flex items-center justify-between w-full py-5 md:py-6 text-left gap-4 group"
       >
-        <span className="font-semibold text-zinc-900 group-hover:text-red-700 transition-colors">
+        <span className="font-semibold text-zinc-900 group-hover:text-red-700 transition-colors text-[15px]">
           {question}
         </span>
-        <ChevronDown
-          className={`h-5 w-5 text-zinc-400 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-accent" : ""}`}
-        />
+        <div
+          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+            isOpen
+              ? "bg-accent/10 rotate-180"
+              : "bg-zinc-100 group-hover:bg-zinc-200"
+          }`}
+        >
+          <ChevronDown
+            className={`h-4 w-4 transition-colors duration-300 ${
+              isOpen ? "text-accent" : "text-zinc-400"
+            }`}
+          />
+        </div>
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-out ${isOpen ? "max-h-40 pb-6" : "max-h-0"}`}
+        className={`grid transition-all duration-300 ease-out ${
+          isOpen ? "grid-rows-[1fr] pb-5 md:pb-6" : "grid-rows-[0fr]"
+        }`}
       >
-        <p className="text-sm text-zinc-500 leading-relaxed pr-10">
-          {answer}
-        </p>
+        <div className="overflow-hidden">
+          <p className="text-sm text-zinc-500 leading-relaxed pr-12">
+            {answer}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -79,8 +93,8 @@ export function FAQSection() {
         title="Frequently Asked Questions"
         subtitle="Answers to common questions about buying from Speedway Motors."
       />
-      <div className="max-w-3xl mx-auto rounded-2xl border border-zinc-200/80 bg-white p-2 sm:p-4">
-        <div className="px-4">
+      <div className="max-w-3xl mx-auto rounded-2xl border border-zinc-200/80 bg-white p-3 sm:p-6 shadow-sm">
+        <div className="px-3 sm:px-4">
           {faqs.map((faq, i) => (
             <FAQItem
               key={i}

@@ -22,7 +22,7 @@ export function LocationsPreview() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {locations.map((loc, i) => (
           <AnimateIn key={loc.id} delay={i * 120} variant="up">
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm p-7 hover:bg-white/[0.05] hover:border-accent/20 transition-all duration-300 h-full">
+            <div className="premium-card p-7 h-full">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent mb-4">
                 {typeLabels[loc.type]}
               </div>
@@ -55,10 +55,10 @@ export function LocationsPreview() {
                 href={loc.mapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-accent transition-colors group"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-accent transition-colors group/dir"
               >
                 Get Directions
-                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-3.5 w-3.5 group-hover/dir:translate-x-1 transition-transform" />
               </a>
             </div>
           </AnimateIn>

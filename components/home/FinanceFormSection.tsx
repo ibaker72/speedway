@@ -12,9 +12,6 @@ const benefits = [
   { icon: FileText, text: "We handle the entire A-to-Z process for you" },
 ];
 
-const inputClasses =
-  "w-full rounded-xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] transition-all duration-200";
-
 export function FinanceFormSection() {
   const [submitted, setSubmitted] = useState(false);
   const hydrationGuard = { suppressHydrationWarning: true };
@@ -78,7 +75,7 @@ export function FinanceFormSection() {
                   Get Pre-Approved
                 </h3>
                 <p className="text-xs text-zinc-500 mb-5">
-                  No impact to your credit score.
+                  No impact to your credit score. Quick and confidential.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <input
@@ -86,14 +83,14 @@ export function FinanceFormSection() {
                     type="text"
                     placeholder="First Name"
                     required
-                    className={inputClasses}
+                    className="premium-input"
                   />
                   <input
                     {...hydrationGuard}
                     type="text"
                     placeholder="Last Name"
                     required
-                    className={inputClasses}
+                    className="premium-input"
                   />
                 </div>
                 <input
@@ -101,20 +98,20 @@ export function FinanceFormSection() {
                   type="email"
                   placeholder="Email Address"
                   required
-                  className={inputClasses}
+                  className="premium-input"
                 />
                 <input
                   {...hydrationGuard}
                   type="tel"
                   placeholder="Phone Number"
                   required
-                  className={inputClasses}
+                  className="premium-input"
                 />
                 <select
                   {...hydrationGuard}
                   required
                   defaultValue=""
-                  className={inputClasses}
+                  className="premium-input"
                 >
                   <option value="" disabled>
                     Credit Range
@@ -128,7 +125,7 @@ export function FinanceFormSection() {
                 <select
                   {...hydrationGuard}
                   defaultValue=""
-                  className={inputClasses}
+                  className="premium-input"
                 >
                   <option value="" disabled>
                     Vehicle Interest
@@ -143,10 +140,13 @@ export function FinanceFormSection() {
                 <button
                   {...hydrationGuard}
                   type="submit"
-                  className="w-full rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-3.5 text-sm transition-all duration-200 shadow-lg shadow-red-900/30"
+                  className="w-full rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-3.5 text-sm transition-all duration-200 shadow-lg shadow-red-900/20 mt-2"
                 >
                   Submit Application
                 </button>
+                <p className="text-[11px] text-zinc-600 text-center mt-3">
+                  Your information is secure and will not be shared.
+                </p>
               </form>
             )}
           </div>
