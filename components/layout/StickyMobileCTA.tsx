@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Phone, Car } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
 
@@ -14,13 +15,13 @@ export function StickyMobileCTA() {
           <Phone className="h-4 w-4" />
           Call {BUSINESS.phone}
         </a>
-        <a
+        <Link
           href="/inventory"
           className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-red-700 active:bg-red-800 transition-colors"
         >
           <Car className="h-4 w-4" />
           Browse {BUSINESS.stats.vehiclesInStock}+ Cars
-        </a>
+        </Link>
       </div>
     </div>
   );
