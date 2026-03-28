@@ -12,7 +12,7 @@ const priceRanges = [
 
 export function PriceRangeShortcuts() {
   return (
-    <SectionWrapper background="light">
+    <SectionWrapper background="elevated">
       <SectionHeading
         title="Shop by Budget"
         subtitle="Quality vehicles at every price point."
@@ -23,9 +23,9 @@ export function PriceRangeShortcuts() {
           <AnimateIn key={range.label} delay={i * 60} variant="up">
             <Link
               href={range.href}
-              className="group p-6 md:p-7 bg-white rounded-lg border border-zinc-200 hover:border-red-200 hover:shadow-md transition-all duration-200 text-center block"
+              className="group p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-accent/30 hover:bg-white/[0.04] transition-all duration-300 text-center block"
             >
-              <div className="text-2xl md:text-3xl font-bold text-zinc-900 group-hover:text-red-700 transition-colors">
+              <div className="text-2xl md:text-3xl font-bold text-white group-hover:text-accent-light transition-colors">
                 {range.label}
               </div>
               <div className="text-xs text-zinc-500 mt-2">

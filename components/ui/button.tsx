@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "danger"
+  | "premium"
+  | "glass";
+type ButtonSize = "sm" | "md" | "lg" | "xl";
 
 interface ButtonBaseProps {
   variant?: ButtonVariant;
@@ -27,20 +34,25 @@ type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-red-700 to-red-600 text-white hover:from-red-800 hover:to-red-700 active:from-red-900 active:to-red-800 shadow-sm hover:shadow-md",
+    "bg-accent text-white hover:bg-accent-light active:bg-accent-dark shadow-[0_2px_12px_rgba(196,18,48,0.25)] hover:shadow-[0_4px_20px_rgba(196,18,48,0.35)]",
+  premium:
+    "bg-gradient-to-r from-accent via-red-600 to-accent-dark text-white shadow-[0_2px_16px_rgba(196,18,48,0.3)] hover:shadow-[0_4px_24px_rgba(196,18,48,0.45)] hover:brightness-110",
   secondary:
-    "bg-zinc-900 text-white hover:bg-zinc-800 active:bg-zinc-700 shadow-sm hover:shadow-md",
+    "bg-surface-3 text-white hover:bg-surface-4 active:bg-surface-5 border border-white/[0.06] hover:border-white/[0.1]",
   outline:
-    "border border-zinc-300 text-zinc-900 hover:bg-zinc-50 active:bg-zinc-100",
-  ghost: "text-zinc-700 hover:bg-zinc-100 active:bg-zinc-200",
+    "border border-white/[0.15] text-white hover:bg-white/[0.06] hover:border-white/[0.25] active:bg-white/[0.08]",
+  glass:
+    "bg-white/[0.06] backdrop-blur-md border border-white/[0.1] text-white hover:bg-white/[0.1] hover:border-white/[0.2]",
+  ghost: "text-zinc-400 hover:text-white hover:bg-white/[0.06] active:bg-white/[0.08]",
   danger:
     "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-5 py-2.5 text-sm",
-  md: "px-6 py-3 text-sm",
-  lg: "px-8 py-3.5 text-base",
+  sm: "px-4 py-2 text-[13px]",
+  md: "px-6 py-2.5 text-sm",
+  lg: "px-8 py-3.5 text-[15px]",
+  xl: "px-10 py-4 text-base",
 };
 
 export function Button({
@@ -51,15 +63,14 @@ export function Button({
   ...props
 }: ButtonProps) {
   const classes = cn(
-    "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-300 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40 disabled:pointer-events-none whitespace-nowrap cursor-pointer",
     variantStyles[variant],
     sizeStyles[size],
     className
   );
 
   if ("href" in props && props.href) {
-    const { href, target, rel, ...rest } = props;
-    void rest;
+    const { href, target, rel } = props;
     return (
       <Link href={href} target={target} rel={rel} className={classes}>
         {children}

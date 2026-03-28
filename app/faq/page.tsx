@@ -15,12 +15,12 @@ export default function FAQPage() {
   return (
     <>
       <FAQSection />
-      <SectionWrapper background="light" className="py-12 md:py-16">
+      <SectionWrapper background="dark" className="py-12 md:py-16">
         <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-xl font-bold text-zinc-900 mb-3">
+          <h2 className="text-xl font-bold text-white mb-3">
             Still have questions?
           </h2>
-          <p className="text-sm text-zinc-500 mb-6">
+          <p className="text-sm text-zinc-400 mb-6">
             Our team is happy to help. Give us a call or visit us in person.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

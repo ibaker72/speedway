@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
-import { ConfidenceBanner } from "@/components/layout/ConfidenceBanner";
 import { Footer } from "@/components/layout/Footer";
 import { StickyMobileCTA } from "@/components/layout/StickyMobileCTA";
+import { ChatWidget } from "@/components/layout/ChatWidget";
 import { AutoDealerJsonLd, FAQPageJsonLd } from "@/components/seo/JsonLd";
 import { BUSINESS } from "@/lib/constants";
 import "./globals.css";
@@ -26,9 +25,6 @@ export const metadata: Metadata = {
     "used SUV paterson",
     "used trucks paterson nj",
     "commercial vehicles paterson",
-    "honda dealer paterson",
-    "toyota dealer paterson",
-    "bmw dealer paterson",
   ],
   alternates: { canonical: "https://www.speedwaymotorsnj.net/" },
   openGraph: {
@@ -67,14 +63,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col font-sans antialiased">
+      <body className="min-h-full flex flex-col font-sans antialiased bg-[#0a0a0a] text-white">
         <AutoDealerJsonLd />
         <FAQPageJsonLd />
-        <AnnouncementBar />
         <Header />
-        <ConfidenceBanner />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ChatWidget />
         <StickyMobileCTA />
       </body>
     </html>

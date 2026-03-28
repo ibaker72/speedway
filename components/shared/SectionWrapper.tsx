@@ -3,31 +3,41 @@ import { cn } from "@/lib/utils";
 interface SectionWrapperProps {
   children: React.ReactNode;
   className?: string;
-  background?: "white" | "light" | "dark" | "charcoal" | "accent" | "gradient";
+  background?: "dark" | "charcoal" | "elevated" | "accent" | "gradient";
   id?: string;
+  narrow?: boolean;
 }
 
 const bgStyles = {
-  white: "bg-white",
-  light: "bg-gray-50",
-  dark: "bg-zinc-950 text-white",
-  charcoal: "bg-zinc-900 text-white",
-  accent: "bg-red-700 text-white",
-  gradient: "bg-zinc-950 text-white",
+  dark: "bg-[#050505]",
+  charcoal: "bg-[#0f0f0f]",
+  elevated: "bg-[#161616]",
+  accent: "bg-accent text-white",
+  gradient: "bg-gradient-to-b from-[#0a0a0a] to-[#0f0f0f]",
 };
 
 export function SectionWrapper({
   children,
   className,
-  background = "white",
+  background = "dark",
   id,
+  narrow,
 }: SectionWrapperProps) {
   return (
     <section
       id={id}
-      className={cn(bgStyles[background], "py-16 md:py-24", className)}
+      className={cn(
+        bgStyles[background],
+        "py-16 md:py-24 lg:py-28 text-white",
+        className
+      )}
     >
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div
+        className={cn(
+          "relative z-10 mx-auto px-5 sm:px-6 lg:px-8",
+          narrow ? "max-w-5xl" : "max-w-[80rem]"
+        )}
+      >
         {children}
       </div>
     </section>

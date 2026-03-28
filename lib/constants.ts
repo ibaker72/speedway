@@ -44,45 +44,18 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { label: "Home", href: "/" },
+  { label: "Inventory", href: "/inventory" },
+  { label: "Financing", href: "/finance" },
   {
-    label: "Inventory",
-    href: "/inventory",
-    children: [
-      { label: "All Inventory", href: "/inventory" },
-      { label: "Sedans", href: "/inventory?type=sedan" },
-      { label: "SUVs", href: "/inventory?type=suv" },
-      { label: "Trucks", href: "/inventory?type=truck" },
-      { label: "Vans", href: "/inventory?type=van" },
-    ],
-  },
-  {
-    label: "Finance",
-    href: "/finance",
-    children: [
-      { label: "Apply Now", href: "/finance" },
-      { label: "Loan Calculator", href: "/finance#calculator" },
-    ],
-  },
-  {
-    label: "Trade/Sell",
+    label: "Trade / Sell",
     href: "/trade",
     children: [
       { label: "Value Your Trade", href: "/trade" },
       { label: "Sell Your Car", href: "/sell-your-car" },
     ],
   },
-  { label: "Service", href: "/contact" },
-  { label: "Commercial", href: "/commercial" },
-  {
-    label: "About Us",
-    href: "/contact",
-    children: [
-      { label: "Reviews", href: "/reviews" },
-      { label: "Contact Us", href: "/contact" },
-      { label: "FAQ", href: "/faq" },
-    ],
-  },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export function isOpenNow(): boolean {

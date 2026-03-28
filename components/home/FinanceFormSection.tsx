@@ -14,7 +14,6 @@ const benefits = [
 
 export function FinanceFormSection() {
   const [submitted, setSubmitted] = useState(false);
-  const hydrationGuard = { suppressHydrationWarning: true };
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,9 +25,9 @@ export function FinanceFormSection() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
         <AnimateIn variant="left">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-red-500 mb-3">
+            <span className="inline-block mb-4 text-[11px] font-semibold tracking-[0.2em] uppercase text-accent-light">
               Financing
-            </p>
+            </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-5">
               Financing Made Simple
             </h2>
@@ -37,38 +36,41 @@ export function FinanceFormSection() {
               across New Jersey to find the best rate for your situation.
             </p>
             <ul className="space-y-5">
-              {benefits.map((b) => (
-                <li key={b.text} className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <b.icon className="h-5 w-5 text-red-500" />
-                  </div>
-                  <span className="text-zinc-300 leading-relaxed">
-                    {b.text}
-                  </span>
-                </li>
-              ))}
+              {benefits.map((b) => {
+                const Icon = b.icon;
+                return (
+                  <li key={b.text} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Icon className="h-5 w-5 text-accent-light" />
+                    </div>
+                    <span className="text-zinc-300 leading-relaxed">
+                      {b.text}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </AnimateIn>
 
         <AnimateIn variant="right" delay={150}>
-          <div className="rounded-lg bg-white p-7 sm:p-9 shadow-xl">
+          <div className="rounded-2xl bg-surface-2 border border-white/[0.08] p-7 sm:p-9">
             {submitted ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto rounded-lg bg-green-50 flex items-center justify-center mb-5">
-                  <CheckCircle className="h-8 w-8 text-green-600" />
+                <div className="w-16 h-16 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5">
+                  <CheckCircle className="h-8 w-8 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-zinc-900 mb-2">
+                <h3 className="text-xl font-bold text-white mb-2">
                   Thank You!
                 </h3>
-                <p className="text-zinc-500 text-sm">
+                <p className="text-zinc-400 text-sm">
                   We&apos;ve received your application. A member of our finance
                   team will be in touch shortly.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4" suppressHydrationWarning>
-                <h3 className="text-xl font-bold text-zinc-900 mb-1">
+                <h3 className="text-xl font-bold text-white mb-1">
                   Get Pre-Approved
                 </h3>
                 <p className="text-xs text-zinc-500 mb-5">
@@ -76,39 +78,39 @@ export function FinanceFormSection() {
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <input
-                    {...hydrationGuard}
+                    suppressHydrationWarning
                     type="text"
                     placeholder="First Name"
                     required
-                    className="simple-input"
+                    className="input-dark"
                   />
                   <input
-                    {...hydrationGuard}
+                    suppressHydrationWarning
                     type="text"
                     placeholder="Last Name"
                     required
-                    className="simple-input"
+                    className="input-dark"
                   />
                 </div>
                 <input
-                  {...hydrationGuard}
+                  suppressHydrationWarning
                   type="email"
                   placeholder="Email Address"
                   required
-                  className="simple-input"
+                  className="input-dark"
                 />
                 <input
-                  {...hydrationGuard}
+                  suppressHydrationWarning
                   type="tel"
                   placeholder="Phone Number"
                   required
-                  className="simple-input"
+                  className="input-dark"
                 />
                 <select
-                  {...hydrationGuard}
+                  suppressHydrationWarning
                   required
                   defaultValue=""
-                  className="simple-input"
+                  className="select-dark"
                 >
                   <option value="" disabled>
                     Credit Range
@@ -120,9 +122,9 @@ export function FinanceFormSection() {
                   <option value="no-credit">No Credit History</option>
                 </select>
                 <select
-                  {...hydrationGuard}
+                  suppressHydrationWarning
                   defaultValue=""
-                  className="simple-input"
+                  className="select-dark"
                 >
                   <option value="" disabled>
                     Vehicle Interest
@@ -135,13 +137,13 @@ export function FinanceFormSection() {
                   <option value="unsure">Not Sure Yet</option>
                 </select>
                 <button
-                  {...hydrationGuard}
+                  suppressHydrationWarning
                   type="submit"
-                  className="w-full rounded-lg bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-3.5 text-sm transition-all duration-200 mt-2"
+                  className="w-full rounded-xl bg-accent hover:bg-accent-light text-white font-semibold py-3.5 text-sm transition-all duration-300 mt-2 shadow-[0_2px_16px_rgba(196,18,48,0.3)] hover:shadow-[0_4px_24px_rgba(196,18,48,0.45)]"
                 >
                   Submit Application
                 </button>
-                <p className="text-[11px] text-zinc-400 text-center mt-3">
+                <p className="text-[11px] text-zinc-600 text-center mt-3">
                   Your information is secure and will not be shared.
                 </p>
               </form>

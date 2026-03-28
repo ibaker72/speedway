@@ -7,8 +7,8 @@ import {
   HandCoins,
   BadgeCheck,
 } from "lucide-react";
+import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
-import { SectionHeading } from "@/components/shared/SectionHeading";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { Button } from "@/components/ui/button";
 import { BUSINESS } from "@/lib/constants";
@@ -24,60 +24,67 @@ const steps = [
   {
     icon: FileText,
     title: "Submit Your Details",
-    description: "Share basic info about your vehicle — year, make, model, mileage, and condition.",
+    description:
+      "Share basic info about your vehicle — year, make, model, mileage, and condition.",
   },
   {
     icon: HandCoins,
     title: "Receive Your Offer",
-    description: "We provide a competitive cash offer based on current market values.",
+    description:
+      "We provide a competitive cash offer based on current market values.",
   },
   {
     icon: BadgeCheck,
     title: "Get Paid",
-    description: "Accept the offer, bring your vehicle in, and walk away with payment. It's that simple.",
+    description:
+      "Accept the offer, bring your vehicle in, and walk away with payment. It's that simple.",
   },
 ];
 
 export default function SellYourCarPage() {
   return (
     <>
-      <SectionWrapper background="charcoal" className="py-14 md:py-20">
-        <SectionHeading
-          title="Sell Your Car"
-          subtitle="We purchase vehicles directly — no trade required. Quick, transparent, and hassle-free."
-          as="h1"
-        />
+      <PageHero
+        eyebrow="Sell Your Vehicle"
+        title="Sell Your Car"
+        subtitle="We purchase vehicles directly — no trade required. Quick, transparent, and hassle-free."
+      />
+
+      <SectionWrapper background="charcoal">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
-          {steps.map((step, i) => (
-            <AnimateIn key={step.title} delay={i * 120} variant="up">
-              <div className="simple-card p-7 text-center h-full">
-                <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-                  <step.icon className="h-5 w-5 text-red-500" />
+          {steps.map((step, i) => {
+            const Icon = step.icon;
+            return (
+              <AnimateIn key={step.title} delay={i * 120} variant="up">
+                <div className="card-glass p-7 text-center h-full">
+                  <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center mx-auto mb-4">
+                    <Icon className="h-5 w-5 text-accent-light" />
+                  </div>
+                  <div className="text-xs text-accent-light font-semibold mb-2">
+                    Step {i + 1}
+                  </div>
+                  <h3 className="font-semibold text-white mb-2 text-[15px]">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
-                <div className="text-xs text-red-500 font-semibold mb-2">
-                  Step {i + 1}
-                </div>
-                <h3 className="font-semibold text-white mb-2 text-[15px]">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-            </AnimateIn>
-          ))}
+              </AnimateIn>
+            );
+          })}
         </div>
       </SectionWrapper>
 
-      <SectionWrapper background="white">
+      <SectionWrapper background="dark">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="w-16 h-16 mx-auto rounded-lg bg-red-50 flex items-center justify-center mb-6">
-            <DollarSign className="h-8 w-8 text-red-700" />
+          <div className="w-16 h-16 mx-auto rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center mb-6">
+            <DollarSign className="h-8 w-8 text-accent-light" />
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900 mb-4">
+          <h2 className="text-2xl font-bold text-white mb-4">
             We Buy Cars, Trucks, SUVs & Vans
           </h2>
-          <p className="text-zinc-500 mb-4 leading-relaxed">
+          <p className="text-zinc-400 mb-4 leading-relaxed">
             Get a competitive cash offer for your vehicle. The process is quick,
             transparent, and completely hassle-free.
           </p>
@@ -89,9 +96,9 @@ export default function SellYourCarPage() {
             ].map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-2 text-sm text-zinc-600"
+                className="flex items-center gap-2 text-sm text-zinc-300"
               >
-                <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
                 {item}
               </li>
             ))}

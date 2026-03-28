@@ -38,28 +38,32 @@ const pillars = [
 
 export function WhyBuySection() {
   return (
-    <SectionWrapper background="dark">
+    <SectionWrapper background="elevated">
       <SectionHeading
-        title="Why Speedway Motors"
+        eyebrow="Why Choose Us"
+        title="The Speedway Difference"
         subtitle="A straightforward approach to buying a used car."
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-        {pillars.map((pillar, i) => (
-          <AnimateIn key={pillar.title} delay={i * 80} variant="up">
-            <div className="simple-card p-7 h-full">
-              <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mb-5">
-                <pillar.icon className="h-5 w-5 text-red-500" />
+        {pillars.map((pillar, i) => {
+          const Icon = pillar.icon;
+          return (
+            <AnimateIn key={pillar.title} delay={i * 80} variant="up">
+              <div className="card-glass p-7 h-full">
+                <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center mb-5">
+                  <Icon className="h-5 w-5 text-accent-light" />
+                </div>
+                <h3 className="font-semibold text-white mb-2.5 text-base">
+                  {pillar.title}
+                </h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {pillar.description}
+                </p>
               </div>
-              <h3 className="font-semibold text-white mb-2 text-base">
-                {pillar.title}
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                {pillar.description}
-              </p>
-            </div>
-          </AnimateIn>
-        ))}
+            </AnimateIn>
+          );
+        })}
       </div>
     </SectionWrapper>
   );

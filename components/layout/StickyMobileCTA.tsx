@@ -1,26 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, Car } from "lucide-react";
+import { Phone, Search } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
 
 export function StickyMobileCTA() {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-zinc-950/95 backdrop-blur-sm border-t border-white/[0.06] shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
-      <div className="flex h-14">
+    <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/[0.06]">
+      <div className="flex h-[3.25rem]">
         <a
           href={BUSINESS.phoneHref}
-          className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white active:bg-white/5 transition-colors border-r border-white/[0.06]"
+          className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white active:bg-white/[0.04] transition-colors border-r border-white/[0.06]"
         >
-          <Phone className="h-4 w-4 text-red-500" />
+          <Phone className="h-4 w-4 text-accent" />
           Call Now
         </a>
         <Link
           href="/inventory"
-          className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-gradient-to-r from-red-700 to-red-600 active:from-red-800 active:to-red-700 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-accent active:bg-accent-dark transition-colors"
         >
-          <Car className="h-4 w-4" />
-          Browse {BUSINESS.stats.vehiclesInStock}+ Cars
+          <Search className="h-4 w-4" />
+          Browse Inventory
         </Link>
       </div>
     </div>

@@ -45,26 +45,26 @@ function FAQItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-zinc-100 last:border-b-0">
+    <div className="border-b border-white/[0.06] last:border-b-0">
       <button
         suppressHydrationWarning
         type="button"
         onClick={onToggle}
         className="flex items-center justify-between w-full py-5 md:py-6 text-left gap-4 group"
       >
-        <span className="font-semibold text-zinc-900 group-hover:text-red-700 transition-colors text-[15px]">
+        <span className="font-semibold text-white group-hover:text-accent-light transition-colors text-[15px]">
           {question}
         </span>
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
             isOpen
-              ? "bg-red-50 rotate-180"
-              : "bg-zinc-100 group-hover:bg-zinc-200"
+              ? "bg-accent/10 rotate-180"
+              : "bg-white/[0.04] group-hover:bg-white/[0.08]"
           }`}
         >
           <ChevronDown
-            className={`h-4 w-4 transition-colors duration-200 ${
-              isOpen ? "text-red-600" : "text-zinc-400"
+            className={`h-4 w-4 transition-colors duration-300 ${
+              isOpen ? "text-accent-light" : "text-zinc-500"
             }`}
           />
         </div>
@@ -75,7 +75,7 @@ function FAQItem({
         }`}
       >
         <div className="overflow-hidden">
-          <p className="text-sm text-zinc-500 leading-relaxed pr-12">
+          <p className="text-sm text-zinc-400 leading-relaxed pr-12">
             {answer}
           </p>
         </div>
@@ -88,13 +88,14 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <SectionWrapper background="white">
+    <SectionWrapper background="elevated">
       <SectionHeading
+        eyebrow="FAQ"
         title="Frequently Asked Questions"
         subtitle="Answers to common questions about buying from Speedway Motors."
       />
-      <div className="max-w-3xl mx-auto rounded-lg border border-zinc-200 bg-white p-3 sm:p-6">
-        <div className="px-3 sm:px-4">
+      <div className="max-w-3xl mx-auto rounded-2xl border border-white/[0.08] bg-surface-1 p-4 sm:p-6">
+        <div className="px-2 sm:px-4">
           {faqs.map((faq, i) => (
             <FAQItem
               key={i}

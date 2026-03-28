@@ -1,30 +1,38 @@
-import { VEHICLE_MAKES, MakeLogo } from "@/lib/make-logos";
-
-function BrandList() {
-  return (
-    <>
-      {VEHICLE_MAKES.map((make) => (
-        <span key={make.name} className="flex items-center gap-10 flex-shrink-0">
-          <MakeLogo make={make.name} size={16} variant="dark" />
-          <span className="w-1 h-1 rounded-full bg-zinc-300 flex-shrink-0" />
-        </span>
-      ))}
-    </>
-  );
-}
+import { VEHICLE_MAKES } from "@/lib/make-logos";
 
 export function BrandMarquee() {
-  return (
-    <section className="bg-gray-100 py-5 overflow-hidden border-b border-zinc-200">
-      {/* Fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-32 bg-gradient-to-r from-gray-100 to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-32 bg-gradient-to-l from-gray-100 to-transparent z-10 pointer-events-none" />
+  const makes = VEHICLE_MAKES;
 
-      {/* Marquee */}
-      <div className="relative flex animate-marquee gap-10">
-        <BrandList />
-        <BrandList />
+  return (
+    <section className="relative bg-[#050505] py-10 md:py-12 overflow-hidden">
+      <div className="section-divider absolute top-0 left-0 right-0" />
+
+      <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 mb-6">
+        <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-zinc-600 text-center">
+          Brands We Carry
+        </p>
       </div>
+
+      <div className="relative">
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#050505] to-transparent z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#050505] to-transparent z-10" />
+
+        <div className="flex animate-marquee">
+          {[...makes, ...makes].map((make, i) => (
+            <div
+              key={`${make.name}-${i}`}
+              className="flex-shrink-0 px-6 md:px-8 flex items-center justify-center"
+            >
+              <span className="text-[13px] font-semibold tracking-wide text-zinc-600 hover:text-zinc-400 transition-colors duration-300 whitespace-nowrap uppercase">
+                {make.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="section-divider absolute bottom-0 left-0 right-0" />
     </section>
   );
 }
