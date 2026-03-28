@@ -1,8 +1,14 @@
-import { Star, ArrowRight } from "lucide-react";
+import { Star } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
-import { Button } from "@/components/ui/button";
 import { testimonials } from "@/lib/data/testimonials";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Customer Reviews",
+  description:
+    "Read real reviews from Speedway Motors customers. Rated 4.8 out of 5 on Google with 120+ reviews.",
+};
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -17,21 +23,21 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export function TestimonialsSection() {
+export default function ReviewsPage() {
   return (
     <SectionWrapper background="white">
       <SectionHeading
-        title="What Our Customers Say"
-        subtitle="Rated 4.8 out of 5 based on 120+ reviews."
+        title="Customer Reviews"
+        subtitle="Rated 4.8 out of 5 based on 120+ Google reviews."
+        as="h1"
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {testimonials.slice(0, 3).map((t) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {testimonials.map((t) => (
           <div
             key={t.id}
             className="relative rounded-xl border border-zinc-200 p-6 bg-white"
           >
-            {/* Decorative quote mark */}
             <span className="absolute top-4 left-5 text-6xl font-display text-zinc-100 leading-none select-none pointer-events-none">
               &ldquo;
             </span>
@@ -68,13 +74,6 @@ export function TestimonialsSection() {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="mt-8 text-center">
-        <Button href="/reviews" variant="ghost" size="md">
-          Read All Reviews
-          <ArrowRight className="h-4 w-4" />
-        </Button>
       </div>
     </SectionWrapper>
   );

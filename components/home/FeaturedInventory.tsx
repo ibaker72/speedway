@@ -1,8 +1,12 @@
-import { ArrowRight, Fuel, Gauge, Settings2 } from "lucide-react";
+import { ArrowRight, Fuel, Gauge, Settings2, Star } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { Button } from "@/components/ui/button";
-import { featuredVehicles, formatPrice, formatMileage } from "@/lib/data/vehicles";
+import {
+  featuredVehicles,
+  formatPrice,
+  formatMileage,
+} from "@/lib/data/vehicles";
 
 export function FeaturedInventory() {
   return (
@@ -16,19 +20,21 @@ export function FeaturedInventory() {
         {featuredVehicles.slice(0, 6).map((vehicle) => (
           <article
             key={vehicle.slug}
-            className="group rounded-xl border border-zinc-200 bg-white overflow-hidden hover:shadow-lg hover:border-zinc-300 transition-all duration-200"
+            className="group rounded-xl border border-zinc-200 bg-white overflow-hidden hover:shadow-lg hover:border-zinc-300 transition-all duration-300"
           >
             {/* Image placeholder */}
             <div className="aspect-[16/10] bg-zinc-100 relative overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center text-zinc-400">
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-200/60 to-transparent" />
+              <div className="absolute inset-0 flex items-center justify-center text-zinc-400 group-hover:scale-[1.02] transition-transform duration-500">
                 <div className="text-center">
                   <div className="text-3xl font-bold">{vehicle.make}</div>
                   <div className="text-sm">{vehicle.model}</div>
                 </div>
               </div>
-              {/* Body type badge */}
-              <span className="absolute top-3 left-3 bg-zinc-900/80 text-white text-xs font-medium px-2.5 py-1 rounded-md capitalize backdrop-blur-sm">
-                {vehicle.bodyType}
+              {/* Featured badge */}
+              <span className="absolute top-3 left-3 bg-amber-800/90 text-amber-100 text-xs font-medium px-2.5 py-1 rounded-md backdrop-blur-sm flex items-center gap-1">
+                <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
+                Featured
               </span>
             </div>
 
@@ -40,11 +46,13 @@ export function FeaturedInventory() {
                     {vehicle.year} {vehicle.make} {vehicle.model}
                   </h3>
                   {vehicle.trim && (
-                    <p className="text-sm text-zinc-500 mt-0.5">{vehicle.trim}</p>
+                    <p className="text-sm text-zinc-500 mt-0.5">
+                      {vehicle.trim}
+                    </p>
                   )}
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-lg font-bold text-zinc-900">
+                  <div className="text-lg font-display text-accent">
                     {formatPrice(vehicle.price)}
                   </div>
                 </div>
@@ -67,15 +75,13 @@ export function FeaturedInventory() {
               </div>
 
               {/* CTA */}
-              <Button
+              <a
                 href={`/inventory/${vehicle.slug}`}
-                variant="outline"
-                size="sm"
-                className="w-full"
+                className="group/link inline-flex items-center gap-1.5 text-sm font-semibold text-red-700 hover:text-red-800 transition-colors"
               >
                 View Details
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
+                <ArrowRight className="h-3.5 w-3.5 group-hover/link:translate-x-1 transition-transform" />
+              </a>
             </div>
           </article>
         ))}

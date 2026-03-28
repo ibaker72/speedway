@@ -1,20 +1,24 @@
 export const BUSINESS = {
   name: "Speedway Motors LLC",
   shortName: "Speedway Motors",
-  phone: "(973) 345-2460",
-  phoneHref: "tel:+19733452460",
-  email: "info@speedwaymotorsnj.com",
-  website: "https://speedwaymotorsnj.com",
+  slogan: "Speedway — The Only Way",
+  phone: "(862) 264-2777",
+  phoneHref: "tel:+18622642777",
+  fax: "(862) 264-2778",
+  email: "Speedwaymotorsnj@gmail.com",
+  website: "https://www.speedwaymotorsnj.net",
+  facebook: "https://www.facebook.com/speedwaynj/",
   established: 2005,
   tagline: "Quality Used Cars in Paterson, NJ",
   description:
-    "Speedway Motors LLC is a trusted used car dealership in Paterson, New Jersey, offering quality pre-owned vehicles, flexible financing, and competitive trade-in values.",
+    "Speedway Motors LLC is a trusted used car dealership in Paterson, New Jersey, offering 180+ quality pre-owned vehicles, flexible financing for all credit levels, and competitive trade-in values. Serving Passaic County and surrounding communities since 2005.",
   stats: {
     yearsInBusiness: new Date().getFullYear() - 2005,
-    vehiclesInStock: 150,
-    googleRating: 4.7,
-    totalReviews: 380,
+    vehiclesInStock: 180,
+    googleRating: 4.8,
+    totalReviews: 120,
     customersServed: "5,000+",
+    brandsCarried: 20,
   },
 } as const;
 

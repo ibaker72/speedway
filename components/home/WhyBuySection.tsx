@@ -1,4 +1,4 @@
-import { ShieldCheck, Banknote, Eye, Headphones } from "lucide-react";
+import { ShieldCheck, Banknote, Eye, Headphones, Shield } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 
@@ -27,9 +27,17 @@ const pillars = [
     description:
       "Our team takes the time to understand what you need. We're here to help you find the right vehicle, not just make a sale.",
   },
+  {
+    icon: Shield,
+    title: "Extended Warranties",
+    description:
+      "Many vehicles qualify for extended service contracts and warranty coverage, giving you added protection and peace of mind.",
+  },
 ];
 
 export function WhyBuySection() {
+  const FifthIcon = pillars[4].icon;
+
   return (
     <SectionWrapper background="light">
       <SectionHeading
@@ -38,7 +46,7 @@ export function WhyBuySection() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        {pillars.map((pillar) => (
+        {pillars.slice(0, 4).map((pillar) => (
           <div key={pillar.title} className="text-center">
             <div className="mx-auto w-12 h-12 rounded-lg bg-red-700/10 flex items-center justify-center mb-4">
               <pillar.icon className="h-6 w-6 text-red-700" />
@@ -49,6 +57,16 @@ export function WhyBuySection() {
             </p>
           </div>
         ))}
+      </div>
+      {/* 5th pillar centered */}
+      <div className="mt-8 max-w-xs mx-auto text-center">
+        <div className="mx-auto w-12 h-12 rounded-lg bg-red-700/10 flex items-center justify-center mb-4">
+          <FifthIcon className="h-6 w-6 text-red-700" />
+        </div>
+        <h3 className="font-semibold text-zinc-900 mb-2">{pillars[4].title}</h3>
+        <p className="text-sm text-zinc-500 leading-relaxed">
+          {pillars[4].description}
+        </p>
       </div>
     </SectionWrapper>
   );
