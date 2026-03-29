@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyMobileCTA } from "@/components/layout/StickyMobileCTA";
@@ -6,6 +7,8 @@ import { ChatWidget } from "@/components/layout/ChatWidget";
 import { AutoDealerJsonLd, FAQPageJsonLd } from "@/components/seo/JsonLd";
 import { BUSINESS } from "@/lib/constants";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -51,19 +54,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-full flex flex-col font-sans antialiased bg-[#0a0a0a] text-white">
+      <body
+        className={`${inter.className} min-h-full flex flex-col font-sans antialiased bg-[#000000] text-white`}
+      >
         <AutoDealerJsonLd />
         <FAQPageJsonLd />
         <Header />

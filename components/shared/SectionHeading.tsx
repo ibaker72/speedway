@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { AnimateIn } from "./AnimateIn";
 
 interface SectionHeadingProps {
   eyebrow?: string;
@@ -26,27 +27,30 @@ export function SectionHeading({
       )}
     >
       {eyebrow && (
-        <span className="inline-block mb-4 text-[11px] font-semibold tracking-[0.2em] uppercase text-accent-light">
+        <AnimateIn as="span" variant="up" className="inline-block mb-4 text-[11px] font-semibold tracking-[0.2em] uppercase text-accent-light">
           {eyebrow}
-        </span>
+        </AnimateIn>
       )}
-      <Tag
+      <AnimateIn as={Tag} variant="up" delay={80}
         className={cn(
-          "text-3xl font-bold tracking-tight sm:text-4xl lg:text-[2.75rem] xl:text-5xl leading-[1.1]",
+          "heading-luxe text-3xl font-bold sm:text-4xl lg:text-[2.75rem] xl:text-5xl leading-[1.1]",
           align === "center" && "mx-auto"
         )}
       >
         {title}
-      </Tag>
+      </AnimateIn>
       {subtitle && (
-        <p
+        <AnimateIn
+          as="p"
+          variant="up"
+          delay={140}
           className={cn(
             "mt-5 text-base sm:text-lg max-w-2xl leading-relaxed text-zinc-400",
             align === "center" && "mx-auto"
           )}
         >
           {subtitle}
-        </p>
+        </AnimateIn>
       )}
     </div>
   );

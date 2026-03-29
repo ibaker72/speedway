@@ -60,10 +60,10 @@ export function Header() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+        "sticky top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-[12px] border-b border-white/[0.1]",
         scrolled
-          ? "bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/[0.06] shadow-[0_4px_30px_rgba(0,0,0,0.3)]"
-          : "bg-transparent"
+          ? "bg-black/70 shadow-[0_4px_30px_rgba(0,0,0,0.35)]"
+          : "bg-black/30"
       )}
     >
       {/* Optional: Minimal top utility line — only on desktop, only before scroll */}
@@ -127,7 +127,9 @@ export function Header() {
               <span className="hidden xl:inline">{BUSINESS.phone}</span>
             </a>
             <Button href="/finance" variant="primary" size="sm">
+              <span className="animate-pulse-glow rounded-lg px-1.5 py-0.5 -mx-1.5 -my-0.5">
               Get Pre-Approved
+              </span>
             </Button>
           </div>
 
