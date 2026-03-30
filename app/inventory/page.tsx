@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Search, ArrowRight, Fuel, Gauge, Settings2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ArrowRight, Fuel, Gauge, Settings2, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { getInventory } from "@/lib/data/inventory-source";
@@ -34,7 +34,8 @@ export default async function InventoryPage({ searchParams }: PageProps) {
       | "year-desc"
       | "year-asc"
       | "mileage-asc"
-      | "newest",
+      | "newest"
+      | "date-added",
     page: params.page ? Number(params.page) : 1,
     perPage: 24,
   };
@@ -97,6 +98,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                       { value: "price-desc", label: "Price: High to Low" },
                       { value: "mileage-asc", label: "Mileage: Low to High" },
                       { value: "year-desc", label: "Year: New to Old" },
+                      { value: "date-added", label: "Recently Added" },
                     ].map((opt) => (
                       <Link
                         key={opt.value}
@@ -253,9 +255,12 @@ export default async function InventoryPage({ searchParams }: PageProps) {
 
             {/* Vehicle Grid */}
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
                 <p className="text-sm text-zinc-500">
                   Showing {start}–{end} of {total} vehicles
+                </p>
+                <p className="text-xs text-zinc-600">
+                  Inventory last updated: {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                 </p>
               </div>
 
@@ -301,6 +306,10 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                             New Arrival
                           </span>
                         )}
+                        <span className="absolute top-3 right-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-zinc-300 text-[10px] font-semibold px-2 py-1 rounded">
+                          <ShieldCheck className="h-3 w-3" />
+                          Carfax
+                        </span>
                         <div className="absolute bottom-3 right-3">
                           <span className="text-lg font-bold text-white drop-shadow-lg">
                             {formatPrice(vehicle.price)}

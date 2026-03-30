@@ -26,6 +26,7 @@ export function VehicleImage({
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
 }: VehicleImageProps) {
   const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const showPlaceholder = !src || error;
 
   if (showPlaceholder) {
@@ -44,14 +45,29 @@ export function VehicleImage({
   }
 
   return (
-    <Image
-      src={src}
-      alt={alt}
-      fill={fill}
-      className={cn("object-cover", className)}
-      onError={() => setError(true)}
-      priority={priority}
-      sizes={sizes}
-    />
+    <>
+      {!loaded && (
+        <div
+          className={cn(
+            "absolute inset-0 bg-gradient-to-br from-surface-2 to-surface-3 animate-[shimmer_1.5s_ease-in-out_infinite]",
+            className
+          )}
+        />
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        fill={fill}
+        className={cn(
+          "object-cover transition-opacity duration-300",
+          loaded ? "opacity-100" : "opacity-0",
+          className
+        )}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+        priority={priority}
+        sizes={sizes}
+      />
+    </>
   );
 }

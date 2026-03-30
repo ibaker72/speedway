@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Phone, MapPin, ChevronDown, ArrowRight } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -15,6 +15,7 @@ interface MobileMenuProps {
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const pathname = usePathname();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Prevent body scroll when menu is open
   useEffect(() => {
@@ -28,6 +29,37 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     };
   }, [open]);
 
+  // Focus trap
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!open || !menuRef.current) return;
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = menuRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    [open, onClose]
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
   if (!open) return null;
 
   return (
@@ -39,7 +71,13 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
       />
 
       {/* Menu panel */}
-      <div className="fixed top-[64px] left-0 right-0 bottom-0 z-50 lg:hidden bg-[#0a0a0a] overflow-y-auto animate-[slideDown_0.3s_cubic-bezier(0.16,1,0.3,1)]">
+      <div
+        ref={menuRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        className="fixed top-[64px] left-0 right-0 bottom-0 z-50 lg:hidden bg-[#0a0a0a] overflow-y-auto animate-[slideDown_0.3s_cubic-bezier(0.16,1,0.3,1)]"
+      >
         <nav className="px-5 py-4">
           {NAV_LINKS.map((link, i) => (
             <div key={link.href + link.label} className="border-b border-white/[0.04] last:border-0">
@@ -47,7 +85,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 <Link
                   href={link.href}
                   onClick={onClose}
-                  className={`flex-1 py-4 text-base font-medium transition-colors ${pathname === link.href || pathname.startsWith(`${link.href}/`) ? "text-accent-light" : "text-white"}` }
+                  className={`flex-1 py-4 text-base font-medium transition-colors ${pathname === link.href || pathname.startsWith(`${link.href}/`) ? "text-accent-light" : "text-white"}`}
                 >
                   {link.label}
                 </Link>
@@ -57,6 +95,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                     onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
                     className="p-3 text-zinc-500 hover:text-white transition-colors"
                     aria-label={`Expand ${link.label} submenu`}
+                    aria-expanded={expandedIndex === i}
                   >
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-300 ${

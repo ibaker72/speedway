@@ -5,9 +5,10 @@ export const BUSINESS = {
   phone: "(862) 264-2777",
   phoneHref: "tel:+18622642777",
   fax: "(862) 264-2778",
-  email: "Speedwaymotorsnj@gmail.com",
-  website: "https://www.speedwaymotorsnj.net",
+  email: "info@speedwaymotorsllc.com", // TODO: Confirm final email address with business owner
+  website: "https://www.speedwaymotorsllc.com",
   facebook: "https://www.facebook.com/speedwaynj/",
+  instagram: "https://www.instagram.com/speedwaymotorsnj/", // TODO: Confirm Instagram handle
   established: 2005,
   tagline: "Quality Used Cars in Paterson, NJ",
   description:

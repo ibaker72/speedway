@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.dealer.com" },
       { protocol: "https", hostname: "pictures.dealer.com" },
       { protocol: "https", hostname: "vehicle-photos-published.vauto.com" },
+      { protocol: "https", hostname: "placehold.co" },
+      { protocol: "https", hostname: "**.dealereprocess.com" },
+      { protocol: "https", hostname: "**.dealercloud.com" },
+      { protocol: "https", hostname: "**.izmo.com" },
     ],
   },
 };
