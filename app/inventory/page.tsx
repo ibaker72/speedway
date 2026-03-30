@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Search, ArrowRight, Fuel, Gauge, Settings2, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { Search, ArrowRight, Fuel, Gauge, Settings2, ChevronLeft, ChevronRight, ShieldCheck, Phone, X } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { MobileFilterToggle } from "@/components/shared/MobileFilterToggle";
+import { InventoryViewToggle } from "@/components/shared/InventoryViewToggle";
 import { getInventory } from "@/lib/data/inventory-source";
 import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -51,6 +53,18 @@ export default async function InventoryPage({ searchParams }: PageProps) {
   const start = (page - 1) * 24 + 1;
   const end = Math.min(page * 24, total);
 
+  // Active filters for summary bar
+  const activeFilters: { label: string; removeQuery: Record<string, string | undefined> }[] = [];
+  if (filters.search) activeFilters.push({ label: `"${filters.search}"`, removeQuery: { ...params, search: undefined, page: undefined } as Record<string, string | undefined> });
+  if (filters.make) activeFilters.push({ label: filters.make, removeQuery: { ...params, make: undefined, page: undefined } as Record<string, string | undefined> });
+  if (filters.bodyType) activeFilters.push({ label: filters.bodyType, removeQuery: { ...params, type: undefined, page: undefined } as Record<string, string | undefined> });
+  if (filters.minPrice || filters.maxPrice) activeFilters.push({ label: `${filters.minPrice ? formatPrice(filters.minPrice) : "$0"}–${filters.maxPrice ? formatPrice(filters.maxPrice) : "$∞"}`, removeQuery: { ...params, priceMin: undefined, priceMax: undefined, page: undefined } as Record<string, string | undefined> });
+  if (filters.minYear || filters.maxYear) activeFilters.push({ label: `${filters.minYear || "Any"}–${filters.maxYear || "Any"}`, removeQuery: { ...params, yearMin: undefined, yearMax: undefined, page: undefined } as Record<string, string | undefined> });
+
+  // Year range for year filter
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 2010 + 1 }, (_, i) => currentYear - i);
+
   return (
     <>
       {/* Hero / Search */}
@@ -87,7 +101,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
             {/* Sidebar Filters */}
             <aside className="w-full lg:w-60 flex-shrink-0">
               <MobileFilterToggle>
-              <div className="lg:sticky lg:top-24 space-y-5">
+              <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto space-y-5">
                 {/* Sort */}
                 <div className="rounded-xl border border-white/[0.06] bg-surface-1 p-4">
                   <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.15em] mb-3">
@@ -206,6 +220,29 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                   </div>
                 )}
 
+                {/* Year Range filter */}
+                <div className="rounded-xl border border-white/[0.06] bg-surface-1 p-4">
+                  <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.15em] mb-3">
+                    Year Range
+                  </h3>
+                  <form className="flex items-center gap-2">
+                    <select name="yearMin" defaultValue={filters.minYear || ""} className="select-dark text-xs py-2">
+                      <option value="">Min Year</option>
+                      {yearOptions.map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                    <span className="text-zinc-600 text-xs">to</span>
+                    <select name="yearMax" defaultValue={filters.maxYear || ""} className="select-dark text-xs py-2">
+                      <option value="">Max Year</option>
+                      {yearOptions.map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                    <button type="submit" className="px-3 py-2 bg-accent/20 text-accent-light rounded-lg text-xs font-semibold hover:bg-accent/30 transition-colors">Go</button>
+                  </form>
+                </div>
+
                 {/* Price Range filter */}
                 <div className="rounded-xl border border-white/[0.06] bg-surface-1 p-4">
                   <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.15em] mb-3">
@@ -258,13 +295,34 @@ export default async function InventoryPage({ searchParams }: PageProps) {
 
             {/* Vehicle Grid */}
             <div className="flex-1">
+              {/* Active Filters Bar */}
+              {activeFilters.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mb-5">
+                  <span className="text-xs text-zinc-500 font-medium">Active:</span>
+                  {activeFilters.map((af) => (
+                    <Link
+                      key={af.label}
+                      href={{ pathname: "/inventory", query: af.removeQuery }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs font-medium text-accent-light hover:bg-accent/20 transition-colors"
+                    >
+                      {af.label}
+                      <X className="h-3 w-3" />
+                    </Link>
+                  ))}
+                  <Link
+                    href="/inventory"
+                    className="text-xs text-zinc-500 hover:text-white transition-colors ml-1"
+                  >
+                    Clear all
+                  </Link>
+                </div>
+              )}
+
               <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
                 <p className="text-sm text-zinc-500">
                   Showing {start}–{end} of {total} vehicles
                 </p>
-                <p className="text-xs text-zinc-600">
-                  Inventory last updated: {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                </p>
+                <InventoryViewToggle />
               </div>
 
               {vehicles.length === 0 ? (
@@ -275,80 +333,116 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                   <p className="text-lg text-zinc-400 mb-2">
                     No vehicles match your criteria.
                   </p>
+                  {activeFilters.length > 0 && (
+                    <p className="text-sm text-zinc-500 mb-4">Try removing some filters to see more results.</p>
+                  )}
+                  <div className="flex flex-wrap justify-center gap-2 mb-6">
+                    {["SUV", "Sedan", "Truck"].map((q) => (
+                      <Link
+                        key={q}
+                        href={{ pathname: "/inventory", query: { type: q.toLowerCase() } }}
+                        className="px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.08] text-sm text-zinc-300 hover:bg-white/[0.08] transition-colors"
+                      >
+                        Popular: {q}s
+                      </Link>
+                    ))}
+                  </div>
                   <Link
                     href="/inventory"
-                    className="inline-block text-sm font-semibold text-accent-light hover:text-white transition-colors"
+                    className="inline-block text-sm font-semibold text-accent-light hover:text-white transition-colors mb-4"
                   >
                     Clear all filters
                   </Link>
+                  <div className="mt-4 pt-4 border-t border-white/[0.06] max-w-sm mx-auto">
+                    <p className="text-sm text-zinc-500 mb-2">Can&apos;t find what you&apos;re looking for?</p>
+                    <a
+                      href={BUSINESS.phoneHref}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-accent-light hover:text-white transition-colors"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Call us at {BUSINESS.phone}
+                    </a>
+                  </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {vehicles.map((vehicle) => (
-                    <Link
-                      key={vehicle.id}
-                      href={`/inventory/${vehicle.slug}`}
-                      className="card-vehicle group block"
-                    >
-                      <div className="aspect-[16/10] relative overflow-hidden">
-                        <VehicleImage
-                          src={vehicle.images[0]?.url}
-                          alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-                          make={vehicle.make}
-                          model={vehicle.model}
-                          className="w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        {vehicle.isFeatured && (
-                          <span className="absolute top-3 left-3 badge-accent text-[10px]">
-                            Featured
-                          </span>
-                        )}
-                        {vehicle.isNewArrival && !vehicle.isFeatured && (
-                          <span className="absolute top-3 left-3 badge-success text-[10px]">
-                            New Arrival
-                          </span>
-                        )}
-                        <span className="absolute top-3 right-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-zinc-300 text-[10px] font-semibold px-2 py-1 rounded">
-                          <ShieldCheck className="h-3 w-3" />
-                          Carfax
-                        </span>
-                        <div className="absolute bottom-3 right-3">
-                          <span className="text-lg font-bold text-white drop-shadow-lg">
-                            {formatPrice(vehicle.price)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-4 pb-5">
-                        <h3 className="font-semibold text-white leading-tight group-hover:text-accent-light transition-colors">
-                          {vehicle.year} {vehicle.make} {vehicle.model}
-                        </h3>
-                        {vehicle.trim && (
-                          <p className="text-sm text-zinc-500 mt-0.5">
-                            {vehicle.trim}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-3 text-xs text-zinc-500 mt-3 flex-wrap">
-                          <span className="flex items-center gap-1.5">
-                            <Gauge className="h-3.5 w-3.5" />
-                            {formatMileage(vehicle.mileage)}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Settings2 className="h-3.5 w-3.5" />
-                            {vehicle.transmission}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Fuel className="h-3.5 w-3.5" />
-                            {vehicle.drivetrain}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" id="vehicle-grid">
+                  {vehicles.map((vehicle) => {
+                    const estMonthly = vehicle.estimatedPayment || Math.round(vehicle.price * 0.02);
+                    return (
+                      <Link
+                        key={vehicle.id}
+                        href={`/inventory/${vehicle.slug}`}
+                        className="card-vehicle group block"
+                      >
+                        <div className="aspect-[16/10] relative overflow-hidden">
+                          <VehicleImage
+                            src={vehicle.images[0]?.url}
+                            alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                            make={vehicle.make}
+                            model={vehicle.model}
+                            className="w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          {/* Quick View overlay (desktop only) */}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center">
+                            <span className="text-sm font-semibold text-white border border-white/30 rounded-lg px-4 py-2 backdrop-blur-sm">
+                              Quick View
+                            </span>
+                          </div>
+                          {vehicle.isFeatured && (
+                            <span className="absolute top-3 left-3 badge-accent text-[10px]">
+                              Featured
+                            </span>
+                          )}
+                          {vehicle.isNewArrival && !vehicle.isFeatured && (
+                            <span className="absolute top-3 left-3 badge-success text-[10px]">
+                              New Arrival
+                            </span>
+                          )}
+                          <span className="absolute top-3 right-3 flex items-center gap-1 bg-black/70 backdrop-blur-sm text-zinc-300 text-[10px] font-semibold px-2 py-1 rounded">
+                            <ShieldCheck className="h-3 w-3" />
+                            Carfax
                           </span>
                         </div>
-                        <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent-light group-hover:text-white transition-colors">
-                          View Details
-                          <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-200" />
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
+                        <div className="p-4 pb-5">
+                          <h3 className="font-semibold text-white leading-tight group-hover:text-accent-light transition-colors">
+                            {vehicle.year} {vehicle.make} {vehicle.model}
+                          </h3>
+                          {vehicle.trim && (
+                            <p className="text-sm text-zinc-500 mt-0.5">
+                              {vehicle.trim}
+                            </p>
+                          )}
+                          <div className="mt-3">
+                            <span className="text-xl font-bold text-accent-light">
+                              {formatPrice(vehicle.price)}
+                            </span>
+                            <span className="block text-xs text-zinc-500 mt-0.5">
+                              Est. ${estMonthly}/mo
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-3 flex-wrap">
+                            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+                              <Gauge className="h-3 w-3" />
+                              {formatMileage(vehicle.mileage)}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+                              <Settings2 className="h-3 w-3" />
+                              {vehicle.transmission}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+                              <Fuel className="h-3 w-3" />
+                              {vehicle.drivetrain}
+                            </span>
+                          </div>
+                          <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent-light group-hover:text-white transition-colors">
+                            View Details
+                            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
 

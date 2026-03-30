@@ -3,6 +3,7 @@ import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { ContactForm } from "@/components/forms/ContactForm";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS, HOURS } from "@/lib/constants";
 import { locations } from "@/lib/data/locations";
 import type { Metadata } from "next";
@@ -44,6 +45,7 @@ const contactMethods = [
 export default function ContactPage() {
   return (
     <>
+      <BreadcrumbJsonLd items={[{ name: "Home", url: `${BUSINESS.website}/` }, { name: "Contact", url: `${BUSINESS.website}/contact` }]} />
       <PageHero
         eyebrow="Get in Touch"
         title="Contact Us"

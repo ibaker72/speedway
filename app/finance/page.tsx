@@ -3,6 +3,8 @@ import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { FinanceApplicationForm } from "@/components/forms/FinanceApplicationForm";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
+import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -44,6 +46,7 @@ const steps = [
 export default function FinancePage() {
   return (
     <>
+      <BreadcrumbJsonLd items={[{ name: "Home", url: `${BUSINESS.website}/` }, { name: "Financing", url: `${BUSINESS.website}/finance` }]} />
       <PageHero
         eyebrow="Financing Solutions"
         title="Auto Financing"

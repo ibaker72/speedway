@@ -5,6 +5,8 @@ import { EmailMagnetSection } from "@/components/home/EmailMagnetSection";
 import { BodyTypeShortcuts } from "@/components/home/BodyTypeShortcuts";
 import { TradeSellCards } from "@/components/home/TradeSellCards";
 import { WhyBuySection } from "@/components/home/WhyBuySection";
+import { StatsShowcase } from "@/components/home/StatsShowcase";
+import { NewArrivals } from "@/components/home/NewArrivals";
 import { FinanceFormSection } from "@/components/home/FinanceFormSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { TrustBadgesRow } from "@/components/home/TrustBadgesRow";
@@ -18,9 +20,11 @@ export default function HomePage() {
       <TrustBadgesRow />
       <BrandMarquee />
       <FeaturedInventory />
+      <NewArrivals />
       <BodyTypeShortcuts />
       <TradeSellCards />
       <WhyBuySection />
+      <StatsShowcase />
       <FinanceFormSection />
       <TestimonialsSection />
       <FAQSection />

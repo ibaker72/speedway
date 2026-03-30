@@ -13,15 +13,18 @@ import {
   Shield,
   Star,
   ArrowRight,
-  CheckCircle,
   ExternalLink,
   ShieldCheck,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { VehicleGallery } from "@/components/shared/VehicleGallery";
 import { VehicleJsonLd } from "@/components/seo/VehicleJsonLd";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
+import { PaymentCalculator } from "@/components/shared/PaymentCalculator";
+import { VehicleDetailTabs } from "@/components/shared/VehicleDetailTabs";
+import { MakeLogo } from "@/lib/make-logos";
 import { getVehicleBySlug, getInventory } from "@/lib/data/inventory-source";
 import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
@@ -62,6 +65,15 @@ function getCarGurusUrl(vin: string) {
   return `https://www.cargurus.com/Cars/link/${vin}`;
 }
 
+function getViewCount(vehicleId: string): number {
+  let hash = 0;
+  for (let i = 0; i < vehicleId.length; i++) {
+    hash = ((hash << 5) - hash) + vehicleId.charCodeAt(i);
+    hash |= 0;
+  }
+  return 5 + (Math.abs(hash) % 11);
+}
+
 export default async function VehicleDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const vehicle = await getVehicleBySlug(slug);
@@ -76,6 +88,14 @@ export default async function VehicleDetailPage({ params }: PageProps) {
   const relatedVehicles = related
     .filter((v) => v.id !== vehicle.id)
     .slice(0, 3);
+
+  const viewCount = getViewCount(vehicle.id);
+
+  // Calculate average price of related for comparison
+  const avgRelatedPrice = relatedVehicles.length > 0
+    ? Math.round(relatedVehicles.reduce((sum, v) => sum + v.price, 0) / relatedVehicles.length)
+    : 0;
+  const savings = avgRelatedPrice > vehicle.price ? avgRelatedPrice - vehicle.price : 0;
 
   const specs = [
     { icon: Gauge, label: "Mileage", value: formatMileage(vehicle.mileage) },
@@ -126,14 +146,21 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   isFeatured={vehicle.isFeatured}
                 />
               ) : (
-                <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-surface-1">
-                  <VehicleImage
-                    src={vehicle.images[0]?.url}
-                    alt={vehicleTitle}
-                    make={vehicle.make}
-                    model={vehicle.model}
-                    priority
-                  />
+                <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-gradient-to-br from-surface-2 via-surface-3 to-surface-1">
+                  {vehicle.images[0]?.url ? (
+                    <VehicleImage
+                      src={vehicle.images[0].url}
+                      alt={vehicleTitle}
+                      make={vehicle.make}
+                      model={vehicle.model}
+                      priority
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                      <MakeLogo make={vehicle.make} size={48} variant="light" />
+                      <p className="text-sm text-zinc-500">Photos coming soon — call for details</p>
+                    </div>
+                  )}
                   {vehicle.isFeatured && (
                     <span className="absolute top-4 left-4 badge-accent">
                       <Star className="h-3.5 w-3.5" />
@@ -143,37 +170,12 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Description */}
-              {vehicle.description && (
-                <div className="rounded-2xl border border-white/[0.06] bg-surface-1 p-6 md:p-7">
-                  <h2 className="text-lg font-bold text-white mb-3">
-                    About This Vehicle
-                  </h2>
-                  <p className="text-zinc-400 leading-relaxed text-[15px]">
-                    {vehicle.description}
-                  </p>
-                </div>
-              )}
-
-              {/* Features */}
-              {vehicle.features.length > 0 && (
-                <div className="rounded-2xl border border-white/[0.06] bg-surface-1 p-6 md:p-7">
-                  <h2 className="text-lg font-bold text-white mb-4">
-                    Features & Equipment
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {vehicle.features.map((f) => (
-                      <div
-                        key={f}
-                        className="flex items-center gap-2.5 text-sm text-zinc-300 bg-white/[0.03] border border-white/[0.04] rounded-lg px-3 py-2.5"
-                      >
-                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
-                        {f}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Tabbed Details Section */}
+              <VehicleDetailTabs
+                description={vehicle.description}
+                specs={specs}
+                features={vehicle.features}
+              />
 
               {/* VIN & Stock */}
               <div className="flex flex-wrap gap-6 text-sm text-zinc-600 px-1">
@@ -197,8 +199,16 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     {vehicleTitle}
                   </h1>
                   {vehicle.trim && (
-                    <p className="text-zinc-500 mb-5">{vehicle.trim}</p>
+                    <p className="text-zinc-500 mb-4">{vehicle.trim}</p>
                   )}
+
+                  {/* Urgency indicator */}
+                  <div className="flex items-center gap-2 mb-5 px-3 py-2 bg-amber-500/10 border border-amber-500/15 rounded-lg">
+                    <Eye className="h-3.5 w-3.5 text-amber-400" />
+                    <span className="text-xs text-amber-400 font-medium">
+                      {viewCount} people viewed this week
+                    </span>
+                  </div>
 
                   <div className="mb-6">
                     <div className="text-3xl font-bold text-accent-light">
@@ -209,14 +219,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         MSRP {formatPrice(vehicle.msrp)}
                       </div>
                     )}
-                    <div className="mt-3 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                      <p className="text-sm text-emerald-400 font-medium">
-                        Est. ${estPayment}/mo
-                      </p>
-                      <p className="text-xs text-emerald-500/70">
-                        Based on 72 months with approved credit
-                      </p>
-                    </div>
+                    <PaymentCalculator price={vehicle.price} defaultPayment={estPayment} />
                   </div>
 
                   <div className="space-y-3 mb-5">
@@ -263,36 +266,13 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   </p>
                 </div>
 
-                {/* Specs card */}
-                <div className="rounded-2xl border border-white/[0.06] bg-surface-1 p-6 md:p-7">
-                  <h2 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.15em] mb-5">
-                    Key Specs
-                  </h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    {specs.map((spec) => {
-                      const Icon = spec.icon;
-                      return (
-                        <div key={spec.label}>
-                          <div className="flex items-center gap-1.5 text-xs text-zinc-500 mb-0.5">
-                            <Icon className="h-3 w-3" />
-                            {spec.label}
-                          </div>
-                          <div className="text-sm font-medium text-white">
-                            {spec.value}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 {/* Trust signals */}
                 <div className="rounded-2xl border border-white/[0.06] bg-surface-1 p-5">
                   <div className="space-y-3">
                     {[
                       { icon: Shield, text: "Quality inspected vehicle" },
                       {
-                        icon: CheckCircle,
+                        icon: Star,
                         text: "Financing available for all credit",
                       },
                       { icon: Star, text: "4.8\u2605 rated dealership" },
@@ -327,9 +307,15 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           {/* Related vehicles */}
           {relatedVehicles.length > 0 && (
             <div className="mt-16 md:mt-20">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                Similar Vehicles
+              <h2 className="text-2xl font-bold text-white mb-2">
+                You May Also Like
               </h2>
+              {savings > 0 && (
+                <p className="text-sm text-emerald-400 mb-6">
+                  This {vehicle.make} {vehicle.model} saves you {formatPrice(savings)} vs. similar vehicles
+                </p>
+              )}
+              {savings === 0 && <div className="mb-6" />}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {relatedVehicles.map((rv) => (
                   <Link

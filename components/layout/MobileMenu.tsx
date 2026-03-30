@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Phone, MapPin, ChevronDown, ArrowRight } from "lucide-react";
+import { Phone, MapPin, ChevronDown, ArrowRight, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS, BUSINESS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
 
   // Prevent body scroll when menu is open
   useEffect(() => {
@@ -60,13 +61,28 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  // Swipe to close
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+      if (deltaX > 80) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
   if (!open) return null;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-[fadeIn_0.2s_ease-out]"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-[fadeIn_0.2s_ease-out] transition-[backdrop-filter] duration-300"
         onClick={onClose}
       />
 
@@ -77,8 +93,23 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         aria-modal="true"
         aria-label="Navigation menu"
         className="fixed top-[64px] left-0 right-0 bottom-0 z-50 lg:hidden bg-[#0a0a0a] overflow-y-auto animate-[slideDown_0.3s_cubic-bezier(0.16,1,0.3,1)]"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        <nav className="px-5 py-4">
+        {/* Search bar */}
+        <div className="px-5 pt-4 pb-2">
+          <form action="/inventory" className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <input
+              type="text"
+              name="search"
+              placeholder="Search vehicles..."
+              className="input-dark pl-10 py-3 text-sm"
+            />
+          </form>
+        </div>
+
+        <nav className="px-5 py-2">
           {NAV_LINKS.map((link, i) => (
             <div key={link.href + link.label} className="border-b border-white/[0.04] last:border-0">
               <div className="flex items-center">
@@ -142,7 +173,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             className="flex items-center justify-center gap-2 w-full py-3 text-sm font-medium text-zinc-500 hover:text-white transition-colors"
           >
             <MapPin className="h-4 w-4" />
-            Paterson, NJ &mdash; Visit Us
+            Paterson, NJ &mdash; Get Directions
           </Link>
         </div>
       </div>

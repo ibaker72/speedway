@@ -1,16 +1,8 @@
+import { MakeLogo } from "@/lib/make-logos";
+
 const BRANDS = [
-  { name: "Audi", slug: "audi" },
-  { name: "BMW", slug: "bmw" },
-  { name: "Mercedes-Benz", slug: "mercedes" },
-  { name: "Ford", slug: "ford" },
-  { name: "Toyota", slug: "toyota" },
-  { name: "Honda", slug: "honda" },
-  { name: "Chevrolet", slug: "chevrolet" },
-  { name: "Nissan", slug: "nissan" },
-  { name: "Volkswagen", slug: "volkswagen" },
-  { name: "Porsche", slug: "porsche" },
-  { name: "Hyundai", slug: "hyundai" },
-  { name: "Kia", slug: "kia" },
+  "Audi", "BMW", "Mercedes-Benz", "Ford", "Toyota", "Honda",
+  "Chevrolet", "Nissan", "Volkswagen", "Porsche", "Hyundai", "Kia",
 ];
 
 export function BrandMarquee() {
@@ -28,27 +20,18 @@ export function BrandMarquee() {
         <div className="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-16 bg-gradient-to-r from-[#0A0A0A] to-transparent sm:w-24" />
         <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-16 bg-gradient-to-l from-[#0A0A0A] to-transparent sm:w-24" />
 
-        <div className="flex w-max animate-marquee items-center gap-8 pr-8 [animation-duration:40s] hover:[animation-play-state:paused] md:gap-10">
+        <div className="flex w-max animate-marquee items-center gap-10 pr-10 [animation-duration:40s] hover:[animation-play-state:paused] md:gap-14">
           {loopedBrands.map((brand, index) => (
             <div
-              key={`${brand.slug}-${index}`}
-              className="group flex min-w-[108px] items-center justify-center md:min-w-[130px]"
+              key={`${brand}-${index}`}
+              className="group flex min-w-[120px] items-center justify-center md:min-w-[140px]"
             >
-              <span
-                className="inline-block h-6 w-16 bg-[#888888] transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:bg-white md:h-8 md:w-20"
-                style={{
-                  maskImage: `url(https://cdn.simpleicons.org/${brand.slug})`,
-                  WebkitMaskImage: `url(https://cdn.simpleicons.org/${brand.slug})`,
-                  maskRepeat: "no-repeat",
-                  WebkitMaskRepeat: "no-repeat",
-                  maskPosition: "center",
-                  WebkitMaskPosition: "center",
-                  maskSize: "contain",
-                  WebkitMaskSize: "contain",
-                }}
-                aria-hidden="true"
+              <MakeLogo
+                make={brand}
+                size={24}
+                variant="light"
+                className="text-zinc-500 group-hover:text-zinc-300 transition-colors duration-300"
               />
-              <span className="sr-only">{brand.name}</span>
             </div>
           ))}
         </div>

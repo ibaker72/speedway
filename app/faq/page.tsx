@@ -1,5 +1,6 @@
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { FAQSection } from "@/components/home/FAQSection";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
@@ -14,6 +15,12 @@ export const metadata: Metadata = {
 export default function FAQPage() {
   return (
     <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: `${BUSINESS.website}/` },
+          { name: "FAQ", url: `${BUSINESS.website}/faq` },
+        ]}
+      />
       <FAQSection />
       <SectionWrapper background="dark" className="py-12 md:py-16">
         <div className="max-w-xl mx-auto text-center">

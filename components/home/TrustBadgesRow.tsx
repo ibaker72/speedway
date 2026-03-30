@@ -10,20 +10,21 @@ const trustSignals = [
 
 export function TrustBadgesRow() {
   return (
-    <section className="bg-[#0A0A0A] px-5 py-8 sm:px-6 md:py-10 lg:px-8">
-      <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
-        {trustSignals.map((signal) => {
+    <section className="bg-[#0A0A0A] px-5 py-8 sm:px-6 md:py-10 lg:px-8 border-t border-white/[0.04] border-b border-b-white/[0.04]">
+      <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-3 sm:gap-y-3 max-w-4xl mx-auto">
+        {trustSignals.map((signal, i) => {
           const Icon = signal.icon;
-          const item = (
-            <>
+          const content = (
+            <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
               <Icon className="h-[17px] w-[17px] shrink-0 text-[#D31119]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white md:text-xs">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white md:text-xs whitespace-nowrap">
                 {signal.label}
               </span>
-            </>
+            </div>
           );
 
-          const classes = "inline-flex items-center justify-center gap-2 text-center";
+          // On mobile: first row has 3, second row has 2 centered
+          const mobileClass = i >= 3 ? "col-span-3 sm:col-span-1 flex justify-center" : "";
 
           if (signal.href) {
             return (
@@ -32,16 +33,16 @@ export function TrustBadgesRow() {
                 href={signal.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={classes}
+                className={mobileClass}
               >
-                {item}
+                {content}
               </a>
             );
           }
 
           return (
-            <div key={signal.label} className={classes}>
-              {item}
+            <div key={signal.label} className={mobileClass}>
+              {content}
             </div>
           );
         })}
