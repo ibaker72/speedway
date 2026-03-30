@@ -25,7 +25,7 @@ export function HeroSection() {
         <div className="relative z-10 mx-auto flex min-h-[70vh] w-full max-w-[1280px] items-end px-6 pb-20 pt-14 md:px-10 md:pt-16">
           <div className="max-w-3xl">
             <p className="hero-stagger-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 sm:text-sm">
-              Paterson, NJ&apos;s Trusted Pre-Owned Dealership
+              DRIVEN BY DISCIPLINE, INTEGRITY, AND SERVICE
             </p>
 
             <h1 className="hero-stagger-2 mt-4 text-4xl font-black uppercase leading-[0.95] tracking-[-0.03em] sm:text-5xl md:text-7xl">
