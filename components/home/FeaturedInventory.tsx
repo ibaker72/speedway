@@ -20,7 +20,7 @@ export async function FeaturedInventory() {
       <SectionHeading
         eyebrow="Featured Vehicles"
         title="Premium Inventory"
-        subtitle="Floating, high-contrast cards designed for quick scanning and decisive action."
+        subtitle="HAND-PICKED INVENTORY. Fully inspected, detailed, and ready for the road."
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
@@ -28,7 +28,7 @@ export async function FeaturedInventory() {
           <AnimateIn key={v.id} delay={i * 80} variant="up">
             <Link
               href={`/inventory/${v.slug}`}
-              className="group block rounded-xl border border-white/5 bg-[#101010] hover:bg-[#1a1a1a] hover:border-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_26px_48px_-16px_rgba(0,0,0,0.92)]"
+              className="group block rounded-xl border border-white/5 bg-[#101010] transition-all duration-300 hover:-translate-y-[5px] hover:border-white/15 hover:bg-[#1a1a1a] hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,0.75)]"
             >
               <div className="relative aspect-[16/10] overflow-hidden rounded-t-xl">
                 <VehicleImage

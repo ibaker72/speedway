@@ -15,17 +15,17 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <TrustBadgesRow />
       <BrandMarquee />
       <FeaturedInventory />
-      <EmailMagnetSection />
       <BodyTypeShortcuts />
       <TradeSellCards />
       <WhyBuySection />
       <FinanceFormSection />
       <TestimonialsSection />
-      <TrustBadgesRow />
       <FAQSection />
       <LocationsPreview />
+      <EmailMagnetSection />
     </>
   );
 }

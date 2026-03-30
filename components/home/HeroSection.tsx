@@ -16,22 +16,24 @@ export function HeroSection() {
           preload="auto"
           aria-hidden="true"
         >
-          <source src="/videos/hero.mp4" type="video/mp4" />
+          <source src="https://cdn.pixabay.com/video/2023/10/22/186008-876800742_large.mp4" type="video/mp4" />
         </video>
 
-        <div className="hero-video-overlay absolute inset-0 bg-black/55" />
+        <div className="hero-video-overlay absolute inset-0 bg-[rgba(10,10,10,0.6)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_30%,rgba(255,255,255,0.06),transparent_55%)]" />
 
-        <div className="relative z-10 mx-auto flex min-h-[70vh] w-full max-w-[1280px] items-end px-6 pb-20 pt-14 md:px-10 md:pt-16">
+        <div className="relative z-10 mx-auto flex min-h-[70vh] w-full max-w-[1280px] items-end px-6 pb-20 pt-6 md:px-10 md:pt-8">
           <div className="max-w-3xl">
             <p className="hero-stagger-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 sm:text-sm">
-              DRIVEN BY DISCIPLINE, INTEGRITY, AND SERVICE
+              VETERAN-OWNED &amp; OPERATED IN PATERSON, NJ
             </p>
 
             <h1 className="hero-stagger-2 mt-4 text-4xl font-black uppercase leading-[0.95] tracking-[-0.03em] sm:text-5xl md:text-7xl">
-              Drive Better.
+              Zero Pressure.
               <br />
-              Pay Less.
+              Total Transparency.
+              <br />
+              Exceptional Vehicles.
             </h1>
 
             <div className="hero-stagger-3 mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
