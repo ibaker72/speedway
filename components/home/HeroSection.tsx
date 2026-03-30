@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { TrustBadgesRow } from "@/components/home/TrustBadgesRow";
 
 export function HeroSection() {
   return (
@@ -23,7 +22,7 @@ export function HeroSection() {
         <div className="hero-video-overlay absolute inset-0 bg-black/55" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_30%,rgba(255,255,255,0.06),transparent_55%)]" />
 
-        <div className="relative z-10 mx-auto flex min-h-[70vh] w-full max-w-[1280px] items-end px-6 pb-20 pt-24 md:px-10">
+        <div className="relative z-10 mx-auto flex min-h-[70vh] w-full max-w-[1280px] items-end px-6 pb-20 pt-14 md:px-10 md:pt-16">
           <div className="max-w-3xl">
             <p className="hero-stagger-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70 sm:text-sm">
               Paterson, NJ&apos;s Trusted Pre-Owned Dealership
@@ -50,8 +49,6 @@ export function HeroSection() {
                 Get Pre-Approved
               </Link>
             </div>
-
-            <TrustBadgesRow />
           </div>
         </div>
 

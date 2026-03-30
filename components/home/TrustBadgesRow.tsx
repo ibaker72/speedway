@@ -10,43 +10,45 @@ const trustSignals = [
 
 export function TrustBadgesRow() {
   return (
-    <div className="mt-7 rounded-2xl border border-[#333333] bg-[rgba(26,26,26,0.8)] px-3 py-3 backdrop-blur-md md:px-5 md:py-4">
-      <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-wrap md:justify-center md:gap-3">
-        {trustSignals.map((signal) => {
-          const Icon = signal.icon;
-          const item = (
-            <>
-              <Icon className="h-[15px] w-[15px] shrink-0 text-[#D31119]" />
-              <span className="whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.1em] text-white md:text-xs">
-                {signal.label}
-              </span>
-            </>
-          );
-
-          const classes =
-            "inline-flex min-w-max items-center gap-2 rounded-lg border border-white/8 bg-black/20 px-3 py-2 transition-all duration-300 hover:border-white/20 hover:bg-black/35";
-
-          if (signal.href) {
-            return (
-              <a
-                key={signal.label}
-                href={signal.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={classes}
-              >
-                {item}
-              </a>
+    <section className="bg-[#050505] px-5 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[80rem]">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center lg:justify-center lg:gap-6">
+          {trustSignals.map((signal) => {
+            const Icon = signal.icon;
+            const item = (
+              <>
+                <Icon className="h-[17px] w-[17px] shrink-0 text-[#D31119]" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-200 md:text-xs">
+                  {signal.label}
+                </span>
+              </>
             );
-          }
 
-          return (
-            <div key={signal.label} className={classes}>
-              {item}
-            </div>
-          );
-        })}
+            const classes =
+              "inline-flex w-full items-center justify-center gap-2 py-2 text-center lg:w-auto";
+
+            if (signal.href) {
+              return (
+                <a
+                  key={signal.label}
+                  href={signal.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={classes}
+                >
+                  {item}
+                </a>
+              );
+            }
+
+            return (
+              <div key={signal.label} className={classes}>
+                {item}
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
