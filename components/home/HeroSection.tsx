@@ -21,7 +21,7 @@ export async function HeroSection() {
           preload="auto"
           aria-hidden="true"
         >
-          <source src="https://cdn.pixabay.com/video/2023/10/22/186008-876800742_large.mp4" type="video/mp4" />
+          <source src="/videos/hero.mp4" type="video/mp4" />
         </video>
 
         <div className="hero-video-overlay absolute inset-0 bg-[rgba(10,10,10,0.6)]" />
