@@ -17,7 +17,7 @@ export function LocationsPreview() {
       <SectionHeading
         eyebrow="Visit Us"
         title="Come See Us in Person"
-        subtitle="Three locations in Paterson, NJ — all here to serve you."
+        subtitle="Three locations in North Jersey — all here to serve you."
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
