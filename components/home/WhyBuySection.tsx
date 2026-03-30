@@ -31,7 +31,7 @@ export function WhyBuySection() {
     <SectionWrapper background="elevated">
       <AnimateIn variant="up">
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-[2px] bg-[#1A1A1A] p-8 md:p-10 border border-white/10">
+          <div className="rounded-lg bg-[#1A1A1A] p-8 md:p-10 border border-white/[0.06]">
             <div className="flex items-start gap-5 mb-10">
               <div className="w-[3px] self-stretch bg-accent" />
               <div>

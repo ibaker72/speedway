@@ -76,7 +76,7 @@ export default function FinancePage() {
       <SectionWrapper background="elevated">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 lg:gap-10">
           <AnimateIn variant="left">
-            <aside className="rounded-2xl bg-[#111111] border border-white/10 p-6 lg:sticky lg:top-28 h-fit">
+            <aside className="rounded-2xl bg-[#111111] border border-white/[0.06] p-6 lg:sticky lg:top-28 h-fit">
               <p className="text-[11px] tracking-[0.2em] uppercase text-accent-light font-semibold mb-5">Application Steps</p>
               <ol className="space-y-4">
                 {steps.map((step, index) => (

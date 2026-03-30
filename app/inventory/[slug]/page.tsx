@@ -4,6 +4,7 @@ import {
   Phone,
   ChevronLeft,
   Gauge,
+  Search,
   Settings2,
   Fuel,
   Palette,
@@ -36,14 +37,29 @@ export async function generateMetadata({
   const { slug } = await params;
   const vehicle = await getVehicleBySlug(slug);
   if (!vehicle) return { title: "Vehicle Not Found" };
+  const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ""}`.trim();
   return {
-    title: `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ""} — ${formatPrice(vehicle.price)}`,
+    title: `${vehicleName} — ${formatPrice(vehicle.price)}`,
     description: `Buy this ${vehicle.year} ${vehicle.make} ${vehicle.model} with ${formatMileage(vehicle.mileage)} for ${formatPrice(vehicle.price)} at Speedway Motors in Paterson, NJ. Financing available.`,
+    openGraph: {
+      title: `${vehicleName} — ${formatPrice(vehicle.price)}`,
+      description: `${vehicle.year} ${vehicle.make} ${vehicle.model} with ${formatMileage(vehicle.mileage)} at Speedway Motors.`,
+      images: vehicle.images[0]?.url
+        ? [{ url: vehicle.images[0].url, alt: vehicleName }]
+        : [{ url: "https://www.speedwaymotorsllc.com/og-image.jpg", alt: "Speedway Motors LLC" }],
+    },
+    alternates: {
+      canonical: `https://www.speedwaymotorsllc.com/inventory/${vehicle.slug}`,
+    },
   };
 }
 
 function getCarfaxUrl(vin: string) {
   return `https://www.carfax.com/VehicleHistory/p/Report.cfx?vin=${vin}`;
+}
+
+function getCarGurusUrl(vin: string) {
+  return `https://www.cargurus.com/Cars/link/${vin}`;
 }
 
 export default async function VehicleDetailPage({ params }: PageProps) {
@@ -174,7 +190,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
 
             {/* Right: Pricing + Specs sidebar */}
             <div className="lg:col-span-2">
-              <div className="sticky top-24 space-y-5">
+              <div className="lg:sticky lg:top-24 space-y-5">
                 {/* Pricing card */}
                 <div className="rounded-2xl border border-white/[0.08] bg-surface-2 p-6 md:p-7">
                   <h1 className="text-2xl font-bold text-white mb-1">
@@ -221,6 +237,16 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     >
                       <ShieldCheck className="h-4 w-4" />
                       View Carfax Report
+                      <ExternalLink className="h-3.5 w-3.5 ml-1 opacity-60" />
+                    </a>
+                    <a
+                      href={getCarGurusUrl(vehicle.vin)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/[0.15] text-white hover:bg-white/[0.06] hover:border-white/[0.25] active:bg-white/[0.08] px-8 py-3.5 text-[15px] font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5"
+                    >
+                      <Search className="h-4 w-4" />
+                      Check on CarGurus
                       <ExternalLink className="h-3.5 w-3.5 ml-1 opacity-60" />
                     </a>
                     <Button

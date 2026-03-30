@@ -116,7 +116,7 @@ export function FinanceFormSection() {
           <div className="rounded-2xl bg-surface-2 border border-white/[0.08] p-7 sm:p-9">
             {submitted ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5">
+                <div className="w-16 h-16 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 animate-check-scale">
                   <CheckCircle className="h-8 w-8 text-emerald-400" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">
@@ -137,52 +137,72 @@ export function FinanceFormSection() {
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <label htmlFor="hp-firstName" className="sr-only">First Name</label>
                     <input
+                      id="hp-firstName"
                       type="text"
                       name="firstName"
                       placeholder="First Name"
                       required
                       className="input-dark"
+                      aria-invalid={!!errors.firstName}
+                      aria-describedby={errors.firstName ? "hp-firstName-error" : undefined}
                     />
-                    {errors.firstName && <p className="text-xs text-red-400 mt-1">{errors.firstName}</p>}
+                    {errors.firstName && <p id="hp-firstName-error" className="text-xs text-red-400 mt-1" role="alert">{errors.firstName}</p>}
                   </div>
                   <div>
+                    <label htmlFor="hp-lastName" className="sr-only">Last Name</label>
                     <input
+                      id="hp-lastName"
                       type="text"
                       name="lastName"
                       placeholder="Last Name"
                       required
                       className="input-dark"
+                      aria-invalid={!!errors.lastName}
+                      aria-describedby={errors.lastName ? "hp-lastName-error" : undefined}
                     />
-                    {errors.lastName && <p className="text-xs text-red-400 mt-1">{errors.lastName}</p>}
+                    {errors.lastName && <p id="hp-lastName-error" className="text-xs text-red-400 mt-1" role="alert">{errors.lastName}</p>}
                   </div>
                 </div>
                 <div>
+                  <label htmlFor="hp-email" className="sr-only">Email Address</label>
                   <input
+                    id="hp-email"
                     type="email"
                     name="email"
                     placeholder="Email Address"
                     required
                     className="input-dark"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "hp-email-error" : undefined}
                   />
-                  {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
+                  {errors.email && <p id="hp-email-error" className="text-xs text-red-400 mt-1" role="alert">{errors.email}</p>}
                 </div>
                 <div>
+                  <label htmlFor="hp-phone" className="sr-only">Phone Number</label>
                   <input
+                    id="hp-phone"
                     type="tel"
                     name="phone"
                     placeholder="Phone Number"
                     required
                     className="input-dark"
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? "hp-phone-error" : undefined}
                   />
-                  {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
+                  {errors.phone && <p id="hp-phone-error" className="text-xs text-red-400 mt-1" role="alert">{errors.phone}</p>}
                 </div>
                 <div>
+                  <label htmlFor="hp-creditRange" className="sr-only">Credit Range</label>
                   <select
+                    id="hp-creditRange"
                     name="creditRange"
                     required
                     defaultValue=""
                     className="select-dark"
+                    aria-invalid={!!errors.creditRange}
+                    aria-describedby={errors.creditRange ? "hp-creditRange-error" : undefined}
                   >
                     <option value="" disabled>
                       Credit Range
@@ -193,25 +213,29 @@ export function FinanceFormSection() {
                     <option value="rebuilding">Rebuilding (&lt;620)</option>
                     <option value="no-credit">No Credit History</option>
                   </select>
-                  {errors.creditRange && <p className="text-xs text-red-400 mt-1">{errors.creditRange}</p>}
+                  {errors.creditRange && <p id="hp-creditRange-error" className="text-xs text-red-400 mt-1" role="alert">{errors.creditRange}</p>}
                 </div>
-                <select
-                  name="vehicleInterest"
-                  defaultValue=""
-                  className="select-dark"
-                >
-                  <option value="" disabled>
-                    Vehicle Interest
-                  </option>
-                  <option value="sedan">Sedan</option>
-                  <option value="suv">SUV / Crossover</option>
-                  <option value="truck">Truck</option>
-                  <option value="van">Van / Minivan</option>
-                  <option value="luxury">Luxury</option>
-                  <option value="unsure">Not Sure Yet</option>
-                </select>
+                <div>
+                  <label htmlFor="hp-vehicleInterest" className="sr-only">Vehicle Interest</label>
+                  <select
+                    id="hp-vehicleInterest"
+                    name="vehicleInterest"
+                    defaultValue=""
+                    className="select-dark"
+                  >
+                    <option value="" disabled>
+                      Vehicle Interest
+                    </option>
+                    <option value="sedan">Sedan</option>
+                    <option value="suv">SUV / Crossover</option>
+                    <option value="truck">Truck</option>
+                    <option value="van">Van / Minivan</option>
+                    <option value="luxury">Luxury</option>
+                    <option value="unsure">Not Sure Yet</option>
+                  </select>
+                </div>
                 {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-sm text-red-400">
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-sm text-red-400" role="alert">
                     {error}
                   </div>
                 )}

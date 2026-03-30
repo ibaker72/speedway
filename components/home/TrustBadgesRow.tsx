@@ -31,7 +31,7 @@ export function TrustBadgesRow() {
                   href={badge.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-w-[170px] flex items-center justify-center gap-2 px-4 py-3 rounded-[2px] bg-[#0f0f0f] text-zinc-300 border border-white/10 grayscale hover:grayscale-0 transition-all"
+                  className="min-w-[170px] flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0f0f0f] text-zinc-300 border border-white/[0.06] grayscale hover:grayscale-0 transition-all"
                 >
                   {content}
                 </a>
@@ -41,7 +41,7 @@ export function TrustBadgesRow() {
             return (
               <div
                 key={badge.label}
-                className="min-w-[170px] flex items-center justify-center gap-2 px-4 py-3 rounded-[2px] bg-[#0f0f0f] text-zinc-300 border border-white/10 grayscale"
+                className="min-w-[170px] flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0f0f0f] text-zinc-300 border border-white/[0.06] grayscale"
               >
                 {content}
               </div>

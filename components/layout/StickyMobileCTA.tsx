@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Phone, Search } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
