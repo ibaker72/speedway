@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { testimonials } from "@/lib/data/testimonials";
+import { AnimateIn } from "@/components/shared/AnimateIn";
 
 function Stars() {
   return (
@@ -23,15 +24,17 @@ export function TestimonialsSection() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-        {testimonials.slice(0, 3).map((t) => (
-          <article key={t.id} className="rounded-[2px] bg-[#0f0f0f] p-7 border border-white/10">
+        {testimonials.slice(0, 3).map((t, i) => (
+          <AnimateIn key={t.id} variant="up" delay={i * 100}>
+            <article className="rounded-[2px] bg-[#1A1A1A] p-7 border border-white/10 h-full">
             <Stars />
             <blockquote className="mt-4 text-sm text-zinc-300 leading-relaxed">&ldquo;{t.text}&rdquo;</blockquote>
             <div className="mt-6 pt-5 border-t border-white/10">
               <p className="text-sm font-semibold text-white">{t.name}</p>
               <p className="text-xs text-zinc-500 mt-1">Verified Google Review</p>
             </div>
-          </article>
+                      </article>
+          </AnimateIn>
         ))}
       </div>
     </SectionWrapper>

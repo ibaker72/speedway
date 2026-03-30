@@ -34,9 +34,9 @@ type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-white hover:bg-accent-light active:bg-accent-dark shadow-[0_2px_12px_rgba(196,18,48,0.25)] hover:shadow-[0_4px_20px_rgba(196,18,48,0.35)]",
+    "bg-accent text-white hover:bg-accent-light active:bg-accent-dark shadow-[0_2px_12px_rgba(211,17,25,0.3)] hover:shadow-[0_4px_20px_rgba(211,17,25,0.42)]",
   premium:
-    "bg-gradient-to-r from-accent via-red-600 to-accent-dark text-white shadow-[0_2px_16px_rgba(196,18,48,0.3)] hover:shadow-[0_4px_24px_rgba(196,18,48,0.45)] hover:brightness-110",
+    "bg-gradient-to-r from-accent via-red-600 to-accent-dark text-white shadow-[0_2px_16px_rgba(211,17,25,0.35)] hover:shadow-[0_4px_24px_rgba(211,17,25,0.5)] hover:brightness-110",
   secondary:
     "bg-surface-3 text-white hover:bg-surface-4 active:bg-surface-5 border border-white/[0.06] hover:border-white/[0.1]",
   outline:
@@ -63,7 +63,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const classes = cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-300 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40 disabled:pointer-events-none whitespace-nowrap cursor-pointer",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5 focus-visible:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40 disabled:pointer-events-none whitespace-nowrap cursor-pointer",
     variantStyles[variant],
     sizeStyles[size],
     className

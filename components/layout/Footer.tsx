@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { BUSINESS, HOURS } from "@/lib/constants";
 import { locations } from "@/lib/data/locations";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 const quickLinks = [
   { label: "Browse Inventory", href: "/inventory" },
@@ -22,28 +23,14 @@ export function Footer() {
   const mainLocation = locations.find((l) => l.type === "showroom")!;
 
   return (
-    <footer className="bg-[#050505] text-zinc-400 pb-20 lg:pb-0">
-      {/* Top divider */}
+    <footer className="bg-[#0A0A0A] text-zinc-400 pb-20 lg:pb-0">
       <div className="section-divider" />
 
       <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
         <div className="py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-          {/* Brand column */}
           <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shadow-[0_0_16px_rgba(196,18,48,0.15)]">
-                <span className="text-white font-black text-lg leading-none">
-                  S
-                </span>
-              </div>
-              <div>
-                <span className="text-base font-bold tracking-tight text-white leading-none block">
-                  Speedway
-                </span>
-                <span className="text-[8px] font-semibold tracking-[0.2em] uppercase text-zinc-600 leading-none block mt-0.5">
-                  Motors LLC
-                </span>
-              </div>
+            <div className="mb-5">
+              <BrandLogo iconClassName="h-9 w-9" textClassName="text-base" subtextClassName="text-[8px] text-zinc-600" />
             </div>
             <p className="text-sm leading-relaxed mb-6 text-zinc-500">
               Trusted used car dealership in Paterson, NJ. Quality inspected
@@ -74,7 +61,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick links */}
           <div>
             <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.2em] mb-5">
               Quick Links
@@ -93,7 +79,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* About links */}
           <div>
             <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.2em] mb-5">
               Dealership
@@ -112,7 +97,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Hours */}
           <div>
             <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.2em] mb-5">
               Showroom Hours
@@ -136,7 +120,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="border-t border-white/[0.04] py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-600">
           <p>
             &copy; {new Date().getFullYear()} {BUSINESS.name}. All rights
@@ -144,13 +127,13 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-6">
             <Link
-              href="/faq"
+              href="/privacy-policy"
               className="hover:text-zinc-400 transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href="/faq"
+              href="/terms-of-service"
               className="hover:text-zinc-400 transition-colors"
             >
               Terms of Service
@@ -158,7 +141,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Powered by signature */}
         <div className="border-t border-white/[0.03] py-4 text-center">
           <p className="text-[11px] text-zinc-700 tracking-wide">
             Powered by{" "}

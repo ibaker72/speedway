@@ -28,7 +28,7 @@ export async function FeaturedInventory() {
           <AnimateIn key={v.id} delay={i * 80} variant="up">
             <Link
               href={`/inventory/${v.slug}`}
-              className="group block rounded-xl bg-[#101010] hover:bg-[#1a1a1a] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)]"
+              className="group block rounded-xl border border-white/5 bg-[#101010] hover:bg-[#1a1a1a] hover:border-white/15 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_26px_48px_-16px_rgba(0,0,0,0.92)]"
             >
               <div className="relative aspect-[16/10] overflow-hidden rounded-t-xl">
                 <VehicleImage

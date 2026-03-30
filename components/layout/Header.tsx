@@ -3,18 +3,25 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, Phone, ChevronDown, MapPin } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { NAV_LINKS, BUSINESS } from "@/lib/constants";
 import type { NavLink } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { MobileMenu } from "./MobileMenu";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { cn } from "@/lib/utils";
 
-function DesktopNavItem({ link }: { link: NavLink }) {
+function DesktopNavItem({ link, pathname }: { link: NavLink; pathname: string }) {
+  const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+
   if (!link.children) {
     return (
       <Link
         href={link.href}
-        className="px-4 py-2 text-[13px] font-semibold text-zinc-300 hover:text-white transition-colors duration-200"
+        className={cn(
+          "px-4 py-2 text-[13px] font-semibold transition-colors duration-200",
+          isActive ? "text-accent-light" : "text-zinc-300 hover:text-white"
+        )}
       >
         {link.label}
       </Link>
@@ -25,7 +32,10 @@ function DesktopNavItem({ link }: { link: NavLink }) {
     <div className="relative group">
       <Link
         href={link.href}
-        className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-zinc-300 hover:text-white transition-colors duration-200"
+        className={cn(
+          "flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold transition-colors duration-200",
+          isActive ? "text-accent-light" : "text-zinc-300 hover:text-white"
+        )}
       >
         {link.label}
         <ChevronDown className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity duration-200" />
@@ -50,6 +60,7 @@ function DesktopNavItem({ link }: { link: NavLink }) {
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -67,7 +78,7 @@ export function Header() {
       >
         <div className="mx-auto max-w-[80rem] h-9 px-5 sm:px-6 lg:px-8 flex items-center justify-between text-[11px] tracking-wide text-zinc-400">
           <div className="hidden sm:flex items-center gap-1.5">
-            <MapPin className="h-3 w-3 text-[#cc0000]" />
+            <MapPin className="h-3 w-3 text-accent" />
             <span>584 22nd Ave, Paterson, NJ</span>
           </div>
           <div className="flex items-center gap-4 ml-auto">
@@ -84,23 +95,17 @@ export function Header() {
 
       <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[4.3rem]">
-          <Link href="/" className="flex items-center gap-3 flex-shrink-0 group">
-            <div className="w-10 h-10 bg-[#cc0000] rounded-[2px] flex items-center justify-center shadow-[0_0_24px_rgba(204,0,0,0.28)]">
-              <span className="text-white font-black text-xl leading-none">S</span>
-            </div>
-            <div>
-              <span className="text-lg font-bold tracking-tight text-white leading-none block">
-                Speedway
-              </span>
-              <span className="text-[9px] font-semibold tracking-[0.2em] uppercase text-zinc-500 leading-none block mt-0.5">
-                Motors LLC
-              </span>
-            </div>
+          <Link href="/" className="flex-shrink-0 group" aria-label="Speedway Motors home">
+            <BrandLogo
+              iconClassName="h-9 w-9 md:h-10 md:w-10"
+              textClassName="text-base md:text-lg"
+              subtextClassName="text-[8px] md:text-[9px]"
+            />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((link) => (
-              <DesktopNavItem key={link.href + link.label} link={link} />
+              <DesktopNavItem key={link.href + link.label} link={link} pathname={pathname} />
             ))}
           </nav>
 

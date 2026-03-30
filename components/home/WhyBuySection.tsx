@@ -1,12 +1,14 @@
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
+import { AnimateIn } from "@/components/shared/AnimateIn";
 
 export function WhyBuySection() {
   return (
     <SectionWrapper background="elevated">
-      <div className="max-w-4xl mx-auto">
-        <div className="rounded-[2px] bg-[#0f0f0f] p-8 md:p-10 border border-white/10">
+      <AnimateIn variant="up">
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-[2px] bg-[#1A1A1A] p-8 md:p-10 border border-white/10">
           <div className="flex items-start gap-5">
-            <div className="w-[3px] self-stretch bg-[#cc0000]" />
+            <div className="w-[3px] self-stretch bg-accent" />
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Our Mission</p>
               <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight text-white">
@@ -17,8 +19,9 @@ export function WhyBuySection() {
               </p>
             </div>
           </div>
+          </div>
         </div>
-      </div>
+      </AnimateIn>
     </SectionWrapper>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Phone, MapPin, ChevronDown, ArrowRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { NAV_LINKS, BUSINESS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
@@ -13,6 +14,7 @@ interface MobileMenuProps {
 
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const pathname = usePathname();
 
   // Prevent body scroll when menu is open
   useEffect(() => {
@@ -45,7 +47,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 <Link
                   href={link.href}
                   onClick={onClose}
-                  className="flex-1 py-4 text-base font-medium text-white transition-colors"
+                  className={`flex-1 py-4 text-base font-medium transition-colors ${pathname === link.href || pathname.startsWith(`${link.href}/`) ? "text-accent-light" : "text-white"}` }
                 >
                   {link.label}
                 </Link>

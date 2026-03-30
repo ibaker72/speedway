@@ -2,19 +2,19 @@
 
 @theme inline {
   /* ─── Color System ─── */
-  --color-background: #000000;
-  --color-foreground: #f4f4f5;
+  --color-background: #0A0A0A;
+  --color-foreground: #FFFFFF;
 
   /* Brand red — controlled accent */
-  --color-accent: #cc0000;
-  --color-accent-light: #e11d2e;
-  --color-accent-dark: #8f0000;
-  --color-accent-glow: rgba(196, 18, 48, 0.15);
+  --color-accent: #D31119;
+  --color-accent-light: #ff3a40;
+  --color-accent-dark: #8f0c11;
+  --color-accent-glow: rgba(211, 17, 25, 0.16);
 
   /* Dark surface layers — cinematic depth */
-  --color-surface-0: #050505;
+  --color-surface-0: #0A0A0A;
   --color-surface-1: #0f0f0f;
-  --color-surface-2: #161616;
+  --color-surface-2: #1A1A1A;
   --color-surface-3: #1c1c1c;
   --color-surface-4: #242424;
   --color-surface-5: #2a2a2a;
@@ -90,8 +90,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 18, 48, 0); }
-  50% { box-shadow: 0 0 20px 4px rgba(196, 18, 48, 0.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(211, 17, 25, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(211, 17, 25, 0.16); }
 }
 
 @keyframes shimmer {
@@ -117,7 +117,7 @@ body {
 }
 
 ::selection {
-  background: rgba(196, 18, 48, 0.3);
+  background: rgba(211, 17, 25, 0.3);
   color: white;
 }
 
@@ -196,7 +196,7 @@ body {
   outline: none;
   border-color: var(--color-accent);
   background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 3px rgba(196, 18, 48, 0.12);
+  box-shadow: 0 0 0 3px rgba(211, 17, 25, 0.12);
 }
 
 .input-light {
@@ -215,7 +215,7 @@ body {
 .input-light:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(196, 18, 48, 0.08);
+  box-shadow: 0 0 0 3px rgba(211, 17, 25, 0.08);
 }
 
 /* Select variant */
@@ -236,7 +236,7 @@ body {
 .select-dark:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(196, 18, 48, 0.12);
+  box-shadow: 0 0 0 3px rgba(211, 17, 25, 0.12);
 }
 
 /* ─── Overlay Utilities ─── */
@@ -307,9 +307,9 @@ body {
   font-weight: 600;
   letter-spacing: 0.025em;
   text-transform: uppercase;
-  background: rgba(196, 18, 48, 0.12);
-  color: #e01538;
-  border: 1px solid rgba(196, 18, 48, 0.2);
+  background: rgba(211, 17, 25, 0.12);
+  color: #ff3a40;
+  border: 1px solid rgba(211, 17, 25, 0.2);
 }
 
 .badge-premium {
