@@ -1,31 +1,39 @@
 import Link from "next/link";
-import { HeroScrollOverlay } from "./HeroScrollOverlay";
 import { HeroVeteranBadge } from "./HeroVeteranBadge";
 
 export function HeroSection() {
   return (
-    <section className="hero-full-bleed relative min-h-[80vh] w-screen overflow-hidden text-white">
-      <video
-        className="hero-video absolute left-0 top-0 h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-      >
-        <source src="/videos/hero.mp4" type="video/mp4" />
-      </video>
+    <section className="hero-full-bleed relative isolate w-full overflow-hidden border-b border-white/10 bg-black text-white">
+      <div className="absolute inset-0">
+        <video
+          className="h-full w-full object-cover object-center motion-reduce:hidden"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="/videos/hero.mp4" type="video/mp4" />
+        </video>
+        <div
+          className="hidden h-full w-full motion-reduce:block"
+          style={{
+            background:
+              "radial-gradient(circle at 18% 30%, rgba(211,17,25,0.22) 0%, rgba(10,10,10,0.82) 40%, #050505 100%)",
+          }}
+          aria-hidden="true"
+        />
+      </div>
 
-      <div className="hero-video-overlay absolute inset-0" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/70" />
-      <HeroScrollOverlay />
+      <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(4,4,4,0.9)_8%,rgba(4,4,4,0.58)_45%,rgba(4,4,4,0.8)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_34%,rgba(0,0,0,0.55)_100%)]" />
 
-      <div className="relative z-10 flex min-h-[80vh] w-full items-center justify-center px-6 py-16 text-center sm:px-10">
-        <div className="hero-content-stack flex w-full max-w-[900px] flex-col items-center">
+      <div className="relative z-10 mx-auto flex min-h-[clamp(27rem,62vh,46rem)] max-w-[80rem] items-center px-5 py-16 sm:px-6 md:min-h-[clamp(31rem,66vh,48rem)] md:py-20 lg:px-8 lg:py-24">
+        <div className="hero-content-stack max-w-[41rem] text-left">
           <HeroVeteranBadge />
 
-          <h1 className="hero-stagger-2 mt-6 text-[clamp(2rem,4.6vw,4.2rem)] font-black leading-[0.98] tracking-[-0.02em]">
+          <h1 className="hero-stagger-2 mt-6 max-w-[18ch] text-[clamp(2rem,4.2vw,3.85rem)] font-extrabold leading-[1.02] tracking-[-0.022em] sm:mt-7">
             Zero Pressure.
             <br />
             Total Transparency.
@@ -33,19 +41,23 @@ export function HeroSection() {
             Exceptional Vehicles.
           </h1>
 
-          <div className="hero-stagger-3 mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
+          <p className="hero-stagger-3 mt-5 max-w-[53ch] text-sm leading-relaxed text-zinc-200/90 sm:text-base">
+            Hand-selected luxury and performance vehicles, fair-market pricing, and a team that keeps every step clear from first browse to final signature.
+          </p>
+
+          <div className="hero-stagger-3 mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <Link
               href="/inventory"
-              className="w-full rounded-lg bg-accent px-8 py-4 text-center text-sm font-bold uppercase tracking-[0.08em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-light hover:shadow-[0_4px_20px_rgba(211,17,25,0.4)] sm:w-auto"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl bg-accent px-7 py-3.5 text-center text-sm font-bold uppercase tracking-[0.09em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-light hover:shadow-[0_6px_24px_rgba(211,17,25,0.42)]"
             >
-              BROWSE INVENTORY
+              Browse Inventory
             </Link>
 
             <Link
               href="/finance"
-              className="w-full rounded-lg border border-white/20 bg-white/5 px-8 py-4 text-center text-sm font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 sm:w-auto"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/25 bg-black/30 px-7 py-3.5 text-center text-sm font-bold uppercase tracking-[0.09em] text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10"
             >
-              GET PRE-APPROVED
+              Get Pre-Approved
             </Link>
           </div>
         </div>
