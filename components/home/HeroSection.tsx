@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { TrustBadgesRow } from "@/components/home/TrustBadgesRow";
 
 export function HeroSection() {
   return (
@@ -34,20 +36,22 @@ export function HeroSection() {
             </h1>
 
             <div className="hero-stagger-3 mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-              <a
+              <Link
                 href="/inventory"
                 className="rounded-lg bg-accent px-8 py-4 text-center text-sm font-bold uppercase tracking-[0.08em] text-white transition-all duration-300 hover:bg-accent-light hover:shadow-[0_4px_20px_rgba(211,17,25,0.4)] hover:-translate-y-0.5"
               >
                 Browse Inventory
-              </a>
+              </Link>
 
-              <a
+              <Link
                 href="/finance"
                 className="rounded-lg border border-white/20 bg-white/5 px-8 py-4 text-center text-sm font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:-translate-y-0.5"
               >
                 Get Pre-Approved
-              </a>
+              </Link>
             </div>
+
+            <TrustBadgesRow />
           </div>
         </div>
 

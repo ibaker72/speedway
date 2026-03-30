@@ -1,54 +1,52 @@
-import { ShieldCheck, Wrench, BadgeCheck, Star } from "lucide-react";
+import { BadgeCheck, FileCheck2, ShieldCheck, Star, Wrench } from "lucide-react";
 
-const badges = [
-  { label: "AAA Approved", icon: ShieldCheck },
+const trustSignals = [
+  { label: "AAA Approved", icon: BadgeCheck },
   { label: "NAPA Service", icon: Wrench },
-  { label: "Carfax Reports", icon: BadgeCheck, href: "https://www.carfax.com" },
+  { label: "Carfax Reports", icon: FileCheck2, href: "https://www.carfax.com" },
   { label: "Google 5-Star", icon: Star },
   { label: "NJ Trusted Dealer", icon: ShieldCheck },
 ];
 
 export function TrustBadgesRow() {
   return (
-    <section className="bg-black border-y border-white/[0.07] py-6 md:py-8">
-      <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
-        <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {badges.map((badge) => {
-            const Icon = badge.icon;
-            const content = (
-              <>
-                <Icon className="h-4 w-4 text-zinc-400" />
-                <span className="text-xs uppercase tracking-[0.08em] font-semibold whitespace-nowrap">
-                  {badge.label}
-                </span>
-              </>
-            );
+    <div className="mt-7 rounded-2xl border border-[#333333] bg-[rgba(26,26,26,0.8)] px-3 py-3 backdrop-blur-md md:px-5 md:py-4">
+      <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-wrap md:justify-center md:gap-3">
+        {trustSignals.map((signal) => {
+          const Icon = signal.icon;
+          const item = (
+            <>
+              <Icon className="h-[15px] w-[15px] shrink-0 text-[#D31119]" />
+              <span className="whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.1em] text-white md:text-xs">
+                {signal.label}
+              </span>
+            </>
+          );
 
-            if (badge.href) {
-              return (
-                <a
-                  key={badge.label}
-                  href={badge.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="min-w-[170px] flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0f0f0f] text-zinc-300 border border-white/[0.06] grayscale hover:grayscale-0 transition-all"
-                >
-                  {content}
-                </a>
-              );
-            }
+          const classes =
+            "inline-flex min-w-max items-center gap-2 rounded-lg border border-white/8 bg-black/20 px-3 py-2 transition-all duration-300 hover:border-white/20 hover:bg-black/35";
 
+          if (signal.href) {
             return (
-              <div
-                key={badge.label}
-                className="min-w-[170px] flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0f0f0f] text-zinc-300 border border-white/[0.06] grayscale"
+              <a
+                key={signal.label}
+                href={signal.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={classes}
               >
-                {content}
-              </div>
+                {item}
+              </a>
             );
-          })}
-        </div>
+          }
+
+          return (
+            <div key={signal.label} className={classes}>
+              {item}
+            </div>
+          );
+        })}
       </div>
-    </section>
+    </div>
   );
 }

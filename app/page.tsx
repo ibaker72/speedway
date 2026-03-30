@@ -1,5 +1,4 @@
 import { HeroSection } from "@/components/home/HeroSection";
-import { TrustBadgesRow } from "@/components/home/TrustBadgesRow";
 import { FeaturedInventory } from "@/components/home/FeaturedInventory";
 import { BodyTypeShortcuts } from "@/components/home/BodyTypeShortcuts";
 import { TradeSellCards } from "@/components/home/TradeSellCards";
@@ -14,7 +13,6 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <TrustBadgesRow />
       <FeaturedInventory />
       <BodyTypeShortcuts />
       <TradeSellCards />
