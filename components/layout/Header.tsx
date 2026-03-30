@@ -79,7 +79,7 @@ export function Header() {
         <div className="mx-auto max-w-[80rem] h-9 px-5 sm:px-6 lg:px-8 flex items-center justify-between text-[11px] tracking-wide text-zinc-400">
           <div className="hidden sm:flex items-center gap-1.5">
             <MapPin className="h-3 w-3 text-accent" />
-            <span>584 22nd Ave, Paterson, NJ</span>
+            <span>302-304 22nd Ave, Paterson, NJ</span>
           </div>
           <div className="flex items-center gap-4 ml-auto">
             <a href={BUSINESS.phoneHref} className="hover:text-white transition-colors">

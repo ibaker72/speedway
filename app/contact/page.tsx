@@ -2,6 +2,7 @@ import { Phone, Mail, Clock, MapPin, ArrowRight } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
+import { ContactForm } from "@/components/forms/ContactForm";
 import { BUSINESS, HOURS } from "@/lib/constants";
 import { locations } from "@/lib/data/locations";
 import type { Metadata } from "next";
@@ -35,7 +36,7 @@ const contactMethods = [
   {
     icon: Clock,
     title: "Hours",
-    value: "Mon–Sat 9:30 AM – 7:00 PM",
+    value: "Mon\u2013Sat 9:30 AM \u2013 7:00 PM",
     sub: "Closed Sunday",
   },
 ];
@@ -77,6 +78,13 @@ export default function ContactPage() {
               </AnimateIn>
             );
           })}
+        </div>
+      </SectionWrapper>
+
+      {/* Contact Form */}
+      <SectionWrapper background="elevated">
+        <div className="max-w-2xl mx-auto">
+          <ContactForm />
         </div>
       </SectionWrapper>
 
@@ -122,7 +130,6 @@ export default function ContactPage() {
           ))}
         </div>
 
-        {/* Map placeholder — replace with Google Maps iframe or static map image */}
         <div className="rounded-2xl overflow-hidden border border-white/[0.06] h-[400px] bg-surface-1">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3015.8!2d-74.1718!3d40.9168!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s302+22nd+Ave+Paterson+NJ+07513!5e0!3m2!1sen!2sus!4v1"
@@ -152,7 +159,7 @@ export default function ContactPage() {
                     h.open === "Closed" ? "text-zinc-600" : "text-white"
                   }`}
                 >
-                  {h.open === "Closed" ? "Closed" : `${h.open} – ${h.close}`}
+                  {h.open === "Closed" ? "Closed" : `${h.open} \u2013 ${h.close}`}
                 </span>
               </div>
             ))}

@@ -1,8 +1,4 @@
 import {
-  ArrowRightLeft,
-  Phone,
-  CheckCircle,
-  ArrowRight,
   ClipboardCheck,
   Car,
   Banknote,
@@ -10,8 +6,7 @@ import {
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
-import { Button } from "@/components/ui/button";
-import { BUSINESS } from "@/lib/constants";
+import { TradeInForm } from "@/components/forms/TradeInForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -77,43 +72,8 @@ export default function TradePage() {
       </SectionWrapper>
 
       <SectionWrapper background="dark">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="w-16 h-16 mx-auto rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center mb-6">
-            <ArrowRightLeft className="h-8 w-8 text-accent-light" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-zinc-400 mb-4 leading-relaxed">
-            Bring your vehicle to any of our Paterson locations for a quick,
-            no-obligation appraisal. Or call us to discuss your trade-in over
-            the phone.
-          </p>
-          <ul className="inline-flex flex-col gap-2 mb-8 text-left mx-auto">
-            {[
-              "Competitive market-based values",
-              "Quick, no-obligation process",
-              "Apply value toward any vehicle",
-            ].map((item) => (
-              <li
-                key={item}
-                className="flex items-center gap-2 text-sm text-zinc-300"
-              >
-                <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                {item}
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button href={BUSINESS.phoneHref} variant="primary" size="lg">
-              <Phone className="h-4 w-4" />
-              Call {BUSINESS.phone}
-            </Button>
-            <Button href="/inventory" variant="outline" size="lg">
-              Browse Inventory
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="max-w-2xl mx-auto">
+          <TradeInForm />
         </div>
       </SectionWrapper>
     </>

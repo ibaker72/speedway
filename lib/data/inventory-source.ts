@@ -125,6 +125,7 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
     case "year-asc": vehicles.sort((a, b) => a.year - b.year); break;
     case "year-desc": vehicles.sort((a, b) => b.year - a.year); break;
     case "mileage-asc": vehicles.sort((a, b) => a.mileage - b.mileage); break;
+    case "date-added": vehicles.sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()); break;
     default: vehicles.sort((a, b) => b.year - a.year);
   }
   const page = filters.page || 1;

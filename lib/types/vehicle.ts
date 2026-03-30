@@ -57,7 +57,7 @@ export interface InventoryFilters {
   drivetrain?: string;
   fuelType?: string;
   isCommercial?: boolean;
-  sortBy?: "price-asc" | "price-desc" | "year-desc" | "year-asc" | "mileage-asc" | "newest";
+  sortBy?: "price-asc" | "price-desc" | "year-desc" | "year-asc" | "mileage-asc" | "newest" | "date-added";
   page?: number;
   perPage?: number;
 }

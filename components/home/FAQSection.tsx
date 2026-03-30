@@ -38,18 +38,22 @@ function FAQItem({
   answer,
   isOpen,
   onToggle,
+  id,
 }: {
   question: string;
   answer: string;
   isOpen: boolean;
   onToggle: () => void;
+  id: string;
 }) {
   return (
     <div className="border-b border-white/[0.06] last:border-b-0">
       <button
-        suppressHydrationWarning
         type="button"
         onClick={onToggle}
+        aria-expanded={isOpen}
+        aria-controls={`faq-panel-${id}`}
+        id={`faq-button-${id}`}
         className="flex items-center justify-between w-full py-5 md:py-6 text-left gap-4 group"
       >
         <span className="font-semibold text-white group-hover:text-accent-light transition-colors text-[15px]">
@@ -70,6 +74,9 @@ function FAQItem({
         </div>
       </button>
       <div
+        id={`faq-panel-${id}`}
+        role="region"
+        aria-labelledby={`faq-button-${id}`}
         className={`grid transition-all duration-300 ease-out ${
           isOpen ? "grid-rows-[1fr] pb-5 md:pb-6" : "grid-rows-[0fr]"
         }`}
@@ -103,6 +110,7 @@ export function FAQSection() {
               answer={faq.answer}
               isOpen={openIndex === i}
               onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+              id={String(i)}
             />
           ))}
         </div>

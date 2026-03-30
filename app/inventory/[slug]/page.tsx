@@ -13,10 +13,14 @@ import {
   Star,
   ArrowRight,
   CheckCircle,
+  ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VehicleImage } from "@/components/shared/VehicleImage";
+import { VehicleGallery } from "@/components/shared/VehicleGallery";
 import { VehicleJsonLd } from "@/components/seo/VehicleJsonLd";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { getVehicleBySlug, getInventory } from "@/lib/data/inventory-source";
 import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
@@ -36,6 +40,10 @@ export async function generateMetadata({
     title: `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ""} — ${formatPrice(vehicle.price)}`,
     description: `Buy this ${vehicle.year} ${vehicle.make} ${vehicle.model} with ${formatMileage(vehicle.mileage)} for ${formatPrice(vehicle.price)} at Speedway Motors in Paterson, NJ. Financing available.`,
   };
+}
+
+function getCarfaxUrl(vin: string) {
+  return `https://www.carfax.com/VehicleHistory/p/Report.cfx?vin=${vin}`;
 }
 
 export default async function VehicleDetailPage({ params }: PageProps) {
@@ -64,9 +72,18 @@ export default async function VehicleDetailPage({ params }: PageProps) {
     { icon: Calendar, label: "Year", value: String(vehicle.year) },
   ];
 
+  const vehicleTitle = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
+
   return (
     <>
       <VehicleJsonLd vehicle={vehicle} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: `${BUSINESS.website}/` },
+          { name: "Inventory", url: `${BUSINESS.website}/inventory` },
+          { name: vehicleTitle, url: `${BUSINESS.website}/inventory/${vehicle.slug}` },
+        ]}
+      />
       <div className="bg-[#0a0a0a] min-h-screen pt-24">
         {/* Breadcrumb */}
         <div className="border-b border-white/[0.06]">
@@ -85,22 +102,30 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
             {/* Left: Image + Details */}
             <div className="lg:col-span-3 space-y-6">
-              {/* Main image */}
-              <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-surface-1">
-                <VehicleImage
-                  src={vehicle.images[0]?.url}
-                  alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
-                  make={vehicle.make}
-                  model={vehicle.model}
-                  priority
+              {/* Image gallery */}
+              {vehicle.images.length > 1 ? (
+                <VehicleGallery
+                  images={vehicle.images}
+                  vehicleTitle={vehicleTitle}
+                  isFeatured={vehicle.isFeatured}
                 />
-                {vehicle.isFeatured && (
-                  <span className="absolute top-4 left-4 badge-accent">
-                    <Star className="h-3.5 w-3.5" />
-                    Featured
-                  </span>
-                )}
-              </div>
+              ) : (
+                <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-surface-1">
+                  <VehicleImage
+                    src={vehicle.images[0]?.url}
+                    alt={vehicleTitle}
+                    make={vehicle.make}
+                    model={vehicle.model}
+                    priority
+                  />
+                  {vehicle.isFeatured && (
+                    <span className="absolute top-4 left-4 badge-accent">
+                      <Star className="h-3.5 w-3.5" />
+                      Featured
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Description */}
               {vehicle.description && (
@@ -153,7 +178,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 {/* Pricing card */}
                 <div className="rounded-2xl border border-white/[0.08] bg-surface-2 p-6 md:p-7">
                   <h1 className="text-2xl font-bold text-white mb-1">
-                    {vehicle.year} {vehicle.make} {vehicle.model}
+                    {vehicleTitle}
                   </h1>
                   {vehicle.trim && (
                     <p className="text-zinc-500 mb-5">{vehicle.trim}</p>
@@ -188,6 +213,16 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       <Phone className="h-4 w-4" />
                       Call About This Vehicle
                     </Button>
+                    <a
+                      href={getCarfaxUrl(vehicle.vin)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/[0.15] text-white hover:bg-white/[0.06] hover:border-white/[0.25] active:bg-white/[0.08] px-8 py-3.5 text-[15px] font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5"
+                    >
+                      <ShieldCheck className="h-4 w-4" />
+                      View Carfax Report
+                      <ExternalLink className="h-3.5 w-3.5 ml-1 opacity-60" />
+                    </a>
                     <Button
                       href="/finance"
                       variant="outline"
@@ -234,7 +269,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         icon: CheckCircle,
                         text: "Financing available for all credit",
                       },
-                      { icon: Star, text: "4.8★ rated dealership" },
+                      { icon: Star, text: "4.8\u2605 rated dealership" },
                     ].map((item) => {
                       const Icon = item.icon;
                       return (
@@ -247,6 +282,16 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         </div>
                       );
                     })}
+                    <a
+                      href={getCarfaxUrl(vehicle.vin)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 text-sm text-zinc-400 hover:text-accent-light transition-colors"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-accent-light flex-shrink-0" />
+                      Carfax Vehicle History Report
+                      <ExternalLink className="h-3 w-3 opacity-50" />
+                    </a>
                   </div>
                 </div>
               </div>

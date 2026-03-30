@@ -10,6 +10,7 @@ export function StickyMobileCTA() {
       <div className="flex h-[3.25rem]">
         <a
           href={BUSINESS.phoneHref}
+          aria-label={`Call Speedway Motors at ${BUSINESS.phone}`}
           className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white active:bg-white/[0.04] transition-colors border-r border-white/[0.06]"
         >
           <Phone className="h-4 w-4 text-accent" />
@@ -17,6 +18,7 @@ export function StickyMobileCTA() {
         </a>
         <Link
           href="/inventory"
+          aria-label="Browse vehicle inventory"
           className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold text-white bg-accent active:bg-accent-dark transition-colors"
         >
           <Search className="h-4 w-4" />

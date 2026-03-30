@@ -4,16 +4,10 @@ export function HeroSection() {
   return (
     <section className="relative text-white overflow-hidden">
       <div className="relative aspect-[16/9] min-h-[70svh] max-h-[90svh]">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
-        </video>
+        {/* TODO: Replace with dealership hero video — use <video autoPlay muted loop playsInline> */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a0000] via-[#0a0a0a] to-[#0d0d0d]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(211,17,25,0.12),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,rgba(211,17,25,0.06),transparent_50%)]" />
 
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.25),rgba(0,0,0,0.9)_75%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/55 to-black" />

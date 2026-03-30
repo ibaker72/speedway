@@ -1,8 +1,4 @@
 import {
-  DollarSign,
-  Phone,
-  CheckCircle,
-  ArrowRight,
   FileText,
   HandCoins,
   BadgeCheck,
@@ -10,8 +6,7 @@ import {
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
-import { Button } from "@/components/ui/button";
-import { BUSINESS } from "@/lib/constants";
+import { SellCarForm } from "@/components/forms/SellCarForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -77,42 +72,8 @@ export default function SellYourCarPage() {
       </SectionWrapper>
 
       <SectionWrapper background="dark">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="w-16 h-16 mx-auto rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center mb-6">
-            <DollarSign className="h-8 w-8 text-accent-light" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-4">
-            We Buy Cars, Trucks, SUVs & Vans
-          </h2>
-          <p className="text-zinc-400 mb-4 leading-relaxed">
-            Get a competitive cash offer for your vehicle. The process is quick,
-            transparent, and completely hassle-free.
-          </p>
-          <ul className="inline-flex flex-col gap-2 mb-8 text-left mx-auto">
-            {[
-              "Competitive cash offers",
-              "Quick and transparent process",
-              "No purchase required — just sell and go",
-            ].map((item) => (
-              <li
-                key={item}
-                className="flex items-center gap-2 text-sm text-zinc-300"
-              >
-                <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                {item}
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button href={BUSINESS.phoneHref} variant="primary" size="lg">
-              <Phone className="h-4 w-4" />
-              Call {BUSINESS.phone}
-            </Button>
-            <Button href="/contact" variant="outline" size="lg">
-              Contact Us
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="max-w-2xl mx-auto">
+          <SellCarForm />
         </div>
       </SectionWrapper>
     </>
