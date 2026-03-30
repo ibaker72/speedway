@@ -71,7 +71,7 @@ export async function FeaturedInventory() {
       </div>
 
       <div className="mt-12 text-center">
-        <Button href="/inventory" variant="outline" size="lg" className="rounded-[2px] border-white/50 uppercase tracking-[0.08em]">
+        <Button href="/inventory" variant="outline" size="lg" className="uppercase tracking-[0.08em]">
           View All Inventory
           <ArrowRight className="h-4 w-4" />
         </Button>

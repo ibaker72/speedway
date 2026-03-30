@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Search, ArrowRight, Fuel, Gauge, Settings2, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { VehicleImage } from "@/components/shared/VehicleImage";
+import { MobileFilterToggle } from "@/components/shared/MobileFilterToggle";
 import { getInventory } from "@/lib/data/inventory-source";
 import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import type { Metadata } from "next";
@@ -85,7 +86,8 @@ export default async function InventoryPage({ searchParams }: PageProps) {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar Filters */}
             <aside className="w-full lg:w-60 flex-shrink-0">
-              <div className="sticky top-24 space-y-5">
+              <MobileFilterToggle>
+              <div className="lg:sticky lg:top-24 space-y-5">
                 {/* Sort */}
                 <div className="rounded-xl border border-white/[0.06] bg-surface-1 p-4">
                   <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.15em] mb-3">
@@ -251,6 +253,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                   </div>
                 </div>
               </div>
+              </MobileFilterToggle>
             </aside>
 
             {/* Vehicle Grid */}

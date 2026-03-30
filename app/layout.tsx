@@ -40,12 +40,21 @@ export const metadata: Metadata = {
     title: `${BUSINESS.shortName} | Quality Used Cars in Paterson, NJ`,
     description: BUSINESS.description,
     url: "https://www.speedwaymotorsllc.com/",
+    images: [
+      {
+        url: "https://www.speedwaymotorsllc.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Speedway Motors LLC — Quality Used Cars in Paterson, NJ",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${BUSINESS.shortName} | Paterson NJ Used Car Dealer`,
     description:
       "Browse 180+ quality used cars, SUVs & trucks. Easy financing available.",
+    images: ["https://www.speedwaymotorsllc.com/og-image.jpg"],
   },
   robots: { index: true, follow: true },
 };

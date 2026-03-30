@@ -52,10 +52,10 @@ export function TestimonialsSection() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
         {testimonials.slice(0, 3).map((t, i) => (
           <AnimateIn key={t.id} variant="up" delay={i * 100}>
-            <article className="rounded-[2px] bg-[#1A1A1A] p-7 border border-white/10 h-full">
+            <article className="rounded-lg bg-[#1A1A1A] p-7 border border-white/[0.06] h-full">
               <Stars />
               <blockquote className="mt-4 text-sm text-zinc-300 leading-relaxed">&ldquo;{t.text}&rdquo;</blockquote>
-              <div className="mt-6 pt-5 border-t border-white/10">
+              <div className="mt-6 pt-5 border-t border-white/[0.06]">
                 <p className="text-sm font-semibold text-white">{t.name}</p>
                 <p className="text-xs text-zinc-500 mt-1">Verified Google Review</p>
               </div>

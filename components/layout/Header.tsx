@@ -119,7 +119,7 @@ export function Header() {
               </div>
               <span className="hidden xl:inline">{BUSINESS.phone}</span>
             </a>
-            <Button href="/finance" variant="primary" size="sm" className="rounded-[2px] uppercase tracking-[0.08em]">
+            <Button href="/finance" variant="primary" size="sm" className="uppercase tracking-[0.08em]">
               Get Pre-Approved
             </Button>
           </div>
