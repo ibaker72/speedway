@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
 import { testimonials } from "@/lib/data/testimonials";
 import type { Metadata } from "next";
@@ -29,9 +30,51 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
+function ReviewAggregateJsonLd() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": BUSINESS.name,
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": String(BUSINESS.stats.googleRating),
+      "reviewCount": String(BUSINESS.stats.totalReviews),
+      "bestRating": "5",
+      "worstRating": "1",
+    },
+    "review": testimonials.slice(0, 3).map((t) => ({
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": String(t.rating),
+        "bestRating": "5",
+      },
+      "author": {
+        "@type": "Person",
+        "name": t.name,
+      },
+      "reviewBody": t.text,
+      "datePublished": t.date,
+    })),
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default function ReviewsPage() {
   return (
     <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: `${BUSINESS.website}/` },
+          { name: "Reviews", url: `${BUSINESS.website}/reviews` },
+        ]}
+      />
+      <ReviewAggregateJsonLd />
       <PageHero
         eyebrow="Customer Reviews"
         title="What Our Customers Say"
@@ -63,8 +106,8 @@ export default function ReviewsPage() {
                     {t.name}
                   </div>
                   {t.vehiclePurchased && (
-                    <div className="text-xs text-zinc-500 mt-0.5">
-                      Purchased a {t.vehiclePurchased}
+                    <div className="text-xs text-zinc-400 mt-0.5">
+                      Purchased: {t.vehiclePurchased}
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 mt-2.5">

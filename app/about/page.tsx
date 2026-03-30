@@ -12,6 +12,7 @@ import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { Button } from "@/components/ui/button";
+import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -51,6 +52,7 @@ const stats = [
 export default function AboutPage() {
   return (
     <>
+      <BreadcrumbJsonLd items={[{ name: "Home", url: `${BUSINESS.website}/` }, { name: "About", url: `${BUSINESS.website}/about` }]} />
       <PageHero
         eyebrow="About Speedway Motors"
         title="A Better Dealership Experience Starts Here"

@@ -21,7 +21,7 @@ export function PageHero({
     <section
       className={cn(
         "relative overflow-hidden text-white",
-        compact ? "py-16 md:py-20" : "py-20 md:py-28 lg:py-32",
+        compact ? "py-12 md:py-20" : "py-12 md:py-24 lg:py-32",
         className
       )}
     >
