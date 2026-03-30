@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Fuel, Gauge, Calendar } from "lucide-react";
+import { ArrowRight, Gauge, Fuel, Cog } from "lucide-react";
 import { getInventory } from "@/lib/data/inventory-source";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
@@ -19,8 +19,8 @@ export async function FeaturedInventory() {
     <SectionWrapper background="charcoal" id="featured">
       <SectionHeading
         eyebrow="Featured Vehicles"
-        title="Handpicked for Quality"
-        subtitle="Browse our curated selection of inspected, road-ready vehicles at competitive prices."
+        title="Premium Inventory"
+        subtitle="Floating, high-contrast cards designed for quick scanning and decisive action."
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
@@ -28,60 +28,40 @@ export async function FeaturedInventory() {
           <AnimateIn key={v.id} delay={i * 80} variant="up">
             <Link
               href={`/inventory/${v.slug}`}
-              className="card-vehicle group block"
+              className="group block rounded-xl bg-[#101010] hover:bg-[#1a1a1a] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.9)]"
             >
-              {/* Image */}
-              <div className="relative aspect-[16/10] overflow-hidden">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-t-xl">
                 <VehicleImage
                   src={v.images[0]?.url}
                   alt={`${v.year} ${v.make} ${v.model}`}
                   make={v.make}
                   model={v.model}
-                  className="w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
+                  className="w-full h-full group-hover:scale-105 transition-transform duration-500"
                 />
-                {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-                {/* Price badge */}
-                <div className="absolute bottom-3 left-4">
-                  <span className="text-xl font-bold text-white drop-shadow-lg">
-                    {formatPrice(v.price)}
-                  </span>
-                </div>
-
-                {/* Status badges */}
-                <div className="absolute top-3 left-3 flex gap-2">
-                  {v.isFeatured && (
-                    <span className="badge-accent text-[10px]">Featured</span>
-                  )}
-                  {v.isNewArrival && (
-                    <span className="badge-success text-[10px]">New Arrival</span>
-                  )}
+                <div className="absolute bottom-3 left-4 text-xl font-bold text-white">
+                  {formatPrice(v.price)}
                 </div>
               </div>
 
-              {/* Info */}
               <div className="p-4 pb-5">
-                <h3 className="text-base font-semibold text-white group-hover:text-accent-light transition-colors">
+                <h3 className="text-base font-semibold text-white">
                   {v.year} {v.make} {v.model}
                 </h3>
-                {v.trim && (
-                  <p className="text-sm text-zinc-500 mt-0.5">{v.trim}</p>
-                )}
+                {v.trim && <p className="text-sm text-zinc-500 mt-0.5">{v.trim}</p>}
 
-                {/* Specs row */}
-                <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500">
+                <div className="mt-4 rounded-md bg-black/35 px-3 py-2 flex items-center justify-between text-[11px] text-zinc-400">
                   <span className="flex items-center gap-1.5">
                     <Gauge className="h-3.5 w-3.5" />
                     {formatMileage(v.mileage)}
                   </span>
                   <span className="flex items-center gap-1.5">
                     <Fuel className="h-3.5 w-3.5" />
-                    {v.fuelType || "Gasoline"}
+                    {v.engine || v.fuelType || "Gas"}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5" />
-                    {v.year}
+                    <Cog className="h-3.5 w-3.5" />
+                    {v.drivetrain || "FWD"}
                   </span>
                 </div>
               </div>
@@ -91,7 +71,7 @@ export async function FeaturedInventory() {
       </div>
 
       <div className="mt-12 text-center">
-        <Button href="/inventory" variant="outline" size="lg">
+        <Button href="/inventory" variant="outline" size="lg" className="rounded-[2px] border-white/50 uppercase tracking-[0.08em]">
           View All Inventory
           <ArrowRight className="h-4 w-4" />
         </Button>

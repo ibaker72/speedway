@@ -6,9 +6,9 @@
   --color-foreground: #f4f4f5;
 
   /* Brand red — controlled accent */
-  --color-accent: #c41230;
-  --color-accent-light: #e01538;
-  --color-accent-dark: #9b1020;
+  --color-accent: #cc0000;
+  --color-accent-light: #e11d2e;
+  --color-accent-dark: #8f0000;
   --color-accent-glow: rgba(196, 18, 48, 0.15);
 
   /* Dark surface layers — cinematic depth */
@@ -173,7 +173,7 @@ body {
 }
 
 .heading-luxe {
-  letter-spacing: 0.06em;
+  letter-spacing: -0.015em;
   text-transform: uppercase;
 }
 
