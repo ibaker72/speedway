@@ -10,6 +10,12 @@ import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
 import { BUSINESS } from "@/lib/constants";
 import "./globals.css";
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover" as const,
+};
+
 export const metadata: Metadata = {
   title: {
     default: `${BUSINESS.shortName} | Quality Used Cars in Paterson, NJ`,

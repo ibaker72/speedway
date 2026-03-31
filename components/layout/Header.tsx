@@ -69,7 +69,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-black/70 backdrop-blur-[15px]">
+    <header className="sticky top-0 left-0 right-0 z-[1000] border-b border-white/[0.08] bg-black/80 backdrop-blur-[18px]">
       <div
         className={cn(
           "border-b border-white/[0.06] overflow-hidden transition-all duration-300",

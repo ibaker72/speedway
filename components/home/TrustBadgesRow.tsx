@@ -10,21 +10,18 @@ const trustSignals = [
 
 export function TrustBadgesRow() {
   return (
-    <section className="bg-[#0A0A0A] px-5 py-8 sm:px-6 md:py-10 lg:px-8 border-t border-white/[0.04] border-b border-b-white/[0.04]">
-      <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-3 sm:gap-y-3 max-w-4xl mx-auto">
-        {trustSignals.map((signal, i) => {
+    <section className="bg-[#0A0A0A] px-5 py-6 sm:px-6 sm:py-8 lg:px-8 border-t border-white/[0.04] border-b border-b-white/[0.04]">
+      <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2.5 sm:gap-x-3 sm:gap-y-3 max-w-4xl mx-auto">
+        {trustSignals.map((signal) => {
           const Icon = signal.icon;
           const content = (
-            <div className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
-              <Icon className="h-[17px] w-[17px] shrink-0 text-[#D31119]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white md:text-xs whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-white/[0.03] border border-white/[0.06] transition-colors duration-300 hover:border-white/[0.1] hover:bg-white/[0.05]">
+              <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-500" strokeWidth={1.8} />
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-400 whitespace-nowrap">
                 {signal.label}
               </span>
-            </div>
+            </span>
           );
-
-          // On mobile: first row has 3, second row has 2 centered
-          const mobileClass = i >= 3 ? "col-span-3 sm:col-span-1 flex justify-center" : "";
 
           if (signal.href) {
             return (
@@ -33,7 +30,6 @@ export function TrustBadgesRow() {
                 href={signal.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={mobileClass}
               >
                 {content}
               </a>
@@ -41,7 +37,7 @@ export function TrustBadgesRow() {
           }
 
           return (
-            <div key={signal.label} className={mobileClass}>
+            <div key={signal.label}>
               {content}
             </div>
           );
