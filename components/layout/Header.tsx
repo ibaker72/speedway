@@ -68,9 +68,8 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-
   return (
-    <header className="sticky top-0 left-0 right-0 z-[120] border-b border-white/[0.08] bg-black/75 backdrop-blur-[15px]">
+    <header className="sticky top-0 left-0 right-0 z-50 border-b border-white/[0.08] bg-black/70 backdrop-blur-[15px]">
       <div
         className={cn(
           "border-b border-white/[0.06] overflow-hidden transition-all duration-300",
@@ -127,16 +126,9 @@ export function Header() {
 
           <button
             type="button"
-            onClick={() => setMobileOpen((prev) => !prev)}
-            className={cn(
-              "lg:hidden p-2.5 -mr-2 rounded-md transition-colors",
-              mobileOpen
-                ? "text-white bg-white/[0.1]"
-                : "text-zinc-400 hover:text-white hover:bg-white/[0.06]"
-            )}
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="lg:hidden p-2.5 -mr-2 text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-md transition-colors"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-site-nav"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

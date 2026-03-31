@@ -1,37 +1,36 @@
 import { MakeLogo } from "@/lib/make-logos";
 
 const BRANDS = [
-  "Audi",
-  "BMW",
-  "Mercedes-Benz",
-  "Ford",
-  "Toyota",
-  "Honda",
-  "Chevrolet",
-  "Nissan",
-  "Volkswagen",
-  "Porsche",
-  "Hyundai",
-  "Kia",
+  "Audi", "BMW", "Mercedes-Benz", "Ford", "Toyota", "Honda",
+  "Chevrolet", "Nissan", "Volkswagen", "Porsche", "Hyundai", "Kia",
 ];
 
 export function BrandMarquee() {
-  return (
-    <section className="bg-[#0A0A0A] px-5 py-10 sm:px-6 md:py-12 lg:px-8 border-b border-white/[0.04]">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Brands We Carry</p>
-        </div>
+  const loopedBrands = [...BRANDS, ...BRANDS];
 
-        <div className="grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-4 sm:gap-y-6 md:grid-cols-6 md:gap-y-7 lg:gap-y-8 items-center justify-items-center">
-          {BRANDS.map((brand) => (
-            <div key={brand} className="group flex justify-center w-full">
+  return (
+    <section className="relative overflow-hidden bg-[#0A0A0A] py-8 md:py-10">
+      <div className="mb-6 px-5 text-center sm:px-6 lg:px-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          Brands We Carry
+        </p>
+      </div>
+
+      <div className="relative">
+        <div className="pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-16 bg-gradient-to-r from-[#0A0A0A] to-transparent sm:w-24" />
+        <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-16 bg-gradient-to-l from-[#0A0A0A] to-transparent sm:w-24" />
+
+        <div className="flex w-max animate-marquee items-center gap-10 pr-10 [animation-duration:40s] hover:[animation-play-state:paused] md:gap-14">
+          {loopedBrands.map((brand, index) => (
+            <div
+              key={`${brand}-${index}`}
+              className="group flex min-w-[120px] items-center justify-center md:min-w-[140px]"
+            >
               <MakeLogo
                 make={brand}
-                mode="emblem"
-                size={30}
+                size={24}
                 variant="light"
-                className="text-zinc-500/95 opacity-85 group-hover:opacity-100 group-hover:text-zinc-300 transition-all duration-300"
+                className="text-zinc-500 group-hover:text-zinc-300 transition-colors duration-300"
               />
             </div>
           ))}

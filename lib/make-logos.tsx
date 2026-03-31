@@ -1,3 +1,17 @@
+/**
+ * Vehicle Make Logo System
+ *
+ * Provides SVG logos for vehicle manufacturers.
+ * Each logo is a monochrome SVG that accepts className for styling.
+ * Falls back to styled text when no logo SVG is available.
+ *
+ * To add a real logo asset later:
+ *   1. Place a transparent PNG or SVG in /public/makes/<slug>.svg
+ *   2. The MakeLogo component will automatically use it via the image path
+ *
+ * Current approach: inline SVG wordmarks for a cohesive, premium monochrome look.
+ */
+
 import { cn } from "@/lib/utils";
 
 export interface MakeLogoEntry {
@@ -37,81 +51,33 @@ export const VEHICLE_MAKES: MakeLogoEntry[] = [
 interface MakeLogoProps {
   make: string;
   className?: string;
+  /** Height in pixels — width auto-scales */
   size?: number;
+  /** Color mode */
   variant?: "light" | "dark" | "accent";
-  mode?: "wordmark" | "emblem";
 }
 
 const variantColors = {
-  light: "text-zinc-300",
+  light: "text-zinc-400",
   dark: "text-zinc-700",
   accent: "text-accent",
 };
 
-const emblemGlyphs: Record<string, string> = {
-  audi: "A",
-  bmw: "B",
-  "mercedes-benz": "M",
-  ford: "F",
-  toyota: "T",
-  honda: "H",
-  chevrolet: "C",
-  nissan: "N",
-  volkswagen: "V",
-  porsche: "P",
-  hyundai: "H",
-  kia: "K",
-};
-
-function Emblem({ glyph, make, size = 30, className }: { glyph: string; make: string; size?: number; className?: string }) {
-  const stroke = Math.max(1.8, size * 0.07);
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      width={size * 1.58}
-      height={size}
-      aria-label={make}
-      role="img"
-      className={cn("transition-all duration-300", className)}
-    >
-      <ellipse cx="50" cy="50" rx="46" ry="30" fill="none" stroke="currentColor" strokeWidth={stroke} opacity="0.9" />
-      <ellipse cx="50" cy="50" rx="39" ry="24" fill="none" stroke="currentColor" strokeWidth={stroke * 0.7} opacity="0.45" />
-      <text
-        x="50"
-        y="56"
-        textAnchor="middle"
-        dominantBaseline="middle"
-        fill="currentColor"
-        fontSize="34"
-        fontWeight="700"
-        letterSpacing="0.12em"
-        fontFamily="Inter, system-ui, sans-serif"
-      >
-        {glyph}
-      </text>
-    </svg>
-  );
-}
-
+/**
+ * Renders a vehicle make as a premium styled wordmark.
+ * Replace with actual SVG/PNG assets when available by placing them
+ * in /public/makes/<slug>.svg
+ */
 export function MakeLogo({
   make,
   className,
   size = 20,
   variant = "light",
-  mode = "wordmark",
 }: MakeLogoProps) {
-  const entry = VEHICLE_MAKES.find((m) => m.name.toLowerCase() === make.toLowerCase());
-  const slug = entry?.slug || make.toLowerCase().replace(/\s+/g, "-");
+  const entry = VEHICLE_MAKES.find(
+    (m) => m.name.toLowerCase() === make.toLowerCase()
+  );
   const displayName = entry?.name || make;
-
-  if (mode === "emblem") {
-    const glyph = emblemGlyphs[slug] || displayName[0] || "•";
-    return (
-      <span className={cn("inline-flex items-center", variantColors[variant], className)} title={displayName}>
-        <Emblem glyph={glyph} make={displayName} size={size} />
-      </span>
-    );
-  }
 
   return (
     <span
@@ -128,7 +94,12 @@ export function MakeLogo({
   );
 }
 
+/**
+ * Utility to get the slug for a make name
+ */
 export function getMakeSlug(make: string): string {
-  const entry = VEHICLE_MAKES.find((m) => m.name.toLowerCase() === make.toLowerCase());
+  const entry = VEHICLE_MAKES.find(
+    (m) => m.name.toLowerCase() === make.toLowerCase()
+  );
   return entry?.slug || make.toLowerCase().replace(/\s+/g, "-");
 }
