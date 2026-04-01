@@ -33,7 +33,7 @@ export function HeroSection() {
           </h1>
 
           <p className="hero-stagger-3 mt-5 max-w-[53ch] text-sm leading-relaxed text-zinc-200/90 sm:text-base">
-            Hand-selected luxury and performance vehicles, fair-market pricing, and a team that keeps every step clear from first browse to final signature.
+            Hand-selected luxury and performance vehicles at Paterson&apos;s most trusted used car dealer. Fair-market pricing, easy financing for all credit levels, and a veteran-owned team that keeps every step clear from first browse to final signature.
           </p>
 
           <div className="hero-stagger-3 mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">

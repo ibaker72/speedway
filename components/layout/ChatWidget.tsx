@@ -10,6 +10,7 @@ import {
   ArrowRightLeft,
   Phone,
   Mail,
+  BookOpen,
 } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
 
@@ -31,6 +32,12 @@ const quickActions = [
     label: "Value My Trade",
     href: "/trade",
     description: "Get an instant estimate",
+  },
+  {
+    icon: BookOpen,
+    label: "Free Buying Guide",
+    href: "/guides/car-buying-guide",
+    description: "Tips before you buy",
   },
   {
     icon: Phone,

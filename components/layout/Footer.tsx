@@ -10,6 +10,8 @@ const quickLinks = [
   { label: "Value Your Trade", href: "/trade" },
   { label: "Sell Your Car", href: "/sell-your-car" },
   { label: "Commercial Vehicles", href: "/commercial" },
+  { label: "Free Buying Guide", href: "/guides/car-buying-guide" },
+  { label: "Value My Car", href: "/value-my-car" },
 ];
 
 const aboutLinks = [
@@ -18,6 +20,7 @@ const aboutLinks = [
   { label: "Customer Reviews", href: "/reviews" },
   { label: "Contact Us", href: "/contact" },
   { label: "FAQ", href: "/faq" },
+  { label: "Blog", href: "/blog" },
 ];
 
 const resourceLinks = [
@@ -164,6 +167,22 @@ export function Footer() {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+
+        {/* Service Areas */}
+        <div className="border-t border-white/[0.04] py-6">
+          <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.2em] mb-3">
+            Service Areas
+          </h3>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+            <Link href="/locations" className="text-sm text-zinc-400 hover:text-white transition-colors">All Locations</Link>
+            <Link href="/locations/paterson" className="text-sm text-zinc-400 hover:text-white transition-colors">Paterson</Link>
+            <Link href="/locations/clifton" className="text-sm text-zinc-400 hover:text-white transition-colors">Clifton</Link>
+            <Link href="/locations/passaic" className="text-sm text-zinc-400 hover:text-white transition-colors">Passaic</Link>
+            <Link href="/locations/wayne" className="text-sm text-zinc-400 hover:text-white transition-colors">Wayne</Link>
+            <Link href="/locations/fair-lawn" className="text-sm text-zinc-400 hover:text-white transition-colors">Fair Lawn</Link>
+            <Link href="/locations/totowa" className="text-sm text-zinc-400 hover:text-white transition-colors">Totowa</Link>
           </div>
         </div>
 

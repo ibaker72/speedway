@@ -8,9 +8,9 @@ import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Auto Financing",
+  title: "Auto Financing in Paterson, NJ | All Credit Welcome",
   description:
-    "Get pre-approved for auto financing at Speedway Motors. All credit levels welcome. Quick decisions and competitive rates from trusted NJ lenders.",
+    "Get pre-approved for auto financing at Speedway Motors in Paterson, NJ. Bad credit, no credit, first-time buyers — all welcome. Same-day decisions from trusted NJ lenders.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/finance",
   },
@@ -52,7 +52,7 @@ export default function FinancePage() {
       <BreadcrumbJsonLd items={[{ name: "Home", url: `${BUSINESS.website}/` }, { name: "Financing", url: `${BUSINESS.website}/finance` }]} />
       <PageHero
         eyebrow="Financing Solutions"
-        title="Auto Financing"
+        title="Auto Financing in Paterson, NJ"
         subtitle="Flexible financing options designed to work for you. Get pre-approved in minutes with no impact to your credit score."
       />
 

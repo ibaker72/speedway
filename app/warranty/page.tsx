@@ -2,6 +2,7 @@ import { Shield, Wrench, Clock, CheckCircle, Phone, ArrowRight } from "lucide-re
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
+import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import { Button } from "@/components/ui/button";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
@@ -110,6 +111,12 @@ export default function WarrantyPage() {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
+        </div>
+      </SectionWrapper>
+
+      <SectionWrapper background="charcoal">
+        <div className="max-w-3xl mx-auto">
+          <InlineLeadCTA variant="buying-guide" />
         </div>
       </SectionWrapper>
     </>

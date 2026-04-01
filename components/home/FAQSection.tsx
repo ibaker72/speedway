@@ -1,15 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 
-const faqs = [
+interface FAQ {
+  question: string;
+  answer: ReactNode;
+}
+
+const faqs: FAQ[] = [
   {
     question: "What financing options does Speedway Motors offer?",
-    answer:
-      "We work with most major banks and lending institutions in NJ to offer affordable financing. We also provide sub-prime financing — bad credit, no credit, or first-time buyers are all welcome.",
+    answer: (
+      <>
+        We work with most major banks and lending institutions in NJ to offer affordable financing. We also provide{" "}
+        <Link href="/finance" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
+          sub-prime financing
+        </Link>{" "}
+        — bad credit, no credit, or first-time buyers are all welcome.
+      </>
+    ),
   },
   {
     question: "What brands does Speedway Motors carry?",
@@ -18,8 +31,15 @@ const faqs = [
   },
   {
     question: "Where is Speedway Motors located?",
-    answer:
-      "Our main showroom is at 302-304 22nd Ave, Paterson, NJ 07513. We serve all of Passaic County and surrounding areas throughout New Jersey.",
+    answer: (
+      <>
+        Our main showroom is at{" "}
+        <Link href="/contact" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
+          302-304 22nd Ave, Paterson, NJ 07513
+        </Link>
+        . We serve all of Passaic County and surrounding areas throughout New Jersey.
+      </>
+    ),
   },
   {
     question: "Do you offer vehicle warranties?",
@@ -28,8 +48,19 @@ const faqs = [
   },
   {
     question: "Can I sell or trade in my car at Speedway Motors?",
-    answer:
-      "Absolutely. We offer competitive trade-in values and also purchase vehicles directly — no trade required. Submit your details for a quick offer.",
+    answer: (
+      <>
+        Absolutely. We offer competitive trade-in values and also purchase vehicles directly — no trade required.{" "}
+        <Link href="/trade" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
+          Submit your trade-in details
+        </Link>{" "}
+        or{" "}
+        <Link href="/sell-your-car" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
+          sell your car directly
+        </Link>{" "}
+        for a quick offer.
+      </>
+    ),
   },
 ];
 
@@ -41,7 +72,7 @@ function FAQItem({
   id,
 }: {
   question: string;
-  answer: string;
+  answer: ReactNode;
   isOpen: boolean;
   onToggle: () => void;
   id: string;
@@ -82,9 +113,9 @@ function FAQItem({
         }`}
       >
         <div className="overflow-hidden">
-          <p className="text-sm text-zinc-400 leading-relaxed pr-12">
+          <div className="text-sm text-zinc-400 leading-relaxed pr-12">
             {answer}
-          </p>
+          </div>
         </div>
       </div>
     </div>

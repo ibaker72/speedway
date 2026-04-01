@@ -14,10 +14,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: `${BUSINESS.shortName} | Quality Used Cars in Paterson, NJ`,
-    template: `%s | ${BUSINESS.shortName}`,
+    default: "Speedway Motors | Used Cars for Sale in Paterson, NJ | Financing Available",
+    template: "%s | Speedway Motors — Paterson, NJ",
   },
-  description: BUSINESS.description,
+  description: "Speedway Motors is a veteran-owned used car dealership in Paterson, NJ with 180+ vehicles. Browse sedans, SUVs, trucks & vans. Easy financing for all credit levels. Serving Passaic County since 2005.",
   keywords: [
     "used cars paterson nj",
     "used car dealer paterson",

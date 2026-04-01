@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   ShieldCheck,
   Users,
@@ -14,11 +15,12 @@ import { AnimateIn } from "@/components/shared/AnimateIn";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
+import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us",
-  description: `Learn about ${BUSINESS.name}, a trusted used car dealership in Paterson, NJ serving the community since 2005 with quality vehicles and flexible financing.`,
+  title: "About Speedway Motors | Used Car Dealership in Paterson, NJ",
+  description: `Learn about ${BUSINESS.name}, a veteran-owned used car dealership in Paterson, NJ serving the community since 2005 with quality vehicles and flexible financing.`,
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/about",
   },
@@ -95,16 +97,26 @@ export default function AboutPage() {
               across Passaic County and beyond.
             </p>
             <p>
-              We carry {BUSINESS.stats.brandsCarried}+ brands across every category —
-              sedans, SUVs, trucks, vans, and commercial vehicles. Every vehicle is
-              inspected, competitively priced, and backed by our commitment to quality.
+              We carry {BUSINESS.stats.brandsCarried}+ brands across every category —{" "}
+              <Link href="/inventory" className="text-accent-light hover:text-white transition-colors">sedans, SUVs, trucks, vans, and commercial vehicles</Link>.
+              Every vehicle is inspected, competitively priced, and backed by our commitment to quality.
+              We also offer{" "}
+              <Link href="/trade" className="text-accent-light hover:text-white transition-colors">competitive trade-in values</Link>{" "}
+              on your current vehicle.
             </p>
             <p>
               We believe everyone deserves reliable transportation, regardless of credit
-              history. That&apos;s why we work with multiple lenders to offer financing
+              history. That&apos;s why we work with multiple lenders to offer{" "}
+              <Link href="/finance" className="text-accent-light hover:text-white transition-colors">flexible financing</Link>{" "}
               solutions for every situation — from excellent credit to first-time buyers.
             </p>
           </div>
+        </div>
+      </SectionWrapper>
+
+      <SectionWrapper background="dark">
+        <div className="max-w-3xl mx-auto">
+          <InlineLeadCTA variant="buying-guide" />
         </div>
       </SectionWrapper>
 

@@ -40,7 +40,7 @@ export function WhyBuySection() {
                   As a veteran-owned business, we deliver transparent, no-pressure car buying.
                 </h2>
                 <p className="mt-5 text-zinc-300 leading-relaxed">
-                  Speedway Motors was built on discipline, integrity, and service. Every vehicle is selected with care, every number is clearly presented, and every customer is treated with respect from test-drive to delivery.
+                  Speedway Motors was built on discipline, integrity, and service. As Paterson&apos;s trusted used car dealership, every vehicle is selected with care, every number is clearly presented, and every customer is treated with respect — whether you&apos;re buying your first car or upgrading your daily driver.
                 </p>
               </div>
             </div>
