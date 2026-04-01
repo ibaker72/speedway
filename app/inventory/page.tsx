@@ -4,8 +4,9 @@ import { PageHero } from "@/components/shared/PageHero";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { MobileFilterToggle } from "@/components/shared/MobileFilterToggle";
 import { InventoryViewToggle } from "@/components/shared/InventoryViewToggle";
+import { RecentlyViewed } from "@/components/shared/RecentlyViewed";
 import { getInventory } from "@/lib/data/inventory-source";
-import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
   title: "Our Inventory",
   description:
     "Browse 180+ quality used cars, SUVs, trucks, and vans at Speedway Motors in Paterson, NJ. Competitive prices and financing available.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/inventory",
+  },
 };
 
 interface PageProps {
@@ -226,6 +230,14 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                     Year Range
                   </h3>
                   <form className="flex items-center gap-2">
+                    {/* Preserve all other active query params */}
+                    {params.search && <input type="hidden" name="search" value={String(params.search)} />}
+                    {params.make && <input type="hidden" name="make" value={String(params.make)} />}
+                    {params.sort && <input type="hidden" name="sort" value={String(params.sort)} />}
+                    {params.priceMin && <input type="hidden" name="priceMin" value={String(params.priceMin)} />}
+                    {params.priceMax && <input type="hidden" name="priceMax" value={String(params.priceMax)} />}
+                    {params.type && <input type="hidden" name="type" value={String(params.type)} />}
+                    {params.drivetrain && <input type="hidden" name="drivetrain" value={String(params.drivetrain)} />}
                     <select name="yearMin" defaultValue={filters.minYear || ""} className="select-dark text-xs py-2">
                       <option value="">Min Year</option>
                       {yearOptions.map((y) => (
@@ -367,7 +379,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" id="vehicle-grid">
                   {vehicles.map((vehicle) => {
-                    const estMonthly = vehicle.estimatedPayment || Math.round(vehicle.price * 0.02);
+                    const estMonthly = vehicle.estimatedPayment || estimateMonthlyPayment(vehicle.price);
                     return (
                       <Link
                         key={vehicle.id}
@@ -480,6 +492,8 @@ export default async function InventoryPage({ searchParams }: PageProps) {
               )}
             </div>
           </div>
+
+          <RecentlyViewed />
         </div>
       </div>
     </>

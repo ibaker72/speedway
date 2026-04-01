@@ -14,9 +14,18 @@ const quickLinks = [
 
 const aboutLinks = [
   { label: "About Us", href: "/about" },
+  { label: "Our Team", href: "/team" },
   { label: "Customer Reviews", href: "/reviews" },
   { label: "Contact Us", href: "/contact" },
   { label: "FAQ", href: "/faq" },
+];
+
+const resourceLinks = [
+  { label: "Payment Calculator", href: "/calculator" },
+  { label: "Specials & Deals", href: "/specials" },
+  { label: "Warranty & Service", href: "/warranty" },
+  { label: "Commercial Vehicles", href: "/commercial" },
+  { label: "Inventory Alerts", href: "/alerts" },
 ];
 
 export function Footer() {
@@ -27,7 +36,7 @@ export function Footer() {
       <div className="section-divider" />
 
       <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
-        <div className="py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
+        <div className="py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12">
           <div className="lg:col-span-1">
             <div className="mb-5">
               <BrandLogo iconClassName="h-9 w-9" textClassName="text-base" subtextClassName="text-[8px] text-zinc-600" />
@@ -105,6 +114,24 @@ export function Footer() {
             </h3>
             <ul className="space-y-3">
               {aboutLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.2em] mb-5">
+              Resources
+            </h3>
+            <ul className="space-y-3">
+              {resourceLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}

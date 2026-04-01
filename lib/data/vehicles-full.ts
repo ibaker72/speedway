@@ -30,3 +30,13 @@ export function formatPrice(price: number): string {
 export function formatMileage(mileage: number): string {
   return new Intl.NumberFormat("en-US").format(mileage) + " mi";
 }
+
+export function estimateMonthlyPayment(price: number, downPayment = 0, termMonths = 72, annualRate = 0.065): number {
+  const principal = Math.max(price - downPayment, 0);
+  const monthlyRate = annualRate / 12;
+  if (monthlyRate === 0) return Math.round(principal / termMonths);
+  return Math.round(
+    (principal * monthlyRate * Math.pow(1 + monthlyRate, termMonths)) /
+    (Math.pow(1 + monthlyRate, termMonths) - 1)
+  );
+}

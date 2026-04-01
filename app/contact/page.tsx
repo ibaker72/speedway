@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "Contact Us",
   description:
     "Contact Speedway Motors LLC in Paterson, NJ. Call (862) 264-2777, email us, or visit one of our three locations.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/contact",
+  },
 };
 
 const typeLabels: Record<string, string> = {
@@ -134,7 +137,7 @@ export default function ContactPage() {
 
         <div className="rounded-2xl overflow-hidden border border-white/[0.06] h-[400px] bg-surface-1">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3015.8!2d-74.1718!3d40.9168!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s302+22nd+Ave+Paterson+NJ+07513!5e0!3m2!1sen!2sus!4v1"
+            src="https://www.google.com/maps?q=302+22nd+Ave,+Paterson,+NJ+07513&output=embed"
             width="100%"
             height="100%"
             style={{ border: 0 }}

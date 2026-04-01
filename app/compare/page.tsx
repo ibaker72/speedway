@@ -4,7 +4,7 @@ import { PageHero } from "@/components/shared/PageHero";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { getInventory } from "@/lib/data/inventory-source";
 import { VehicleImage } from "@/components/shared/VehicleImage";
-import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "Compare Vehicles",
   description:
     "Compare vehicles side-by-side at Speedway Motors. Find the best car for your needs by comparing specs, prices, and features.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/compare",
+  },
 };
 
 interface PageProps {
@@ -40,7 +43,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
     { label: "Exterior Color", get: (v: typeof compareVehicles[0]) => v!.exteriorColor },
     { label: "Interior Color", get: (v: typeof compareVehicles[0]) => v!.interiorColor },
     { label: "Body Type", get: (v: typeof compareVehicles[0]) => v!.bodyType },
-    { label: "Est. Payment", get: (v: typeof compareVehicles[0]) => `$${v!.estimatedPayment || Math.round(v!.price * 0.02)}/mo` },
+    { label: "Est. Payment", get: (v: typeof compareVehicles[0]) => `$${v!.estimatedPayment || estimateMonthlyPayment(v!.price)}/mo` },
   ];
 
   return (
@@ -119,7 +122,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
                             key={v!.id}
                             className={`p-3 text-center text-sm ${
                               !allSame && row.label === "Price"
-                                ? values[j] === values.sort()[0]
+                                ? values[j] === [...values].sort()[0]
                                   ? "text-emerald-400 font-semibold"
                                   : "text-white"
                                 : allSame

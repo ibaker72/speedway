@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: "Commercial Vehicles",
   description:
     "Commercial trucks, vans, and work vehicles available at Speedway Motors in Paterson, NJ. Fleet pricing and commercial financing available.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/commercial",
+  },
 };
 
 export default async function CommercialPage() {

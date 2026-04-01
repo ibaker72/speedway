@@ -3,12 +3,7 @@ import { notFound } from "next/navigation";
 import {
   Phone,
   ChevronLeft,
-  Gauge,
   Search,
-  Settings2,
-  Fuel,
-  Palette,
-  Calendar,
   Hash,
   Shield,
   Star,
@@ -24,9 +19,12 @@ import { VehicleJsonLd } from "@/components/seo/VehicleJsonLd";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { PaymentCalculator } from "@/components/shared/PaymentCalculator";
 import { VehicleDetailTabs } from "@/components/shared/VehicleDetailTabs";
+import { ShareButtons } from "@/components/shared/ShareButtons";
+import { TestDriveToggle } from "@/components/shared/TestDriveToggle";
+import { RecentlyViewedTracker } from "@/components/shared/RecentlyViewedTracker";
 import { MakeLogo } from "@/lib/make-logos";
 import { getVehicleBySlug, getInventory } from "@/lib/data/inventory-source";
-import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -57,6 +55,11 @@ export async function generateMetadata({
   };
 }
 
+export async function generateStaticParams() {
+  const { vehicles } = await getInventory({ perPage: 999 });
+  return vehicles.map((v) => ({ slug: v.slug }));
+}
+
 function getCarfaxUrl(vin: string) {
   return `https://www.carfax.com/VehicleHistory/p/Report.cfx?vin=${vin}`;
 }
@@ -80,7 +83,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
   if (!vehicle) notFound();
 
   const estPayment =
-    vehicle.estimatedPayment || Math.round(vehicle.price * 0.02);
+    vehicle.estimatedPayment || estimateMonthlyPayment(vehicle.price);
   const { vehicles: related } = await getInventory({
     bodyType: vehicle.bodyType,
     perPage: 4,
@@ -98,14 +101,14 @@ export default async function VehicleDetailPage({ params }: PageProps) {
   const savings = avgRelatedPrice > vehicle.price ? avgRelatedPrice - vehicle.price : 0;
 
   const specs = [
-    { icon: Gauge, label: "Mileage", value: formatMileage(vehicle.mileage) },
-    { icon: Settings2, label: "Transmission", value: vehicle.transmission },
-    { icon: Fuel, label: "Drivetrain", value: vehicle.drivetrain },
-    { icon: Fuel, label: "Fuel Type", value: vehicle.fuelType },
-    { icon: Palette, label: "Exterior", value: vehicle.exteriorColor },
-    { icon: Palette, label: "Interior", value: vehicle.interiorColor },
-    { icon: Settings2, label: "Engine", value: vehicle.engine },
-    { icon: Calendar, label: "Year", value: String(vehicle.year) },
+    { iconName: "Gauge", label: "Mileage", value: formatMileage(vehicle.mileage) },
+    { iconName: "Settings2", label: "Transmission", value: vehicle.transmission },
+    { iconName: "Fuel", label: "Drivetrain", value: vehicle.drivetrain },
+    { iconName: "Fuel", label: "Fuel Type", value: vehicle.fuelType },
+    { iconName: "Palette", label: "Exterior", value: vehicle.exteriorColor },
+    { iconName: "Palette", label: "Interior", value: vehicle.interiorColor },
+    { iconName: "Settings2", label: "Engine", value: vehicle.engine },
+    { iconName: "Calendar", label: "Year", value: String(vehicle.year) },
   ];
 
   const vehicleTitle = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
@@ -178,7 +181,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
               />
 
               {/* VIN & Stock */}
-              <div className="flex flex-wrap gap-6 text-sm text-zinc-600 px-1">
+              <div className="flex flex-wrap items-center gap-6 text-sm text-zinc-600 px-1">
                 <div className="flex items-center gap-1.5">
                   <Hash className="h-3.5 w-3.5" />
                   VIN: {vehicle.vin}
@@ -187,6 +190,10 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   <Hash className="h-3.5 w-3.5" />
                   Stock #: {vehicle.stockNumber}
                 </div>
+                <ShareButtons
+                  url={`${BUSINESS.website}/inventory/${vehicle.slug}`}
+                  title={vehicleTitle}
+                />
               </div>
             </div>
 
@@ -261,6 +268,12 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       Get Pre-Approved
                     </Button>
                   </div>
+                  <Link
+                    href={`/calculator?price=${vehicle.price}`}
+                    className="flex items-center justify-center gap-2 text-sm text-zinc-400 hover:text-accent-light transition-colors mb-2"
+                  >
+                    <span>💰</span> Try our Payment Calculator
+                  </Link>
                   <p className="text-xs text-zinc-600 text-center">
                     Call {BUSINESS.phone} for availability
                   </p>
@@ -300,9 +313,22 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     </a>
                   </div>
                 </div>
+
+                {/* Test Drive */}
+                <TestDriveToggle vehicleId={vehicle.id} vehicleTitle={vehicleTitle} />
               </div>
             </div>
           </div>
+
+          {/* Recently Viewed Tracker */}
+          <RecentlyViewedTracker
+            slug={vehicle.slug}
+            year={vehicle.year}
+            make={vehicle.make}
+            model={vehicle.model}
+            price={vehicle.price}
+            image={vehicle.images[0]?.url}
+          />
 
           {/* Related vehicles */}
           {relatedVehicles.length > 0 && (

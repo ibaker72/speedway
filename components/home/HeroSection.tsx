@@ -1,21 +1,12 @@
 import Link from "next/link";
 import { HeroVeteranBadge } from "./HeroVeteranBadge";
+import { HeroVideo } from "./HeroVideo";
 
 export function HeroSection() {
   return (
     <section className="hero-full-bleed relative isolate w-full overflow-hidden border-b border-white/10 bg-black text-white">
       <div className="absolute inset-0">
-        <video
-          className="h-full w-full object-cover object-center motion-reduce:hidden"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden="true"
-        >
-          <source src="/videos/hero.mp4" type="video/mp4" />
-        </video>
+        <HeroVideo />
         <div
           className="hidden h-full w-full motion-reduce:block"
           style={{

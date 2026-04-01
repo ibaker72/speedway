@@ -8,9 +8,19 @@ export const metadata: Metadata = {
   title: "Payment Calculator",
   description:
     "Estimate your monthly car payment with our free auto loan calculator. Adjust price, down payment, loan term, and interest rate.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/calculator",
+  },
 };
 
-export default function CalculatorPage() {
+interface PageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function CalculatorPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const initialPrice = params.price ? Number(params.price) : undefined;
+
   return (
     <>
       <BreadcrumbJsonLd
@@ -28,7 +38,7 @@ export default function CalculatorPage() {
 
       <div className="bg-[#0a0a0a] min-h-screen">
         <div className="mx-auto max-w-3xl px-5 sm:px-6 lg:px-8 py-8 md:py-12">
-          <CalculatorForm />
+          <CalculatorForm initialPrice={initialPrice} />
         </div>
       </div>
     </>

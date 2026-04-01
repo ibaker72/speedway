@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "Customer Reviews",
   description:
     "Read real reviews from Speedway Motors customers. Rated 4.8 out of 5 on Google with 120+ reviews.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/reviews",
+  },
 };
 
 function StarRating({ rating }: { rating: number }) {

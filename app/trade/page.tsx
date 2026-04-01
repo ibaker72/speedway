@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "Trade-In Your Vehicle",
   description:
     "Get a competitive trade-in value for your current vehicle at Speedway Motors. Apply the value toward any car in our inventory.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/trade",
+  },
 };
 
 const steps = [

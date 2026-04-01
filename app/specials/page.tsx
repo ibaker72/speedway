@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "Specials & Deals",
   description:
     "Browse featured deals, price drops, and seasonal promotions at Speedway Motors in Paterson, NJ.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/specials",
+  },
 };
 
 export default async function SpecialsPage() {

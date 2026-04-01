@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "Warranty & Service",
   description:
     "Explore warranty options, service contracts, and maintenance packages available at Speedway Motors LLC in Paterson, NJ.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/warranty",
+  },
 };
 
 const warranties = [
