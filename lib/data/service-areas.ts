@@ -1,0 +1,138 @@
+export interface ServiceArea {
+  slug: string;
+  city: string;
+  county: string;
+  state: string;
+  distanceMiles: number;
+  description: string;
+  popularSearches: string[];
+}
+
+export const serviceAreas: ServiceArea[] = [
+  {
+    slug: "paterson",
+    city: "Paterson",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 0,
+    description: "Speedway Motors is proud to call Paterson home. Located on 22nd Ave, we've been serving Paterson drivers with quality used cars, SUVs, and trucks since 2005. Whether you're in the Eastside, Northside, or South Paterson, we're just minutes away.",
+    popularSearches: ["used cars paterson nj", "buy here pay here paterson", "used SUV paterson nj", "car dealership paterson"],
+  },
+  {
+    slug: "clifton",
+    city: "Clifton",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 4,
+    description: "Just a short drive from Clifton, Speedway Motors offers Clifton residents access to 180+ quality pre-owned vehicles with flexible financing. We're conveniently located off Route 20, making us one of the closest used car dealers to Clifton.",
+    popularSearches: ["used cars clifton nj", "car dealer near clifton", "affordable cars clifton nj"],
+  },
+  {
+    slug: "passaic",
+    city: "Passaic",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 3,
+    description: "Passaic drivers choose Speedway Motors for honest pricing and a wide selection. We're just 5 minutes from downtown Passaic, offering easy financing for all credit levels.",
+    popularSearches: ["used cars passaic nj", "car dealer passaic", "cheap cars passaic nj"],
+  },
+  {
+    slug: "totowa",
+    city: "Totowa",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 5,
+    description: "Totowa residents enjoy quick access to Speedway Motors for quality used vehicles. Located just minutes from the Totowa border via Route 20, we offer competitive pricing and same-day financing approval.",
+    popularSearches: ["used cars totowa nj", "auto dealer near totowa"],
+  },
+  {
+    slug: "fair-lawn",
+    city: "Fair Lawn",
+    county: "Bergen",
+    state: "NJ",
+    distanceMiles: 7,
+    description: "Fair Lawn shoppers looking for reliable used cars trust Speedway Motors. We're a quick 15-minute drive away and offer vehicles from every major brand with financing options for every budget.",
+    popularSearches: ["used cars fair lawn nj", "car dealer near fair lawn"],
+  },
+  {
+    slug: "hawthorne",
+    city: "Hawthorne",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 6,
+    description: "Hawthorne drivers have trusted Speedway Motors for nearly two decades. We carry sedans, SUVs, trucks, and commercial vehicles — all inspected and priced competitively.",
+    popularSearches: ["used cars hawthorne nj", "auto dealer hawthorne"],
+  },
+  {
+    slug: "wayne",
+    city: "Wayne",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 8,
+    description: "Wayne residents choose Speedway Motors for our large inventory and transparent pricing. Just 20 minutes from Wayne via Route 46 or I-80, we make the drive worth it.",
+    popularSearches: ["used cars wayne nj", "car dealership near wayne nj"],
+  },
+  {
+    slug: "garfield",
+    city: "Garfield",
+    county: "Bergen",
+    state: "NJ",
+    distanceMiles: 5,
+    description: "Garfield is one of our closest communities. Speedway Motors serves Garfield drivers with quality vehicles, fast financing, and an honest buying experience — all just minutes away.",
+    popularSearches: ["used cars garfield nj", "car dealer garfield"],
+  },
+  {
+    slug: "elmwood-park",
+    city: "Elmwood Park",
+    county: "Bergen",
+    state: "NJ",
+    distanceMiles: 6,
+    description: "Elmwood Park drivers looking for their next vehicle will find a great selection at Speedway Motors. We're a short trip away and offer financing for all credit situations.",
+    popularSearches: ["used cars elmwood park nj"],
+  },
+  {
+    slug: "woodland-park",
+    city: "Woodland Park",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 4,
+    description: "Formerly West Paterson, Woodland Park is right next door to us. Speedway Motors is the neighborhood dealer Woodland Park residents trust for quality, selection, and fair deals.",
+    popularSearches: ["used cars woodland park nj", "car dealer woodland park"],
+  },
+  {
+    slug: "haledon",
+    city: "Haledon",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 2,
+    description: "Haledon is one of our closest neighborhoods. Residents can reach Speedway Motors in under 5 minutes. Stop by to browse 180+ vehicles or get pre-approved for financing today.",
+    popularSearches: ["used cars haledon nj"],
+  },
+  {
+    slug: "prospect-park",
+    city: "Prospect Park",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 2,
+    description: "Prospect Park drivers are practically neighbors. Speedway Motors is just a few blocks away, offering the largest used car selection in the area with financing for every budget.",
+    popularSearches: ["used cars prospect park nj"],
+  },
+  {
+    slug: "little-falls",
+    city: "Little Falls",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 7,
+    description: "Little Falls shoppers will find a quality alternative to big-box dealers at Speedway Motors. Personal service, fair pricing, and a wide inventory — just a short drive away.",
+    popularSearches: ["used cars little falls nj"],
+  },
+  {
+    slug: "north-haledon",
+    city: "North Haledon",
+    county: "Passaic",
+    state: "NJ",
+    distanceMiles: 4,
+    description: "North Haledon residents have easy access to Speedway Motors via Belmont Ave. We offer quality pre-owned vehicles with competitive financing and a no-pressure buying experience.",
+    popularSearches: ["used cars north haledon nj"],
+  },
+];

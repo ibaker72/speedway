@@ -1,13 +1,14 @@
 import { PageHero } from "@/components/shared/PageHero";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
+import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import { BUSINESS } from "@/lib/constants";
 import { CalculatorForm } from "./CalculatorForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Payment Calculator",
+  title: "Auto Loan Payment Calculator | Speedway Motors",
   description:
-    "Estimate your monthly car payment with our free auto loan calculator. Adjust price, down payment, loan term, and interest rate.",
+    "Estimate your monthly car payment with our free auto loan calculator. Adjust price, down payment, loan term, and interest rate at Speedway Motors in Paterson, NJ.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/calculator",
   },
@@ -39,6 +40,9 @@ export default async function CalculatorPage({ searchParams }: PageProps) {
       <div className="bg-[#0a0a0a] min-h-screen">
         <div className="mx-auto max-w-3xl px-5 sm:px-6 lg:px-8 py-8 md:py-12">
           <CalculatorForm initialPrice={initialPrice} />
+          <div className="mt-8">
+            <InlineLeadCTA variant="finance" />
+          </div>
         </div>
       </div>
     </>

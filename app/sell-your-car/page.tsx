@@ -10,9 +10,9 @@ import { SellCarForm } from "@/components/forms/SellCarForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sell Your Car",
+  title: "Sell Your Car in Paterson, NJ | Cash Offers | Speedway Motors",
   description:
-    "Sell your car directly to Speedway Motors — no trade required. Get a competitive offer and get paid fast.",
+    "Sell your car in Paterson, NJ directly to Speedway Motors — no trade required. Get a competitive cash offer and get paid fast. Quick, transparent process.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/sell-your-car",
   },
@@ -44,7 +44,7 @@ export default function SellYourCarPage() {
     <>
       <PageHero
         eyebrow="Sell Your Vehicle"
-        title="Sell Your Car"
+        title="Sell Your Car in Paterson, NJ"
         subtitle="We purchase vehicles directly — no trade required. Quick, transparent, and hassle-free."
       />
 

@@ -22,6 +22,7 @@ import { VehicleDetailTabs } from "@/components/shared/VehicleDetailTabs";
 import { ShareButtons } from "@/components/shared/ShareButtons";
 import { TestDriveToggle } from "@/components/shared/TestDriveToggle";
 import { RecentlyViewedTracker } from "@/components/shared/RecentlyViewedTracker";
+import { PriceDropAlert } from "@/components/shared/PriceDropAlert";
 import { MakeLogo } from "@/lib/make-logos";
 import { getVehicleBySlug, getInventory } from "@/lib/data/inventory-source";
 import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
@@ -39,6 +40,13 @@ export async function generateMetadata({
   const vehicle = await getVehicleBySlug(slug);
   if (!vehicle) return { title: "Vehicle Not Found" };
   const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ""}`.trim();
+  if (vehicle.isSold) {
+    return {
+      title: `${vehicleName} — Sold`,
+      robots: { index: false, follow: true },
+      description: `This ${vehicleName} has been sold. Browse similar vehicles at Speedway Motors in Paterson, NJ.`,
+    };
+  }
   return {
     title: `${vehicleName} — ${formatPrice(vehicle.price)}`,
     description: `Buy this ${vehicle.year} ${vehicle.make} ${vehicle.model} with ${formatMileage(vehicle.mileage)} for ${formatPrice(vehicle.price)} at Speedway Motors in Paterson, NJ. Financing available.`,
@@ -153,7 +161,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   {vehicle.images[0]?.url ? (
                     <VehicleImage
                       src={vehicle.images[0].url}
-                      alt={vehicleTitle}
+                      alt={`Used ${vehicleTitle} ${vehicle.trim || ""} for sale in Paterson NJ — Speedway Motors`.trim()}
                       make={vehicle.make}
                       model={vehicle.model}
                       priority
@@ -227,6 +235,10 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       </div>
                     )}
                     <PaymentCalculator price={vehicle.price} defaultPayment={estPayment} />
+                  </div>
+
+                  <div className="mb-5">
+                    <PriceDropAlert slug={vehicle.slug} title={vehicleTitle} price={vehicle.price} />
                   </div>
 
                   <div className="space-y-3 mb-5">
@@ -330,6 +342,22 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             image={vehicle.images[0]?.url}
           />
 
+          {/* Helpful Resources */}
+          <div className="mt-12 border-t border-white/[0.06] pt-8">
+            <h3 className="text-lg font-semibold text-white mb-4">Helpful Resources</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Link href="/calculator" className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.08] bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
+                <span>💰</span> Payment Calculator
+              </Link>
+              <Link href="/finance" className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.08] bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
+                <span>✅</span> Get Pre-Approved
+              </Link>
+              <Link href="/guides/car-buying-guide" className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.08] bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
+                <span>📋</span> Free Buying Guide
+              </Link>
+            </div>
+          </div>
+
           {/* Related vehicles */}
           {relatedVehicles.length > 0 && (
             <div className="mt-16 md:mt-20">
@@ -352,7 +380,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     <div className="aspect-[16/10] relative overflow-hidden">
                       <VehicleImage
                         src={rv.images[0]?.url}
-                        alt={`${rv.year} ${rv.make} ${rv.model}`}
+                        alt={`Used ${rv.year} ${rv.make} ${rv.model} for sale in Paterson NJ — Speedway Motors`}
                         make={rv.make}
                         model={rv.model}
                         className="group-hover:scale-105 transition-transform duration-500"

@@ -1,5 +1,6 @@
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { FAQSection } from "@/components/home/FAQSection";
+import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight } from "lucide-react";
@@ -26,6 +27,9 @@ export default function FAQPage() {
       />
       <FAQSection />
       <SectionWrapper background="dark" className="py-12 md:py-16">
+        <div className="max-w-xl mx-auto mb-8">
+          <InlineLeadCTA variant="finance" />
+        </div>
         <div className="max-w-xl mx-auto text-center">
           <h2 className="text-xl font-bold text-white mb-3">
             Still have questions?

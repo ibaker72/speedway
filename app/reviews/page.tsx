@@ -2,15 +2,16 @@ import { Star } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
+import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
 import { testimonials } from "@/lib/data/testimonials";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Customer Reviews",
+  title: "Customer Reviews | Speedway Motors Paterson NJ",
   description:
-    "Read real reviews from Speedway Motors customers. Rated 4.8 out of 5 on Google with 120+ reviews.",
+    "Read real reviews from Speedway Motors customers. Rated 4.8 out of 5 on Google with 120+ reviews. See why thousands trust us in Paterson, NJ.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/reviews",
   },
@@ -127,6 +128,12 @@ export default function ReviewsPage() {
               </div>
             </AnimateIn>
           ))}
+        </div>
+      </SectionWrapper>
+
+      <SectionWrapper background="dark">
+        <div className="max-w-3xl mx-auto">
+          <InlineLeadCTA variant="value-tool" />
         </div>
       </SectionWrapper>
     </>

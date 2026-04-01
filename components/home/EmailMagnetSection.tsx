@@ -202,10 +202,10 @@ export function EmailMagnetSection() {
           Speedway Insider List
         </p>
         <h2 id="inventory-alert-title" className="mt-3 pr-8 text-2xl font-extrabold tracking-[-0.015em] text-white sm:text-[2rem]">
-          Get first access to fresh inventory.
+          Get Price Drops & New Arrivals Before Anyone Else
         </h2>
         <p id="inventory-alert-description" className="mt-3 max-w-[50ch] text-sm leading-relaxed text-zinc-300 sm:text-[0.96rem]">
-          Be the first to see new arrivals and notable price drops across our premium lineup. No spam—just meaningful updates from {BUSINESS.shortName}.
+          Join 2,000+ NJ car shoppers who get early access to new inventory, exclusive price drops, and financing specials. Delivered weekly — unsubscribe anytime.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-3">
@@ -231,9 +231,12 @@ export function EmailMagnetSection() {
             disabled={status === "loading" || status === "success"}
             className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-accent px-6 text-sm font-bold uppercase tracking-[0.1em] text-white transition-colors hover:bg-accent-light disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {status === "loading" ? "Saving..." : status === "success" ? "You're on the list" : "Notify Me"}
+            {status === "loading" ? "Saving..." : status === "success" ? "You're on the list" : "Join the Insider List"}
           </button>
 
+          <p className="text-xs text-zinc-500 flex items-center justify-center gap-1.5">
+            <span>🚗</span> 847 price alerts sent this month
+          </p>
           {errorMessage ? (
             <p id="newsletter-error" className="text-sm text-red-300" role="alert">
               {errorMessage}

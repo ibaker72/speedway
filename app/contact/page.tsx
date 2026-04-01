@@ -9,9 +9,9 @@ import { locations } from "@/lib/data/locations";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Us",
+  title: "Contact Speedway Motors — Paterson, NJ",
   description:
-    "Contact Speedway Motors LLC in Paterson, NJ. Call (862) 264-2777, email us, or visit one of our three locations.",
+    "Contact Speedway Motors at (862) 264-2777 or visit us at 302-304 22nd Ave, Paterson, NJ 07513. Open Mon-Sat 9:30 AM - 7:00 PM.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/contact",
   },
@@ -51,7 +51,7 @@ export default function ContactPage() {
       <BreadcrumbJsonLd items={[{ name: "Home", url: `${BUSINESS.website}/` }, { name: "Contact", url: `${BUSINESS.website}/contact` }]} />
       <PageHero
         eyebrow="Get in Touch"
-        title="Contact Us"
+        title="Contact Speedway Motors — Paterson, NJ"
         subtitle="We'd love to hear from you. Reach out by phone, email, or visit us in person."
       />
 

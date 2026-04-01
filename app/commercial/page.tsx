@@ -11,9 +11,9 @@ import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Commercial Vehicles",
+  title: "Commercial Vehicles for Sale in Paterson, NJ",
   description:
-    "Commercial trucks, vans, and work vehicles available at Speedway Motors in Paterson, NJ. Fleet pricing and commercial financing available.",
+    "Commercial trucks, vans, and work vehicles at Speedway Motors in Paterson, NJ. Fleet pricing, commercial financing, and a wide selection of work-ready vehicles.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/commercial",
   },
@@ -29,7 +29,7 @@ export default async function CommercialPage() {
     <>
       <PageHero
         eyebrow="Commercial Fleet"
-        title="Commercial Vehicles"
+        title="Commercial Vehicles in Paterson, NJ"
         subtitle={`${total} work-ready trucks, vans, and fleet vehicles for your business.`}
       >
         <div className="flex flex-col sm:flex-row gap-3">

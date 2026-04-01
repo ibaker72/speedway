@@ -5,15 +5,17 @@ import { VehicleImage } from "@/components/shared/VehicleImage";
 import { MobileFilterToggle } from "@/components/shared/MobileFilterToggle";
 import { InventoryViewToggle } from "@/components/shared/InventoryViewToggle";
 import { RecentlyViewed } from "@/components/shared/RecentlyViewed";
+import { InventoryAlertBar } from "@/components/shared/InventoryAlertBar";
+import { InventoryListJsonLd } from "@/components/seo/InventoryListJsonLd";
 import { getInventory } from "@/lib/data/inventory-source";
 import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Our Inventory",
+  title: "Used Cars, SUVs & Trucks for Sale in Paterson, NJ | Speedway Motors",
   description:
-    "Browse 180+ quality used cars, SUVs, trucks, and vans at Speedway Motors in Paterson, NJ. Competitive prices and financing available.",
+    "Browse 180+ quality used cars, SUVs, trucks, and vans at Speedway Motors in Paterson, NJ. Competitive prices, flexible financing for all credit levels, and Carfax reports on every vehicle.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/inventory",
   },
@@ -97,6 +99,11 @@ export default async function InventoryPage({ searchParams }: PageProps) {
           </button>
         </form>
       </PageHero>
+
+      {/* Inventory Alert Bar */}
+      <InventoryAlertBar filters={{ make: filters.make, type: filters.bodyType, priceMin: filters.minPrice ? String(filters.minPrice) : undefined, priceMax: filters.maxPrice ? String(filters.maxPrice) : undefined }} />
+
+      <InventoryListJsonLd vehicles={vehicles} total={total} />
 
       {/* Main content */}
       <div className="bg-[#0a0a0a] min-h-screen">
@@ -331,9 +338,14 @@ export default async function InventoryPage({ searchParams }: PageProps) {
               )}
 
               <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-                <p className="text-sm text-zinc-500">
-                  Showing {start}–{end} of {total} vehicles
-                </p>
+                <div>
+                  <p className="text-sm text-zinc-500">
+                    Showing {start}–{end} of {total} vehicles
+                  </p>
+                  <p className="text-xs text-zinc-600">
+                    Inventory last updated: {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  </p>
+                </div>
                 <InventoryViewToggle />
               </div>
 
@@ -389,7 +401,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                         <div className="aspect-[16/10] relative overflow-hidden">
                           <VehicleImage
                             src={vehicle.images[0]?.url}
-                            alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                            alt={`Used ${vehicle.year} ${vehicle.make} ${vehicle.model} for sale in Paterson NJ — Speedway Motors`}
                             make={vehicle.make}
                             model={vehicle.model}
                             className="w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"

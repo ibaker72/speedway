@@ -10,9 +10,9 @@ import { TradeInForm } from "@/components/forms/TradeInForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Trade-In Your Vehicle",
+  title: "Trade In Your Car in Paterson, NJ | Speedway Motors",
   description:
-    "Get a competitive trade-in value for your current vehicle at Speedway Motors. Apply the value toward any car in our inventory.",
+    "Get a competitive trade-in value for your vehicle at Speedway Motors in Paterson, NJ. Instant estimates and apply the value toward any car in our inventory.",
   alternates: {
     canonical: "https://www.speedwaymotorsllc.com/trade",
   },
@@ -44,7 +44,7 @@ export default function TradePage() {
     <>
       <PageHero
         eyebrow="Trade-In"
-        title="Value Your Trade"
+        title="Trade In Your Car in Paterson, NJ"
         subtitle="Get a fair market estimate for your current vehicle and apply it toward your next car."
       />
 

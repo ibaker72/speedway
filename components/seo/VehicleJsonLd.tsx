@@ -35,10 +35,18 @@ export function VehicleJsonLd({ vehicle }: { vehicle: Vehicle }) {
     },
   };
 
+  if (vehicle.bodyType) jsonLd.bodyType = vehicle.bodyType;
   if (vehicle.exteriorColor) jsonLd.color = vehicle.exteriorColor;
   if (vehicle.transmission) jsonLd.vehicleTransmission = vehicle.transmission;
   if (vehicle.drivetrain) jsonLd.driveWheelConfiguration = vehicle.drivetrain;
   if (vehicle.fuelType) jsonLd.fuelType = vehicle.fuelType;
+  if (vehicle.engine) {
+    jsonLd.vehicleEngine = {
+      "@type": "EngineSpecification",
+      name: vehicle.engine,
+      fuelType: vehicle.fuelType,
+    };
+  }
   if (vehicle.images[0]?.url) jsonLd.image = vehicle.images[0].url;
   if (vehicle.description) jsonLd.description = vehicle.description;
 

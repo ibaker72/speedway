@@ -32,7 +32,7 @@ export async function NewArrivals() {
               <div className="relative aspect-[16/10] overflow-hidden rounded-t-xl">
                 <VehicleImage
                   src={v.images[0]?.url}
-                  alt={`${v.year} ${v.make} ${v.model}`}
+                  alt={`Used ${v.year} ${v.make} ${v.model} for sale in Paterson NJ — Speedway Motors`}
                   make={v.make}
                   model={v.model}
                   className="w-full h-full group-hover:scale-105 transition-transform duration-500"
