@@ -99,6 +99,20 @@
   100% { background-position: 200% 0; }
 }
 
+/* ─── Marquee Utility ─── */
+.animate-marquee {
+  animation: marquee linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* ─── Base ─── */
 html {
   scroll-behavior: smooth;
@@ -455,6 +469,7 @@ img {
   50% { transform: scale(1.15); }
   100% { opacity: 1; transform: scale(1); }
 }
+
 /* Badge shimmer effect */
 .shimmer-badge {
   background-size: 200% 100%;
