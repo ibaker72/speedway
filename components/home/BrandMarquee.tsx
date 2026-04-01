@@ -69,7 +69,7 @@ export function BrandMarquee() {
               title={brand.name}
               className={[
                 "h-auto w-auto shrink-0 object-contain opacity-55 transition-opacity duration-300 hover:opacity-90",
-                brand.keepOriginalColor ? "" : "brightness-0 invert",
+                ("keepOriginalColor" in brand && brand.keepOriginalColor) ? "" : "brightness-0 invert",
                 SIZE_BY_BRAND[brand.name] ?? "max-h-[26px] sm:max-h-[30px] md:max-h-[32px]",
               ]
                 .filter(Boolean)
