@@ -1,20 +1,34 @@
 "use client";
 
-import { MakeLogo } from "@/lib/make-logos";
+import Image from "next/image";
 
 const BRANDS = [
-  "Audi",
-  "BMW",
-  "Mercedes-Benz",
-  "Ford",
-  "Toyota",
-  "Honda",
-  "Chevrolet",
-  "Nissan",
-  "Volkswagen",
-  "Porsche",
-  "Hyundai",
-  "Kia",
+  { name: "Audi", src: "/brands/audi.svg" },
+  { name: "BMW", src: "/brands/bmw.svg" },
+  { name: "BMW M Series", src: "/brands/bmw-m-series.svg" },
+  { name: "Fiat", src: "/brands/fiat.svg" },
+  { name: "Fisker", src: "/brands/fisker.svg" },
+  { name: "Ford", src: "/brands/ford.svg" },
+  { name: "GMC", src: "/brands/gmc.svg" },
+  { name: "Honda", src: "/brands/honda.svg" },
+  { name: "Hyundai", src: "/brands/hyundai.svg" },
+  { name: "Infiniti", src: "/brands/infiniti.svg" },
+  { name: "Jaguar", src: "/brands/jaguar.svg" },
+  { name: "Jeep", src: "/brands/jeep.svg" },
+  { name: "Kia", src: "/brands/kia.svg" },
+  { name: "Land Rover", src: "/brands/land-rover.svg" },
+  { name: "Lexus", src: "/brands/lexus.svg" },
+  { name: "Lincoln", src: "/brands/lincoln.svg" },
+  { name: "Maserati", src: "/brands/maserati.svg" },
+  { name: "Mazda", src: "/brands/mazda.svg" },
+  { name: "Mercedes-Benz", src: "/brands/mercedes-benz.svg" },
+  { name: "Mitsubishi", src: "/brands/mitsubishi.svg" },
+  { name: "Nissan", src: "/brands/nissan.svg" },
+  { name: "Pontiac", src: "/brands/pontiac.svg" },
+  { name: "Porsche", src: "/brands/porsche.svg" },
+  { name: "RAM", src: "/brands/ram.svg" },
+  { name: "Toyota", src: "/brands/toyota.svg" },
+  { name: "Volkswagen", src: "/brands/volkswagen.svg" },
 ];
 
 export function BrandMarquee() {
@@ -28,50 +42,25 @@ export function BrandMarquee() {
         </p>
       </div>
 
-      {/* Mobile: horizontal emblem rail */}
-      <div className="relative md:hidden">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-[#0A0A0A] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-[#0A0A0A] to-transparent" />
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[#0A0A0A] to-transparent sm:w-16 md:w-20" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[#0A0A0A] to-transparent sm:w-16 md:w-20" />
 
-        <div className="overflow-x-auto px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex w-max snap-x snap-mandatory items-center gap-3 pr-4">
-            {BRANDS.map((brand) => (
-              <div
-                key={brand}
-                className="flex h-14 min-w-[120px] snap-start items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-sm"
-                aria-label={brand}
-                title={brand}
-              >
-                <MakeLogo
-                  make={brand}
-                  size={26}
-                  variant="light"
-                  className="text-zinc-500 transition-colors duration-200"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop: premium marquee */}
-      <div className="relative hidden md:block">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-[#0A0A0A] to-transparent lg:w-28" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#0A0A0A] to-transparent lg:w-28" />
-
-        <div className="flex w-max animate-marquee items-center gap-12 pr-12 [animation-duration:42s] hover:[animation-play-state:paused] lg:gap-16">
+        <div className="flex w-max animate-marquee items-center gap-4 pr-4 [animation-duration:26s] sm:gap-5 sm:pr-5 md:gap-8 md:pr-8 md:[animation-duration:34s] lg:[animation-duration:40s]">
           {loopedBrands.map((brand, index) => (
             <div
-              key={`${brand}-${index}`}
-              className="group flex min-w-[132px] items-center justify-center lg:min-w-[150px]"
-              aria-label={brand}
-              title={brand}
+              key={`${brand.name}-${index}`}
+              className="flex h-[72px] min-w-[120px] items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.02] px-6 backdrop-blur-sm sm:min-w-[132px] md:h-[82px] md:min-w-[148px] md:px-7"
+              aria-label={brand.name}
+              title={brand.name}
             >
-              <MakeLogo
-                make={brand}
-                size={28}
-                variant="light"
-                className="text-zinc-600 transition-colors duration-300 group-hover:text-zinc-300"
+              <Image
+                src={brand.src}
+                alt={`${brand.name} emblem`}
+                width={96}
+                height={48}
+                className="h-auto max-h-[34px] w-auto object-contain opacity-70 grayscale transition-opacity duration-300 sm:max-h-[38px] md:max-h-[44px] md:opacity-75"
+                priority={index < BRANDS.length}
               />
             </div>
           ))}
