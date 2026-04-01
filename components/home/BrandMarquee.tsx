@@ -5,7 +5,7 @@ import Image from "next/image";
 const BRANDS = [
   { name: "Audi", src: "/brands/audi.svg" },
   { name: "BMW", src: "/brands/bmw.svg" },
-  { name: "BMW M Series", src: "/brands/bmw-m-series.svg" },
+  { name: "BMW M Series", src: "/brands/bmw-m-series.svg", keepOriginalColor: true },
   { name: "Fiat", src: "/brands/fiat.svg" },
   { name: "Fisker", src: "/brands/fisker.svg" },
   { name: "Ford", src: "/brands/ford.svg" },
@@ -29,10 +29,18 @@ const BRANDS = [
   { name: "RAM", src: "/brands/ram.svg" },
   { name: "Toyota", src: "/brands/toyota.svg" },
   { name: "Volkswagen", src: "/brands/volkswagen.svg" },
-];
+] as const;
+
+const SIZE_BY_BRAND: Record<string, string> = {
+  "BMW M Series": "max-h-[22px] sm:max-h-[24px] md:max-h-[26px]",
+  Porsche: "max-h-[30px] sm:max-h-[34px] md:max-h-[36px]",
+  Toyota: "max-h-[30px] sm:max-h-[34px] md:max-h-[36px]",
+};
+
+const TRACK_DURATION_SECONDS = 34;
 
 export function BrandMarquee() {
-  const loopedBrands = [...BRANDS, ...BRANDS];
+  const renderedBrands = [...BRANDS, ...BRANDS];
 
   return (
     <section className="relative overflow-hidden border-b border-white/[0.04] bg-[#0A0A0A] py-8 md:py-10">
@@ -42,27 +50,31 @@ export function BrandMarquee() {
         </p>
       </div>
 
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-[#0A0A0A] to-transparent sm:w-20 md:w-28" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[#0A0A0A] to-transparent sm:w-20 md:w-28" />
 
-        <div className="flex w-max animate-marquee items-center gap-12 pr-12 [animation-duration:26s] sm:gap-14 sm:pr-14 md:gap-20 md:pr-20 md:[animation-duration:34s] lg:[animation-duration:40s] hover:[animation-play-state:paused]">
-          {loopedBrands.map((brand, index) => (
-            <div
+        <div
+          className="animate-marquee flex w-max items-center gap-12 pr-12 sm:gap-14 sm:pr-14 md:gap-16 md:pr-16 lg:gap-20 lg:pr-20 hover:[animation-play-state:paused]"
+          style={{ animationDuration: `${TRACK_DURATION_SECONDS}s` }}
+        >
+          {renderedBrands.map((brand, index) => (
+            <Image
               key={`${brand.name}-${index}`}
-              className="flex h-12 min-w-[88px] items-center justify-center sm:min-w-[96px] md:h-14 md:min-w-[108px]"
-              aria-label={brand.name}
+              src={brand.src}
+              alt={`${brand.name} emblem`}
+              width={136}
+              height={40}
+              priority={index < BRANDS.length}
               title={brand.name}
-            >
-              <Image
-                src={brand.src}
-                alt={`${brand.name} emblem`}
-                width={96}
-                height={48}
-                priority={index < BRANDS.length}
-                className="h-auto max-h-[28px] w-auto object-contain opacity-60 brightness-0 invert transition duration-300 hover:opacity-100 sm:max-h-[32px] md:max-h-[36px]"
-              />
-            </div>
+              className={[
+                "h-auto w-auto shrink-0 object-contain opacity-55 transition-opacity duration-300 hover:opacity-90",
+                brand.keepOriginalColor ? "" : "brightness-0 invert",
+                SIZE_BY_BRAND[brand.name] ?? "max-h-[26px] sm:max-h-[30px] md:max-h-[32px]",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            />
           ))}
         </div>
       </div>
