@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "Sell Your Car",
   description:
     "Sell your car directly to Speedway Motors — no trade required. Get a competitive offer and get paid fast.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/sell-your-car",
+  },
 };
 
 const steps = [

@@ -19,6 +19,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Us",
   description: `Learn about ${BUSINESS.name}, a trusted used car dealership in Paterson, NJ serving the community since 2005 with quality vehicles and flexible financing.`,
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/about",
+  },
 };
 
 const values = [

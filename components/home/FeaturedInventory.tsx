@@ -6,7 +6,7 @@ import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
 
 export async function FeaturedInventory() {
   const { vehicles: all } = await getInventory({ perPage: 6 });
@@ -26,7 +26,7 @@ export async function FeaturedInventory() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
         {vehicles.map((v, i) => {
-          const estMonthly = v.estimatedPayment || Math.round(v.price * 0.02);
+          const estMonthly = v.estimatedPayment || estimateMonthlyPayment(v.price);
           return (
             <AnimateIn key={v.id} delay={i * 80} variant="up">
               <Link

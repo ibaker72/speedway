@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "Frequently Asked Questions",
   description:
     "Answers to common questions about buying a used car, financing, trade-ins, and more at Speedway Motors in Paterson, NJ.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/faq",
+  },
 };
 
 export default function FAQPage() {

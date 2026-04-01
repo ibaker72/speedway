@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "Auto Financing",
   description:
     "Get pre-approved for auto financing at Speedway Motors. All credit levels welcome. Quick decisions and competitive rates from trusted NJ lenders.",
+  alternates: {
+    canonical: "https://www.speedwaymotorsllc.com/finance",
+  },
 };
 
 const highlights = [

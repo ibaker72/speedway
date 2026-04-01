@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Gauge, Settings2, Fuel, Palette, Calendar } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const ICON_MAP: Record<string, LucideIcon> = {
+  Gauge,
+  Settings2,
+  Fuel,
+  Palette,
+  Calendar,
+};
+
 interface SpecItem {
-  icon: LucideIcon;
+  iconName: string;
   label: string;
   value: string;
 }
@@ -58,7 +66,7 @@ export function VehicleDetailTabs({ description, specs, features }: VehicleDetai
             {/* Key specs highlights */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/[0.06]">
               {specs.slice(0, 4).map((spec) => {
-                const Icon = spec.icon;
+                const Icon = ICON_MAP[spec.iconName] || Gauge;
                 return (
                   <div key={spec.label} className="text-center">
                     <Icon className="h-4 w-4 text-zinc-500 mx-auto mb-1" />
@@ -74,7 +82,7 @@ export function VehicleDetailTabs({ description, specs, features }: VehicleDetai
         {activeTab === "Specs" && (
           <div className="grid grid-cols-2 gap-4">
             {specs.map((spec) => {
-              const Icon = spec.icon;
+              const Icon = ICON_MAP[spec.iconName] || Gauge;
               return (
                 <div key={spec.label}>
                   <div className="flex items-center gap-1.5 text-xs text-zinc-500 mb-0.5">

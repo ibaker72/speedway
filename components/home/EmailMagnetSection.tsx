@@ -22,11 +22,15 @@ export function EmailMagnetSection() {
   const emailInputRef = useRef<HTMLInputElement>(null);
 
   const suppressFor7Days = useCallback(() => {
-    localStorage.setItem(
-      POPUP_SUPPRESS_KEY,
-      String(Date.now() + SUPPRESS_DURATION_MS),
-    );
-    sessionStorage.setItem(SESSION_SUPPRESS_KEY, "1");
+    try {
+      localStorage.setItem(
+        POPUP_SUPPRESS_KEY,
+        String(Date.now() + SUPPRESS_DURATION_MS),
+      );
+    } catch {}
+    try {
+      sessionStorage.setItem(SESSION_SUPPRESS_KEY, "1");
+    } catch {}
   }, []);
 
   const closeModal = useCallback(() => {
@@ -37,8 +41,14 @@ export function EmailMagnetSection() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const hiddenUntil = Number(localStorage.getItem(POPUP_SUPPRESS_KEY) || "0");
-    const hiddenInSession = sessionStorage.getItem(SESSION_SUPPRESS_KEY) === "1";
+    let hiddenUntil = 0;
+    let hiddenInSession = false;
+    try {
+      hiddenUntil = Number(localStorage.getItem(POPUP_SUPPRESS_KEY) || "0");
+    } catch {}
+    try {
+      hiddenInSession = sessionStorage.getItem(SESSION_SUPPRESS_KEY) === "1";
+    } catch {}
     if (hiddenUntil > Date.now() || hiddenInSession) return;
 
     const isDesktop = window.matchMedia("(min-width: 1024px)").matches;

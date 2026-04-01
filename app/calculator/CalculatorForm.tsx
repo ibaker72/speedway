@@ -13,8 +13,8 @@ const CREDIT_RANGES = [
 
 const TERMS = [36, 48, 60, 72, 84];
 
-export function CalculatorForm() {
-  const [price, setPrice] = useState(25000);
+export function CalculatorForm({ initialPrice }: { initialPrice?: number }) {
+  const [price, setPrice] = useState(initialPrice && initialPrice >= 5000 && initialPrice <= 75000 ? initialPrice : 25000);
   const [downPayment, setDownPayment] = useState(2000);
   const [term, setTerm] = useState(60);
   const [creditIndex, setCreditIndex] = useState(0);

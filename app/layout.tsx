@@ -3,12 +3,14 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyMobileCTA } from "@/components/layout/StickyMobileCTA";
 import { ChatWidget } from "@/components/layout/ChatWidget";
+import { CookieConsent } from "@/components/layout/CookieConsent";
 import { AutoDealerJsonLd, FAQPageJsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { FacebookPixel } from "@/components/analytics/FacebookPixel";
 import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
 import { BUSINESS } from "@/lib/constants";
 import "./globals.css";
+
 
 export const metadata: Metadata = {
   title: {
@@ -30,6 +32,10 @@ export const metadata: Metadata = {
     "commercial vehicles paterson",
   ],
   alternates: { canonical: "https://www.speedwaymotorsllc.com/" },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -82,6 +88,7 @@ export default function RootLayout({
         <Footer />
         <ChatWidget />
         <StickyMobileCTA />
+        <CookieConsent />
       </body>
     </html>
   );
