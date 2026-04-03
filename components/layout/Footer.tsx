@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { BUSINESS, HOURS } from "@/lib/constants";
 import { locations } from "@/lib/data/locations";
+import { geoLocations } from "@/lib/geo/locations";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 
 const quickLinks = [
@@ -177,12 +178,11 @@ export function Footer() {
           </h3>
           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
             <Link href="/locations" className="text-sm text-zinc-400 hover:text-white transition-colors">All Locations</Link>
-            <Link href="/locations/paterson" className="text-sm text-zinc-400 hover:text-white transition-colors">Paterson</Link>
-            <Link href="/locations/clifton" className="text-sm text-zinc-400 hover:text-white transition-colors">Clifton</Link>
-            <Link href="/locations/passaic" className="text-sm text-zinc-400 hover:text-white transition-colors">Passaic</Link>
-            <Link href="/locations/wayne" className="text-sm text-zinc-400 hover:text-white transition-colors">Wayne</Link>
-            <Link href="/locations/fair-lawn" className="text-sm text-zinc-400 hover:text-white transition-colors">Fair Lawn</Link>
-            <Link href="/locations/totowa" className="text-sm text-zinc-400 hover:text-white transition-colors">Totowa</Link>
+            {geoLocations.slice(0, 7).map((location) => (
+              <Link key={location.slug} href={`/locations/${location.slug}`} className="text-sm text-zinc-400 hover:text-white transition-colors">
+                {location.city}
+              </Link>
+            ))}
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getInventory } from "@/lib/data/inventory-source";
-import { serviceAreas } from "@/lib/data/service-areas";
+import { geoLocations } from "@/lib/geo/locations";
 import { blogPosts } from "@/lib/data/blog-posts";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.speedwaymotorsllc.com";
@@ -52,8 +52,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     },
-    ...serviceAreas.map((area) => ({
-      url: `${BASE_URL}/locations/${area.slug}`,
+    ...geoLocations.map((location) => ({
+      url: `${BASE_URL}/locations/${location.slug}`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.7,
