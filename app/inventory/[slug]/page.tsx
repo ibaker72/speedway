@@ -17,15 +17,15 @@ import { VehicleImage } from "@/components/shared/VehicleImage";
 import { VehicleGallery } from "@/components/shared/VehicleGallery";
 import { VehicleJsonLd } from "@/components/seo/VehicleJsonLd";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
-import { PaymentCalculator } from "@/components/shared/PaymentCalculator";
 import { VehicleDetailTabs } from "@/components/shared/VehicleDetailTabs";
 import { ShareButtons } from "@/components/shared/ShareButtons";
 import { TestDriveToggle } from "@/components/shared/TestDriveToggle";
 import { RecentlyViewedTracker } from "@/components/shared/RecentlyViewedTracker";
 import { PriceDropAlert } from "@/components/shared/PriceDropAlert";
+import { BuildMyDealModule } from "@/components/shared/BuildMyDealModule";
 import { MakeLogo } from "@/lib/make-logos";
 import { getVehicleBySlug, getInventory } from "@/lib/data/inventory-source";
-import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
+import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -90,8 +90,6 @@ export default async function VehicleDetailPage({ params }: PageProps) {
   const vehicle = await getVehicleBySlug(slug);
   if (!vehicle) notFound();
 
-  const estPayment =
-    vehicle.estimatedPayment || estimateMonthlyPayment(vehicle.price);
   const { vehicles: related } = await getInventory({
     bodyType: vehicle.bodyType,
     perPage: 4,
@@ -234,7 +232,6 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         MSRP {formatPrice(vehicle.msrp)}
                       </div>
                     )}
-                    <PaymentCalculator price={vehicle.price} defaultPayment={estPayment} />
                   </div>
 
                   <div className="mb-5">
@@ -290,6 +287,18 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     Call {BUSINESS.phone} for availability
                   </p>
                 </div>
+
+                <BuildMyDealModule
+                  vehicle={{
+                    id: vehicle.id,
+                    slug: vehicle.slug,
+                    stockNumber: vehicle.stockNumber,
+                    title: vehicleTitle,
+                    price: vehicle.price,
+                    mileage: vehicle.mileage,
+                    imageUrl: vehicle.images[0]?.url,
+                  }}
+                />
 
                 {/* Trust signals */}
                 <div className="rounded-2xl border border-white/[0.06] bg-surface-1 p-5">
