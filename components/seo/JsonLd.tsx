@@ -9,7 +9,7 @@ export function AutoDealerJsonLd() {
     logo: "https://www.speedwaymotorsllc.com/logo.png",
     image: "https://www.speedwaymotorsllc.com/og-image.jpg",
     description:
-      "Veteran-owned used car dealership in Paterson, NJ offering 180+ quality pre-owned vehicles, flexible financing for all credit levels, and competitive trade-in values. Serving Passaic County since 2005.",
+      "used car dealership in Paterson, NJ offering 180+ quality pre-owned vehicles, flexible financing for all credit levels, and competitive trade-in values. Serving Passaic County since 2005.",
     telephone: "+1-862-264-2777",
     email: "info@speedwaymotorsllc.com",
     foundingDate: "2005",

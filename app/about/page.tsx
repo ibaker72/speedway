@@ -20,10 +20,9 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About Speedway Motors | Used Car Dealership in Paterson, NJ",
-  description: `Learn about ${BUSINESS.name}, a veteran-owned used car dealership in Paterson, NJ serving the community since 2005 with quality vehicles and flexible financing.`,
+  description: `Learn about ${BUSINESS.name}, a trusted used car dealership in Paterson, NJ serving the community since 2005 with quality vehicles, transparent pricing, and flexible financing.`,
   alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/about",
-  },
+    canonical: "https://www.speedwaymotorsllc.com/about",  },
 };
 
 const values = [
@@ -65,8 +64,8 @@ export default function AboutPage() {
       />
 
       {/* Stats band */}
-      <section className="bg-[#0a0a0a] py-12 md:py-14 border-y border-white/[0.04]">
-        <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
+      <section className="bg-[#0a0a0a] py-12 md:py-14 border-y border-white/4">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, i) => (
               <AnimateIn key={stat.label} delay={i * 100} variant="up">
@@ -168,8 +167,8 @@ export default function AboutPage() {
               const Icon = item.icon;
               return (
                 <AnimateIn key={item.text} delay={i * 80} variant="up">
-                  <div className="flex items-center justify-center gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                    <Icon className="h-5 w-5 text-accent-light flex-shrink-0" />
+                  <div className="flex items-center justify-center gap-3 p-4 rounded-xl bg-white/3 border border-white/6">
+                    <Icon className="h-5 w-5 text-accent-light shrink-0" />
                     <span className="text-sm text-zinc-300">{item.text}</span>
                   </div>
                 </AnimateIn>

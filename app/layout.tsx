@@ -17,8 +17,7 @@ export const metadata: Metadata = {
     default: "Speedway Motors | Used Cars for Sale in Paterson, NJ | Financing Available",
     template: "%s | Speedway Motors — Paterson, NJ",
   },
-  description: "Speedway Motors is a veteran-owned used car dealership in Paterson, NJ with 180+ vehicles. Browse sedans, SUVs, trucks & vans. Easy financing for all credit levels. Serving Passaic County since 2005.",
-  keywords: [
+  description: "Speedway Motors is a trusted used car dealership in Paterson, NJ with 180+ vehicles. Browse sedans, SUVs, trucks & vans. Easy financing for all credit levels. Serving Passaic County since 2005.",  keywords: [
     "used cars paterson nj",
     "used car dealer paterson",
     "buy used car new jersey",
@@ -77,7 +76,7 @@ export default function RootLayout({
         <GoogleTagManager />
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-accent focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-100 focus:bg-accent focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
         >
           Skip to content
         </a>
