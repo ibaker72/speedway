@@ -45,7 +45,7 @@ export function CookieConsent() {
             href="/privacy-policy"
             className="text-sm text-zinc-400 hover:text-white transition-colors"
           >
-            Learn More
+            Read our Privacy Policy
           </Link>
           <button
             onClick={accept}

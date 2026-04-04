@@ -73,7 +73,7 @@ export default function BlogPage() {
                     })}
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-light group-hover:text-white transition-colors">
-                    Read More
+                    {`Read ${post.title}`}
                     <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>
