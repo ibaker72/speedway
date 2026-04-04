@@ -267,16 +267,16 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
   vehicles = vehicles.filter((v) => !v.isSold);
   if (filters.isCommercial !== undefined) vehicles = vehicles.filter((v) => v.isCommercial === filters.isCommercial);
   if (filters.search) { const q = filters.search.toLowerCase(); vehicles = vehicles.filter((v) => `${v.year} ${v.make} ${v.model} ${v.trim || ""}`.toLowerCase().includes(q)); }
-  if (filters.make) vehicles = vehicles.filter((v) => v.make.toLowerCase() === filters.make.toLowerCase());
-  if (filters.model) vehicles = vehicles.filter((v) => v.model.toLowerCase() === filters.model.toLowerCase());
-  if (filters.bodyType) vehicles = vehicles.filter((v) => v.bodyType === filters.bodyType);
-  if (filters.minPrice !== undefined) vehicles = vehicles.filter((v) => v.price >= filters.minPrice);
-  if (filters.maxPrice !== undefined) vehicles = vehicles.filter((v) => v.price <= filters.maxPrice);
-  if (filters.minYear !== undefined) vehicles = vehicles.filter((v) => v.year >= filters.minYear);
-  if (filters.maxYear !== undefined) vehicles = vehicles.filter((v) => v.year <= filters.maxYear);
-  if (filters.minMileage !== undefined) vehicles = vehicles.filter((v) => v.mileage >= filters.minMileage);
-  if (filters.maxMileage !== undefined) vehicles = vehicles.filter((v) => v.mileage <= filters.maxMileage);
-  if (filters.drivetrain) vehicles = vehicles.filter((v) => v.drivetrain === filters.drivetrain);
+  if (filters.make) vehicles = vehicles.filter((v) => v.make.toLowerCase() === filters.make!.toLowerCase());
+  if (filters.model) vehicles = vehicles.filter((v) => v.model.toLowerCase() === filters.model!.toLowerCase());
+  if (filters.bodyType) vehicles = vehicles.filter((v) => v.bodyType === filters.bodyType!);
+  if (filters.minPrice !== undefined) vehicles = vehicles.filter((v) => v.price >= filters.minPrice!);
+  if (filters.maxPrice !== undefined) vehicles = vehicles.filter((v) => v.price <= filters.maxPrice!);
+  if (filters.minYear !== undefined) vehicles = vehicles.filter((v) => v.year >= filters.minYear!);
+  if (filters.maxYear !== undefined) vehicles = vehicles.filter((v) => v.year <= filters.maxYear!);
+  if (filters.minMileage !== undefined) vehicles = vehicles.filter((v) => v.mileage >= filters.minMileage!);
+  if (filters.maxMileage !== undefined) vehicles = vehicles.filter((v) => v.mileage <= filters.maxMileage!);
+  if (filters.drivetrain) vehicles = vehicles.filter((v) => v.drivetrain === filters.drivetrain!);
   if (filters.features?.length) vehicles = vehicles.filter((v) => filters.features!.every((f) => v.features.some((vf) => vf.toLowerCase().includes(f.toLowerCase()))));
 
   const filterOptions = buildFilterOptions(vehicles);
