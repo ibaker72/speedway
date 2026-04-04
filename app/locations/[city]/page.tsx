@@ -138,7 +138,7 @@ export default async function LocationPage({ params }: PageProps) {
             <h2 className="text-xl font-semibold text-white mb-3">Also serving nearby communities</h2>
             <div className="flex flex-wrap gap-2">
               {location.nearbyAreas.map((area) => (
-                <span key={area} className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-zinc-300 bg-white/[0.03]">{area}</span>
+                <span key={area} className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-zinc-300 bg-white/3">{area}</span>
               ))}
             </div>
             {nearbyLocations.length > 0 && (
