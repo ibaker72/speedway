@@ -44,6 +44,25 @@ export interface VehicleImage {
   height?: number;
 }
 
+export type InventorySortBy = "price-asc" | "price-desc" | "year-desc" | "year-asc" | "mileage-asc" | "newest" | "date-added";
+
+export type KeyFeatureOption =
+  | "Apple CarPlay"
+  | "Sunroof"
+  | "3rd Row Seating"
+  | "Navigation"
+  | "Heated Seats"
+  | "Backup Camera"
+  | "Bluetooth"
+  | "Remote Start";
+
+export type TrustBadgeType = "one-owner" | "clean-carfax" | "low-mileage" | "price-drop" | "recent-arrival";
+
+export interface TrustBadge {
+  type: TrustBadgeType;
+  label: string;
+}
+
 export interface InventoryFilters {
   search?: string;
   make?: string;
@@ -53,11 +72,13 @@ export interface InventoryFilters {
   maxPrice?: number;
   minYear?: number;
   maxYear?: number;
+  minMileage?: number;
   maxMileage?: number;
+  features?: KeyFeatureOption[];
   drivetrain?: string;
   fuelType?: string;
   isCommercial?: boolean;
-  sortBy?: "price-asc" | "price-desc" | "year-desc" | "year-asc" | "mileage-asc" | "newest" | "date-added";
+  sortBy?: InventorySortBy;
   page?: number;
   perPage?: number;
 }
@@ -70,6 +91,7 @@ export interface InventoryResponse {
   totalPages: number;
   filters: {
     makes: { name: string; count: number }[];
+    models: { name: string; count: number }[];
     bodyTypes: { name: string; count: number }[];
     priceRanges: { label: string; min: number; max: number; count: number }[];
     yearRange: { min: number; max: number };
