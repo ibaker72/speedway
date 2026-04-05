@@ -39,7 +39,7 @@ export default function LocationsPage() {
             <AnimateIn key={location.slug} delay={index * 60} variant="up">
               <Link href={`/locations/${location.slug}`} className="card-glass p-6 h-full flex flex-col group">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-lg bg-accent/10 border border-accent/15 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-accent/10 border border-accent/15 flex items-center justify-center shrink-0">
                     <MapPin className="h-4 w-4 text-accent-light" />
                   </div>
                   <div>
