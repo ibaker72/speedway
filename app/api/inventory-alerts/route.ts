@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createLead } from "@/lib/leads/store";
+import { notifyLead } from "@/lib/leads/notify";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -14,11 +16,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const payload = {
-      email,
-      name: (String(body.name || "")).trim(),
-      phone: (String(body.phone || "")).trim(),
-      source: body.source || "unknown",
+    const name = (String(body.name || "")).trim();
+    const phone = (String(body.phone || "")).trim();
+    const source = String(body.source || "inventory-alert");
+
+    const payload: Record<string, unknown> = {
       filters: body.filters || null,
       vehicleSlug: body.vehicleSlug || null,
       vehicleTitle: body.vehicleTitle || null,
@@ -29,14 +31,15 @@ export async function POST(request: Request) {
       vehicleModel: body.vehicleModel || null,
       mileage: body.mileage || null,
       condition: body.condition || null,
-      createdAt: new Date().toISOString(),
+      accidents: body.accidents || null,
     };
 
-    // TODO: Connect this endpoint to your email provider/CRM (e.g., Klaviyo, Mailchimp, HubSpot).
-    console.info("Lead capture", payload);
+    await createLead({ source, name, email, phone, payload });
+    await notifyLead({ source, name, email, phone, payload });
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error("Inventory alerts error:", err);
     return NextResponse.json(
       { message: "Unable to process your request right now." },
       { status: 500 },

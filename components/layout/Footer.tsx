@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { BUSINESS, HOURS } from "@/lib/constants";
+import { dealerConfig } from "@/dealer.config";
 import { locations } from "@/lib/data/locations";
 import { geoLocations } from "@/lib/geo/locations";
 import { BrandLogo } from "@/components/shared/BrandLogo";
@@ -15,13 +16,13 @@ const quickLinks = [
   { label: "Value My Car", href: "/value-my-car" },
 ];
 
-const aboutLinks = [
+const aboutLinksAll = [
   { label: "About Us", href: "/about" },
   { label: "Our Team", href: "/team" },
   { label: "Customer Reviews", href: "/reviews" },
   { label: "Contact Us", href: "/contact" },
   { label: "FAQ", href: "/faq" },
-  { label: "Blog", href: "/blog" },
+  { label: "Blog", href: "/blog", featureFlag: "blog" as const },
 ];
 
 const resourceLinks = [
@@ -34,6 +35,12 @@ const resourceLinks = [
 
 export function Footer() {
   const mainLocation = locations.find((l) => l.type === "showroom")!;
+  const aboutLinks = aboutLinksAll.filter((link) => {
+    if ("featureFlag" in link && link.featureFlag) {
+      return dealerConfig.features[link.featureFlag];
+    }
+    return true;
+  });
 
   return (
     <footer className="bg-[#0A0A0A] text-zinc-400 pb-20 lg:pb-0">

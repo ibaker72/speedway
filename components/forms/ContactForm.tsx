@@ -46,8 +46,15 @@ export function ContactForm() {
     const payload = Object.fromEntries(formData.entries());
 
     try {
-      console.log("Contact form payload:", payload);
-      await new Promise((r) => setTimeout(r, 1000));
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Request failed");
+      }
       setSubmitted(true);
     } catch {
       setError("Something went wrong. Please try again or call us directly.");

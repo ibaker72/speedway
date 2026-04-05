@@ -6,6 +6,7 @@ import { Menu, X, Phone, ChevronDown, MapPin } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS, BUSINESS } from "@/lib/constants";
 import type { NavLink } from "@/lib/constants";
+import { dealerConfig } from "@/dealer.config";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { cn } from "@/lib/utils";
@@ -135,7 +136,10 @@ export function Header() {
             </Link>
 
             <nav className="hidden items-center gap-1 lg:flex">
-              {NAV_LINKS.map((link) => (
+              {NAV_LINKS.filter((link) => {
+                if (link.href === "/blog" && !dealerConfig.features.blog) return false;
+                return true;
+              }).map((link) => (
                 <DesktopNavItem key={link.href + link.label} link={link} pathname={pathname} />
               ))}
             </nav>
@@ -188,7 +192,10 @@ export function Header() {
             <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-neutral-950/95 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
               <nav className="max-h-full overflow-y-auto p-3">
                 <div className="space-y-1">
-                  {NAV_LINKS.map((link) => {
+                  {NAV_LINKS.filter((link) => {
+                    if (link.href === "/blog" && !dealerConfig.features.blog) return false;
+                    return true;
+                  }).map((link) => {
                     const parentActive = isLinkActive(pathname, link.href);
 
                     if (!link.children?.length) {

@@ -21,10 +21,6 @@ export default function TermsOfServicePage() {
       />
       <SectionWrapper background="charcoal">
         <div className="max-w-3xl mx-auto text-zinc-300 leading-relaxed">
-          <p className="text-sm text-zinc-500 mb-8 border border-white/[0.06] rounded-xl p-4 bg-surface-1">
-            These terms of service are a structural placeholder. Please consult legal counsel to finalize specific language and ensure compliance with applicable regulations.
-          </p>
-
           <div className="space-y-10">
             <section>
               <h2 className="text-xl font-bold text-white mb-3">Acceptance of Terms</h2>

@@ -63,8 +63,12 @@ export async function generateMetadata({
   };
 }
 
+export const dynamicParams = true;
+export const revalidate = 3600;
+
 export async function generateStaticParams() {
-  const { vehicles } = await getInventory({ perPage: 999 });
+  // Only pre-render a small subset; the rest will be generated on-demand with ISR
+  const { vehicles } = await getInventory({ perPage: 20 });
   return vehicles.map((v) => ({ slug: v.slug }));
 }
 

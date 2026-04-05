@@ -17,19 +17,28 @@ export function TestDriveForm({ vehicleId, vehicleTitle }: TestDriveFormProps) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("Morning");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setStatus("loading");
-    console.log("Test Drive Request:", {
-      vehicleId,
-      vehicleTitle,
-      name,
-      phone,
-      email,
-      preferredDate: date,
-      preferredTime: time,
-    });
-    setTimeout(() => setStatus("success"), 500);
+    try {
+      const res = await fetch("/api/test-drive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vehicleId,
+          vehicleTitle,
+          name,
+          phone,
+          email,
+          preferredDate: date,
+          preferredTime: time,
+        }),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      setStatus("success");
+    } catch {
+      setStatus("idle");
+    }
   };
 
   if (status === "success") {
