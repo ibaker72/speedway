@@ -63,10 +63,10 @@ export default async function ComparePage({ searchParams }: PageProps) {
       />
 
       <div className="bg-[#0a0a0a] min-h-screen">
-        <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-8 md:py-12">
           {compareVehicles.length === 0 ? (
-            <div className="text-center py-20 rounded-2xl border border-white/[0.06] bg-surface-1">
-              <div className="w-16 h-16 mx-auto rounded-xl bg-white/[0.04] flex items-center justify-center mb-4">
+            <div className="text-center py-20 rounded-2xl border border-white/6 bg-surface-1">
+              <div className="w-16 h-16 mx-auto rounded-xl bg-white/4 flex items-center justify-center mb-4">
                 <Search className="h-7 w-7 text-zinc-600" />
               </div>
               <p className="text-lg text-zinc-400 mb-2">No vehicles selected for comparison.</p>
@@ -81,7 +81,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
+              <table className="w-full min-w-150">
                 {/* Vehicle headers */}
                 <thead>
                   <tr>
@@ -89,7 +89,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
                     {compareVehicles.map((v) => (
                       <th key={v!.id} className="p-3 text-center">
                         <Link href={`/inventory/${v!.slug}`} className="group block">
-                          <div className="aspect-[16/10] rounded-xl overflow-hidden relative bg-surface-1 mb-3 mx-auto max-w-[280px]">
+                          <div className="aspect-16/10 rounded-xl overflow-hidden relative bg-surface-1 mb-3 mx-auto max-w-70">
                             <VehicleImage
                               src={v!.images[0]?.url}
                               alt={`${v!.year} ${v!.make} ${v!.model}`}
@@ -114,7 +114,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
                     return (
                       <tr
                         key={row.label}
-                        className={i % 2 === 0 ? "bg-white/[0.02]" : ""}
+                        className={i % 2 === 0 ? "bg-white/2" : ""}
                       >
                         <td className="p-3 text-xs font-medium text-zinc-400">{row.label}</td>
                         {compareVehicles.map((v, j) => (

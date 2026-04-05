@@ -27,8 +27,8 @@ export function PageHero({
     >
       {/* Layered background */}
       <div className="absolute inset-0 bg-[#050505]" />
-      <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.04] via-transparent to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/4 via-transparent to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/6 to-transparent" />
 
       {/* Subtle grid texture */}
       <div
@@ -40,7 +40,7 @@ export function PageHero({
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
         {eyebrow && (
           <span className="inline-block mb-4 text-[11px] font-semibold tracking-[0.2em] uppercase text-accent-light animate-[fadeUp_0.6s_ease-out_forwards]">
             {eyebrow}

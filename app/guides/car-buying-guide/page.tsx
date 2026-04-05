@@ -58,8 +58,8 @@ export default function CarBuyingGuidePage() {
             {benefits.map((b) => {
               const Icon = b.icon;
               return (
-                <div key={b.title} className="flex items-start gap-4 p-5 rounded-xl bg-surface-1 border border-white/[0.06]">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 border border-accent/15 flex items-center justify-center flex-shrink-0">
+                <div key={b.title} className="flex items-start gap-4 p-5 rounded-xl bg-surface-1 border border-white/6">
+                  <div className="w-10 h-10 rounded-lg bg-accent/10 border border-accent/15 flex items-center justify-center shrink-0">
                     <Icon className="h-5 w-5 text-accent-light" />
                   </div>
                   <div>

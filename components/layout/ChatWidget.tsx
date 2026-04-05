@@ -62,7 +62,7 @@ export function ChatWidget() {
       {/* Panel */}
       {isOpen && (
         <div className="fixed bottom-20 right-4 sm:right-6 z-50 w-[340px] max-w-[calc(100vw-2rem)] animate-[scaleIn_0.3s_cubic-bezier(0.16,1,0.3,1)]">
-          <div className="bg-surface-2 border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
+          <div className="bg-surface-2 border border-white/8 rounded-2xl shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="bg-accent px-5 py-4 flex items-center justify-between">
               <div>
@@ -95,9 +95,9 @@ export function ChatWidget() {
                     key={action.label}
                     {...extraProps}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/[0.04] transition-colors group"
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/4 transition-colors group"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors">
+                    <div className="w-9 h-9 rounded-lg bg-white/6 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
                       <Icon className="h-4 w-4 text-zinc-400 group-hover:text-accent-light transition-colors" />
                     </div>
                     <div>
@@ -110,7 +110,7 @@ export function ChatWidget() {
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3 border-t border-white/[0.06] text-center">
+            <div className="px-5 py-3 border-t border-white/6 text-center">
               <p className="text-[11px] text-zinc-600">
                 Mon–Sat 9:30 AM – 7:00 PM
               </p>
@@ -124,7 +124,7 @@ export function ChatWidget() {
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed bottom-6 right-6 z-50 hidden lg:flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ${
           isOpen
-            ? "bg-surface-3 border border-white/[0.1] text-zinc-400 hover:text-white"
+            ? "bg-surface-3 border border-white/10 text-zinc-400 hover:text-white"
             : "bg-accent text-white hover:bg-accent-light shadow-[0_4px_24px_rgba(196,18,48,0.4)] hover:shadow-[0_6px_32px_rgba(196,18,48,0.5)] animate-[pulseGlow_3s_ease-in-out_infinite]"
         }`}
         aria-label={isOpen ? "Close help" : "Get help"}

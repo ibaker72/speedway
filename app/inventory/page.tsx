@@ -94,9 +94,9 @@ export default async function InventoryPage({ searchParams }: PageProps) {
       <InventoryListJsonLd vehicles={vehicles} total={total} />
 
       <div className="bg-[#0a0a0a] min-h-screen">
-        <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-8 md:py-12">
           <div className="flex flex-col lg:flex-row gap-8">
-            <aside className="w-full lg:w-72 flex-shrink-0">
+            <aside className="w-full lg:w-72 shrink-0">
               <MobileInventoryFilters>
                 <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
                   <InventoryFiltersSidebar
@@ -145,11 +145,11 @@ export default async function InventoryPage({ searchParams }: PageProps) {
               </div>
 
               {vehicles.length === 0 ? (
-                <div className="text-center py-20 rounded-2xl border border-white/[0.06] bg-surface-1">
+                <div className="text-center py-20 rounded-2xl border border-white/6 bg-surface-1">
                   <p className="text-lg text-zinc-400 mb-2">No vehicles match your criteria.</p>
                   <p className="text-sm text-zinc-500 mb-4">Try removing some filters to see more results.</p>
                   <Link href="/inventory" className="inline-block text-sm font-semibold text-accent-light hover:text-white transition-colors mb-4">Clear all filters</Link>
-                  <div className="mt-4 pt-4 border-t border-white/[0.06] max-w-sm mx-auto">
+                  <div className="mt-4 pt-4 border-t border-white/6 max-w-sm mx-auto">
                     <p className="text-sm text-zinc-500 mb-2">Can&apos;t find what you&apos;re looking for?</p>
                     <a href={BUSINESS.phoneHref} className="inline-flex items-center gap-2 text-sm font-semibold text-accent-light hover:text-white transition-colors">
                       <Phone className="h-4 w-4" />
@@ -166,7 +166,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                   {page > 1 && (
                     <Link
                       href={{ pathname: "/inventory", query: { ...params, page: String(page - 1) } }}
-                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium border border-white/[0.1] rounded-xl text-zinc-300 hover:bg-white/[0.04] transition-all"
+                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium border border-white/10 rounded-xl text-zinc-300 hover:bg-white/4 transition-all"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Previous
@@ -176,7 +176,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                   {page < totalPages && (
                     <Link
                       href={{ pathname: "/inventory", query: { ...params, page: String(page + 1) } }}
-                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium border border-white/[0.1] rounded-xl text-zinc-300 hover:bg-white/[0.04] transition-all"
+                      className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium border border-white/10 rounded-xl text-zinc-300 hover:bg-white/4 transition-all"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />

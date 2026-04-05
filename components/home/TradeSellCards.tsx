@@ -7,7 +7,7 @@ const cardBase =
 export function TradeSellCards() {
   return (
     <section className="bg-[#0a0a0a]">
-      <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 py-16 md:py-20">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link href="/trade" className={cardBase}>
             {/* Dark gradient placeholder instead of external image */}
@@ -16,7 +16,7 @@ export function TradeSellCards() {
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-500" />
             <div className="absolute top-0 left-0 right-0 h-px bg-accent" />
             <div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-10">
-              <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center mb-5">
+              <div className="w-12 h-12 rounded-xl bg-white/6 border border-white/8 flex items-center justify-center mb-5">
                 <Car className="h-6 w-6 text-zinc-400" />
               </div>
               <p className="text-xs uppercase tracking-[0.16em] text-zinc-300">Trading In?</p>
@@ -35,7 +35,7 @@ export function TradeSellCards() {
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-500" />
             <div className="absolute top-0 left-0 right-0 h-px bg-accent" />
             <div className="relative z-10 h-full flex flex-col justify-end p-8 md:p-10">
-              <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center mb-5">
+              <div className="w-12 h-12 rounded-xl bg-white/6 border border-white/8 flex items-center justify-center mb-5">
                 <FileText className="h-6 w-6 text-zinc-400" />
               </div>
               <p className="text-xs uppercase tracking-[0.16em] text-zinc-300">Save an Hour</p>

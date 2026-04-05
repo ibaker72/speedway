@@ -69,7 +69,7 @@ export function PriceDropAlert({ slug, title, price }: PriceDropAlertProps) {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="px-3 py-2 bg-accent text-white text-xs font-semibold rounded-lg hover:bg-accent-light transition-colors disabled:opacity-60 flex-shrink-0"
+          className="px-3 py-2 bg-accent text-white text-xs font-semibold rounded-lg hover:bg-accent-light transition-colors disabled:opacity-60 shrink-0"
         >
           {status === "loading" ? "..." : "Alert Me"}
         </button>

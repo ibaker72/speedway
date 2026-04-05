@@ -32,21 +32,21 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
       <span className="text-xs text-zinc-500 mr-1">Share:</span>
       <button
         onClick={copyLink}
-        className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/[0.08] transition-colors"
+        className="w-8 h-8 rounded-lg bg-white/4 border border-white/6 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/8 transition-colors"
         title="Copy link"
       >
         {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Share2 className="h-3.5 w-3.5" />}
       </button>
       <a
         href={`sms:?body=${smsBody}`}
-        className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/[0.08] transition-colors"
+        className="w-8 h-8 rounded-lg bg-white/4 border border-white/6 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/8 transition-colors"
         title="Text to a friend"
       >
         <MessageCircle className="h-3.5 w-3.5" />
       </a>
       <a
         href={`mailto:?subject=${emailSubject}&body=${emailBody}`}
-        className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/[0.08] transition-colors"
+        className="w-8 h-8 rounded-lg bg-white/4 border border-white/6 flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/8 transition-colors"
         title="Email to a friend"
       >
         <Mail className="h-3.5 w-3.5" />

@@ -43,7 +43,7 @@ export function BrandMarquee() {
   const renderedBrands = [...BRANDS, ...BRANDS];
 
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.04] bg-[#0A0A0A] py-8 md:py-10">
+    <section className="relative overflow-hidden border-b border-white/4 bg-[#0A0A0A] py-8 md:py-10">
       <div className="mb-6 px-5 text-center sm:px-6 lg:px-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
           Brands We Carry

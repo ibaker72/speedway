@@ -25,7 +25,7 @@ export function InventoryFiltersSidebar({ params, filterOptions, current }: Inve
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-white/[0.06] bg-surface-1 p-4">
+      <div className="rounded-xl border border-white/6 bg-surface-1 p-4">
         <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.15em] mb-3">Sort By</h3>
         <div className="space-y-0.5">
           {[
@@ -36,14 +36,14 @@ export function InventoryFiltersSidebar({ params, filterOptions, current }: Inve
             { value: "year-desc", label: "Year: New to Old" },
             { value: "date-added", label: "Recently Added" },
           ].map((opt) => (
-            <Link key={opt.value} href={{ pathname: "/inventory", query: { ...params, sort: opt.value, page: undefined } }} className={`block text-sm px-3 py-2 rounded-lg transition-colors ${current.sortBy === opt.value ? "bg-accent/10 text-accent-light font-medium" : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"}`}>
+            <Link key={opt.value} href={{ pathname: "/inventory", query: { ...params, sort: opt.value, page: undefined } }} className={`block text-sm px-3 py-2 rounded-lg transition-colors ${current.sortBy === opt.value ? "bg-accent/10 text-accent-light font-medium" : "text-zinc-400 hover:bg-white/4 hover:text-white"}`}>
               {opt.label}
             </Link>
           ))}
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/[0.06] bg-surface-1 p-4">
+      <div className="rounded-xl border border-white/6 bg-surface-1 p-4">
         <h3 className="text-[11px] font-semibold text-accent-light uppercase tracking-[0.15em] mb-3">Filters</h3>
         <form action="/inventory" className="space-y-4">
           {params.search && <input type="hidden" name="search" value={String(params.search)} />}
@@ -114,7 +114,7 @@ export function InventoryFiltersSidebar({ params, filterOptions, current }: Inve
 
           <div className="flex gap-2 pt-1">
             <button type="submit" className="flex-1 px-3 py-2 bg-accent/20 text-accent-light rounded-lg text-xs font-semibold hover:bg-accent/30 transition-colors">Apply</button>
-            <Link href="/inventory" className="flex-1 text-center px-3 py-2 bg-white/[0.04] text-zinc-300 rounded-lg text-xs font-semibold hover:bg-white/[0.08] transition-colors">Reset</Link>
+            <Link href="/inventory" className="flex-1 text-center px-3 py-2 bg-white/4 text-zinc-300 rounded-lg text-xs font-semibold hover:bg-white/8 transition-colors">Reset</Link>
           </div>
         </form>
       </div>

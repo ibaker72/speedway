@@ -111,7 +111,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 
         <nav className="px-5 py-2">
           {NAV_LINKS.map((link, i) => (
-            <div key={link.href + link.label} className="border-b border-white/[0.04] last:border-0">
+            <div key={link.href + link.label} className="border-b border-white/4 last:border-0">
               <div className="flex items-center">
                 <Link
                   href={link.href}
@@ -143,7 +143,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                       key={child.href}
                       href={child.href}
                       onClick={onClose}
-                      className="flex items-center gap-2 px-3 py-2.5 text-sm text-zinc-400 hover:text-white rounded-lg hover:bg-white/[0.04] transition-colors"
+                      className="flex items-center gap-2 px-3 py-2.5 text-sm text-zinc-400 hover:text-white rounded-lg hover:bg-white/4 transition-colors"
                     >
                       <ArrowRight className="h-3 w-3 text-accent" />
                       {child.label}
@@ -156,13 +156,13 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         </nav>
 
         {/* Bottom actions */}
-        <div className="px-5 pb-8 space-y-3 border-t border-white/[0.06] pt-6 mt-2">
+        <div className="px-5 pb-8 space-y-3 border-t border-white/6 pt-6 mt-2">
           <Button href="/finance" variant="primary" size="lg" className="w-full">
             Get Pre-Approved
           </Button>
           <a
             href={BUSINESS.phoneHref}
-            className="flex items-center justify-center gap-2.5 w-full px-6 py-3.5 text-sm font-semibold text-white border border-white/[0.1] rounded-xl hover:bg-white/[0.04] transition-colors"
+            className="flex items-center justify-center gap-2.5 w-full px-6 py-3.5 text-sm font-semibold text-white border border-white/10 rounded-xl hover:bg-white/4 transition-colors"
           >
             <Phone className="h-4 w-4 text-accent" />
             Call {BUSINESS.phone}

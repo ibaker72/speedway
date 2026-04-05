@@ -23,7 +23,7 @@ export function PriceRangeShortcuts() {
           <AnimateIn key={range.label} delay={i * 60} variant="up">
             <Link
               href={range.href}
-              className="group p-6 md:p-7 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:border-accent/30 hover:bg-white/[0.04] transition-all duration-300 text-center block"
+              className="group p-6 md:p-7 rounded-2xl border border-white/6 bg-white/2 hover:border-accent/30 hover:bg-white/4 transition-all duration-300 text-center block"
             >
               <div className="text-2xl md:text-3xl font-bold text-white group-hover:text-accent-light transition-colors">
                 {range.label}

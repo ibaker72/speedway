@@ -33,7 +33,7 @@ export async function FeaturedInventory() {
                 href={`/inventory/${v.slug}`}
                 className="group block rounded-xl border border-white/5 bg-[#101010] transition-all duration-300 hover:-translate-y-[5px] hover:border-white/15 hover:bg-[#1a1a1a] hover:shadow-[0_18px_36px_-14px_rgba(0,0,0,0.75)]"
               >
-                <div className="relative aspect-[16/10] overflow-hidden rounded-t-xl">
+                <div className="relative aspect-16/10 overflow-hidden rounded-t-xl">
                   <VehicleImage
                     src={v.images[0]?.url}
                     alt={`Used ${v.year} ${v.make} ${v.model} for sale in Paterson NJ — Speedway Motors`}
@@ -73,15 +73,15 @@ export async function FeaturedInventory() {
                   </div>
 
                   <div className="mt-4 flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
                       <Gauge className="h-3 w-3" />
                       {formatMileage(v.mileage)}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
                       <Fuel className="h-3 w-3" />
                       {v.engine || v.fuelType || "Gas"}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
                       <Cog className="h-3 w-3" />
                       {v.drivetrain || "FWD"}
                     </span>

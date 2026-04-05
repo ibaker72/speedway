@@ -4,7 +4,7 @@ import { SectionWrapper } from "@/components/shared/SectionWrapper";
 export function LocationCtaStrip() {
   return (
     <SectionWrapper background="dark">
-      <div className="max-w-5xl mx-auto rounded-2xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+      <div className="max-w-5xl mx-auto rounded-2xl border border-white/10 bg-white/3 p-6 md:p-8">
         <h2 className="text-2xl font-bold text-white text-center">Ready for your next vehicle?</h2>
         <p className="text-zinc-400 text-center mt-2">Browse inventory, apply for financing, value your trade-in, or schedule a test drive in minutes.</p>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

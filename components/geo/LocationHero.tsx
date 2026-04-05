@@ -16,7 +16,7 @@ export function LocationHero({ location }: { location: GeoLocation }) {
         </Button>
         <Button href="/finance" variant="outline" size="lg">Apply for Financing</Button>
       </div>
-      <div className="mt-5 inline-flex items-center gap-2 text-xs text-zinc-300 border border-white/10 rounded-full px-4 py-2 bg-white/[0.03]">
+      <div className="mt-5 inline-flex items-center gap-2 text-xs text-zinc-300 border border-white/10 rounded-full px-4 py-2 bg-white/3">
         <CheckCircle2 className="h-3.5 w-3.5 text-accent-light" />
         Trusted local dealership with transparent process and real inventory
       </div>

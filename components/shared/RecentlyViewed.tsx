@@ -72,9 +72,9 @@ export function RecentlyViewed() {
           <Link
             key={v.slug}
             href={`/inventory/${v.slug}`}
-            className="flex-shrink-0 w-52 card-vehicle group block"
+            className="shrink-0 w-52 card-vehicle group block"
           >
-            <div className="aspect-[16/10] relative overflow-hidden">
+            <div className="aspect-16/10 relative overflow-hidden">
               <VehicleImage
                 src={v.image}
                 alt={`${v.year} ${v.make} ${v.model}`}

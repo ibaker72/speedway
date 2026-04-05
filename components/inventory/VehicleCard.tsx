@@ -21,7 +21,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
 
   return (
     <Link href={`/inventory/${vehicle.slug}`} className="card-vehicle group block">
-      <div className="aspect-[16/10] relative overflow-hidden">
+      <div className="aspect-16/10 relative overflow-hidden">
         <VehicleImage
           src={vehicle.images[0]?.url}
           alt={`Used ${vehicle.year} ${vehicle.make} ${vehicle.model} for sale in Paterson NJ — Speedway Motors`}
@@ -58,15 +58,15 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
         </div>
 
         <div className="flex items-center gap-2 mt-3 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
             <Gauge className="h-3 w-3" />
             {formatMileage(vehicle.mileage)}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
             <Settings2 className="h-3 w-3" />
             {vehicle.transmission}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full px-2.5 py-1">
+          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
             <Fuel className="h-3 w-3" />
             {vehicle.drivetrain}
           </span>

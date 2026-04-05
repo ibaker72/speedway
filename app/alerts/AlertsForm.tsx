@@ -39,7 +39,7 @@ export function AlertsForm() {
 
   if (status === "success") {
     return (
-      <div className="rounded-2xl border border-white/[0.08] bg-surface-2 p-8 text-center">
+      <div className="rounded-2xl border border-white/8 bg-surface-2 p-8 text-center">
         <div className="text-4xl mb-4">🎉</div>
         <h2 className="text-xl font-bold text-white mb-2">You&apos;re on the list!</h2>
         <p className="text-sm text-zinc-400">
@@ -50,7 +50,7 @@ export function AlertsForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-surface-2 p-6 md:p-8">
+    <div className="rounded-2xl border border-white/8 bg-surface-2 p-6 md:p-8">
       <div className="text-center mb-6">
         <div className="w-14 h-14 mx-auto rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center mb-4">
           <Mail className="h-6 w-6 text-accent-light" />

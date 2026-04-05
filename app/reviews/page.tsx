@@ -105,7 +105,7 @@ export default function ReviewsPage() {
                   &ldquo;{t.text}&rdquo;
                 </blockquote>
 
-                <div className="mt-6 pt-5 border-t border-white/[0.06]">
+                <div className="mt-6 pt-5 border-t border-white/6">
                   <div className="font-semibold text-sm text-white">
                     {t.name}
                   </div>

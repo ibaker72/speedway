@@ -21,7 +21,7 @@ export function FinanceCTABand() {
               and a team that works to get you approved.
             </p>
           </div>
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <Button href="/finance" variant="primary" size="lg">
               Start Application
               <ArrowRight className="h-4 w-4" />

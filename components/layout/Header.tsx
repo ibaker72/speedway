@@ -46,12 +46,12 @@ function DesktopNavItem({ link, pathname }: { link: NavLink; pathname: string })
       </Link>
 
       <div className="absolute left-0 top-full z-160 invisible pt-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
-        <div className="min-w-[210px] rounded-md border border-white/[0.08] bg-black/85 py-2 shadow-2xl backdrop-blur-xl">
+        <div className="min-w-[210px] rounded-md border border-white/8 bg-black/85 py-2 shadow-2xl backdrop-blur-xl">
           {link.children.map((child) => (
             <Link
               key={child.href}
               href={child.href}
-              className="block px-4 py-2.5 text-sm text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-white"
+              className="block px-4 py-2.5 text-sm text-zinc-400 transition-colors hover:bg-white/4 hover:text-white"
             >
               {child.label}
             </Link>
@@ -100,14 +100,14 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 left-0 right-0 z-[120] isolate overflow-visible border-b border-white/[0.08] bg-black/70 backdrop-blur-[15px]">
+      <header className="sticky top-0 left-0 right-0 z-[120] isolate overflow-visible border-b border-white/8 bg-black/70 backdrop-blur-[15px]">
         <div
           className={cn(
-            "overflow-hidden border-b border-white/[0.06] transition-all duration-300",
+            "overflow-hidden border-b border-white/6 transition-all duration-300",
             scrolled ? "max-h-0 opacity-0" : "max-h-10 opacity-100"
           )}
         >
-          <div className="mx-auto flex h-9 max-w-[80rem] items-center justify-between px-5 text-[11px] tracking-wide text-zinc-400 sm:px-6 lg:px-8">
+          <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-5 text-[11px] tracking-wide text-zinc-400 sm:px-6 lg:px-8">
             <div className="hidden items-center gap-1.5 sm:flex">
               <MapPin className="h-3 w-3 text-accent" />
               <span>302-304 22nd Ave, Paterson, NJ</span>
@@ -125,9 +125,9 @@ export function Header() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between lg:h-[4.3rem]">
-            <Link href="/" className="group flex-shrink-0" aria-label="Speedway Motors home">
+            <Link href="/" className="group shrink-0" aria-label="Speedway Motors home">
               <BrandLogo
                 iconClassName="h-9 w-9 md:h-10 md:w-10"
                 textClassName="text-base md:text-lg"
@@ -149,7 +149,7 @@ export function Header() {
                 href={BUSINESS.phoneHref}
                 className="flex items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/6">
                   <Phone className="h-3.5 w-3.5" />
                 </div>
                 <span className="hidden xl:inline">{BUSINESS.phone}</span>
@@ -163,7 +163,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => setMobileOpenPath((prev) => (prev === pathname ? null : pathname))}
-              className="rounded-md p-2.5 text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white lg:hidden"
+              className="rounded-md p-2.5 text-zinc-400 transition-colors hover:bg-white/6 hover:text-white lg:hidden"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
             >
@@ -189,7 +189,7 @@ export function Header() {
               maxHeight: `calc(100dvh - ${mobilePanelTop + 16}px)`,
             }}
           >
-            <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-neutral-950/95 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+            <div className="overflow-hidden rounded-2xl border border-white/8 bg-neutral-950/95 shadow-[0_20px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
               <nav className="max-h-full overflow-y-auto p-3">
                 <div className="space-y-1">
                   {NAV_LINKS.filter((link) => {
@@ -206,8 +206,8 @@ export function Header() {
                           className={cn(
                             "block rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors",
                             parentActive
-                              ? "bg-white/[0.06] text-white"
-                              : "text-zinc-300 hover:bg-white/[0.04] hover:text-white"
+                              ? "bg-white/6 text-white"
+                              : "text-zinc-300 hover:bg-white/4 hover:text-white"
                           )}
                         >
                           {link.label}
@@ -216,7 +216,7 @@ export function Header() {
                     }
 
                     return (
-                      <div key={link.href} className="rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                      <div key={link.href} className="rounded-xl border border-white/6 bg-white/2">
                         <Link
                           href={link.href}
                           className={cn(
@@ -228,7 +228,7 @@ export function Header() {
                           <ChevronDown className="h-4 w-4 opacity-60" />
                         </Link>
 
-                        <div className="border-t border-white/[0.06] px-2 py-2">
+                        <div className="border-t border-white/6 px-2 py-2">
                           {link.children.map((child) => {
                             const childActive = isLinkActive(pathname, child.href);
 
@@ -239,8 +239,8 @@ export function Header() {
                                 className={cn(
                                   "block rounded-lg px-3 py-2.5 text-sm transition-colors",
                                   childActive
-                                    ? "bg-white/[0.06] text-white"
-                                    : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+                                    ? "bg-white/6 text-white"
+                                    : "text-zinc-400 hover:bg-white/4 hover:text-white"
                                 )}
                               >
                                 {child.label}
@@ -253,12 +253,12 @@ export function Header() {
                   })}
                 </div>
 
-                <div className="mt-4 space-y-3 border-t border-white/[0.08] pt-4">
+                <div className="mt-4 space-y-3 border-t border-white/8 pt-4">
                   <a
                     href={BUSINESS.phoneHref}
-                    className="flex items-center gap-3 rounded-xl border border-white/[0.08] px-4 py-3 text-zinc-200 transition-colors hover:bg-white/[0.04] hover:text-white"
+                    className="flex items-center gap-3 rounded-xl border border-white/8 px-4 py-3 text-zinc-200 transition-colors hover:bg-white/4 hover:text-white"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06]">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/6">
                       <Phone className="h-4 w-4" />
                     </div>
                     <div className="flex flex-col">

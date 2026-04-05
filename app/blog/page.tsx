@@ -64,7 +64,7 @@ export default function BlogPage() {
                 <p className="text-sm text-zinc-400 leading-relaxed flex-1">
                   {post.excerpt}
                 </p>
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/6">
                   <span className="text-xs text-zinc-500">
                     {new Date(post.datePublished).toLocaleDateString("en-US", {
                       month: "long",

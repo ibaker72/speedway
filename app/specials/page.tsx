@@ -48,7 +48,7 @@ export default async function SpecialsPage() {
                 href={`/inventory/${vehicle.slug}`}
                 className="card-vehicle group block"
               >
-                <div className="aspect-[16/10] relative overflow-hidden">
+                <div className="aspect-16/10 relative overflow-hidden">
                   <VehicleImage
                     src={vehicle.images[0]?.url}
                     alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}

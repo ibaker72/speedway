@@ -50,13 +50,13 @@ export function TestimonialsSection() {
             href={BUSINESS.facebook}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-5 rounded-2xl bg-surface-2 border border-white/[0.08] px-8 py-5 hover:border-white/[0.15] transition-all group"
+            className="inline-flex items-center gap-5 rounded-2xl bg-surface-2 border border-white/8 px-8 py-5 hover:border-white/15 transition-all group"
           >
             <div className="flex flex-col items-center">
               <div className="text-4xl font-bold text-white">{BUSINESS.stats.googleRating}</div>
               <Stars />
             </div>
-            <div className="border-l border-white/[0.08] pl-5">
+            <div className="border-l border-white/8 pl-5">
               <p className="text-base font-semibold text-white">{BUSINESS.stats.totalReviews}+ Google Reviews</p>
               <p className="text-sm text-accent-light flex items-center gap-1.5 mt-1 font-medium">
                 Read all reviews
@@ -70,10 +70,10 @@ export function TestimonialsSection() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
         {testimonials.slice(0, 3).map((t, i) => (
           <AnimateIn key={t.id} variant="up" delay={i * 100}>
-            <article className="rounded-lg bg-[#1A1A1A] p-7 border border-white/[0.06] h-full">
+            <article className="rounded-lg bg-[#1A1A1A] p-7 border border-white/6 h-full">
               <Stars />
               <blockquote className="mt-4 text-sm text-zinc-300 leading-relaxed">&ldquo;{t.text}&rdquo;</blockquote>
-              <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center gap-3">
+              <div className="mt-6 pt-5 border-t border-white/6 flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${getAvatarColor(t.name)}`}>
                   {getInitials(t.name)}
                 </div>

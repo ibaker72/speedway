@@ -46,7 +46,7 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
       {/* Main Image */}
       <div className="space-y-3">
         <div
-          className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-surface-1 cursor-pointer"
+          className="aspect-16/10 rounded-2xl overflow-hidden relative bg-surface-1 cursor-pointer"
           onClick={() => setLightboxOpen(true)}
         >
           <Image
@@ -76,7 +76,7 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
               type="button"
               onClick={() => setActiveIndex(i)}
               className={cn(
-                "relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200",
+                "relative shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200",
                 i === activeIndex
                   ? "border-accent ring-1 ring-accent/30"
                   : "border-transparent opacity-60 hover:opacity-100"
@@ -129,7 +129,7 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
           </button>
 
           <div
-            className="relative w-full max-w-5xl max-h-[85vh] aspect-[16/10] mx-4"
+            className="relative w-full max-w-5xl max-h-[85vh] aspect-16/10 mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             <Image

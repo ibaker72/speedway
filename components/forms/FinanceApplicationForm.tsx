@@ -66,7 +66,7 @@ export function FinanceApplicationForm() {
 
   if (submitted) {
     return (
-      <div className="rounded-2xl bg-[#1A1A1A] border border-white/[0.06] p-6 sm:p-8 text-center py-16">
+      <div className="rounded-2xl bg-[#1A1A1A] border border-white/6 p-6 sm:p-8 text-center py-16">
         <div className="w-16 h-16 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 animate-check-scale">
           <CheckCircle className="h-8 w-8 text-emerald-400" />
         </div>
@@ -77,7 +77,7 @@ export function FinanceApplicationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="rounded-2xl bg-[#1A1A1A] border border-white/[0.06] p-6 sm:p-8 space-y-8">
+    <form onSubmit={handleSubmit} noValidate className="rounded-2xl bg-[#1A1A1A] border border-white/6 p-6 sm:p-8 space-y-8">
       <section>
         <h2 className="text-xl font-semibold text-white mb-4">Step 1 — Personal Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

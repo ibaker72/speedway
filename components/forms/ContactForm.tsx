@@ -65,7 +65,7 @@ export function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="rounded-2xl bg-surface-2 border border-white/[0.08] p-8 text-center py-16">
+      <div className="rounded-2xl bg-surface-2 border border-white/8 p-8 text-center py-16">
         <div className="w-16 h-16 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 animate-check-scale">
           <CheckCircle className="h-8 w-8 text-emerald-400" />
         </div>
@@ -76,7 +76,7 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="rounded-2xl bg-surface-2 border border-white/[0.08] p-6 sm:p-8 space-y-5">
+    <form onSubmit={handleSubmit} noValidate className="rounded-2xl bg-surface-2 border border-white/8 p-6 sm:p-8 space-y-5">
       <h3 className="text-xl font-bold text-white mb-1">Send Us a Message</h3>
       <p className="text-sm text-zinc-500 mb-4">Fill out the form and our team will respond promptly.</p>
 

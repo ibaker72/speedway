@@ -135,8 +135,8 @@ export default async function VehicleDetailPage({ params }: PageProps) {
       />
       <div className="bg-[#0a0a0a] min-h-screen pt-24">
         {/* Breadcrumb */}
-        <div className="border-b border-white/[0.06]">
-          <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 py-3">
+        <div className="border-b border-white/6">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-3">
             <Link
               href="/inventory"
               className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white transition-colors"
@@ -147,7 +147,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 py-6 md:py-10">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-6 md:py-10">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
             {/* Left: Image + Details */}
             <div className="lg:col-span-3 space-y-6">
@@ -159,7 +159,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   isFeatured={vehicle.isFeatured}
                 />
               ) : (
-                <div className="aspect-[16/10] rounded-2xl overflow-hidden relative bg-gradient-to-br from-surface-2 via-surface-3 to-surface-1">
+                <div className="aspect-16/10 rounded-2xl overflow-hidden relative bg-gradient-to-br from-surface-2 via-surface-3 to-surface-1">
                   {vehicle.images[0]?.url ? (
                     <VehicleImage
                       src={vehicle.images[0].url}
@@ -211,7 +211,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
             <div className="lg:col-span-2">
               <div className="lg:sticky lg:top-24 space-y-5">
                 {/* Pricing card */}
-                <div className="rounded-2xl border border-white/[0.08] bg-surface-2 p-6 md:p-7">
+                <div className="rounded-2xl border border-white/8 bg-surface-2 p-6 md:p-7">
                   <h1 className="text-2xl font-bold text-white mb-1">
                     {vehicleTitle}
                   </h1>
@@ -256,7 +256,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       href={getCarfaxUrl(vehicle.vin)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/[0.15] text-white hover:bg-white/[0.06] hover:border-white/[0.25] active:bg-white/[0.08] px-8 py-3.5 text-[15px] font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5"
+                      className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/15 text-white hover:bg-white/6 hover:border-white/25 active:bg-white/8 px-8 py-3.5 text-[15px] font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5"
                     >
                       <ShieldCheck className="h-4 w-4" />
                       View Carfax Report
@@ -266,7 +266,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       href={getCarGurusUrl(vehicle.vin)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/[0.15] text-white hover:bg-white/[0.06] hover:border-white/[0.25] active:bg-white/[0.08] px-8 py-3.5 text-[15px] font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5"
+                      className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/15 text-white hover:bg-white/6 hover:border-white/25 active:bg-white/8 px-8 py-3.5 text-[15px] font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5"
                     >
                       <Search className="h-4 w-4" />
                       Check on CarGurus
@@ -305,7 +305,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 />
 
                 {/* Trust signals */}
-                <div className="rounded-2xl border border-white/[0.06] bg-surface-1 p-5">
+                <div className="rounded-2xl border border-white/6 bg-surface-1 p-5">
                   <div className="space-y-3">
                     {[
                       { icon: Shield, text: "Quality inspected vehicle" },
@@ -321,7 +321,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                           key={item.text}
                           className="flex items-center gap-3 text-sm text-zinc-400"
                         >
-                          <Icon className="h-4 w-4 text-accent-light flex-shrink-0" />
+                          <Icon className="h-4 w-4 text-accent-light shrink-0" />
                           {item.text}
                         </div>
                       );
@@ -332,7 +332,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 text-sm text-zinc-400 hover:text-accent-light transition-colors"
                     >
-                      <ShieldCheck className="h-4 w-4 text-accent-light flex-shrink-0" />
+                      <ShieldCheck className="h-4 w-4 text-accent-light shrink-0" />
                       Carfax Vehicle History Report
                       <ExternalLink className="h-3 w-3 opacity-50" />
                     </a>
@@ -356,16 +356,16 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           />
 
           {/* Helpful Resources */}
-          <div className="mt-12 border-t border-white/[0.06] pt-8">
+          <div className="mt-12 border-t border-white/6 pt-8">
             <h3 className="text-lg font-semibold text-white mb-4">Helpful Resources</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Link href="/calculator" className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.08] bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
+              <Link href="/calculator" className="flex items-center gap-3 p-4 rounded-xl border border-white/8 bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
                 <span>💰</span> Payment Calculator
               </Link>
-              <Link href="/finance" className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.08] bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
+              <Link href="/finance" className="flex items-center gap-3 p-4 rounded-xl border border-white/8 bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
                 <span>✅</span> Get Pre-Approved
               </Link>
-              <Link href="/guides/car-buying-guide" className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.08] bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
+              <Link href="/guides/car-buying-guide" className="flex items-center gap-3 p-4 rounded-xl border border-white/8 bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
                 <span>📋</span> Free Buying Guide
               </Link>
             </div>
@@ -390,7 +390,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     href={`/inventory/${rv.slug}`}
                     className="card-vehicle group block"
                   >
-                    <div className="aspect-[16/10] relative overflow-hidden">
+                    <div className="aspect-16/10 relative overflow-hidden">
                       <VehicleImage
                         src={rv.images[0]?.url}
                         alt={`Used ${rv.year} ${rv.make} ${rv.model} for sale in Paterson NJ — Speedway Motors`}

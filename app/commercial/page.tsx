@@ -46,7 +46,7 @@ export default async function CommercialPage() {
       <SectionWrapper background="charcoal">
         {vehicles.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-5">
+            <div className="w-16 h-16 mx-auto rounded-xl bg-white/4 border border-white/6 flex items-center justify-center mb-5">
               <Truck className="h-7 w-7 text-zinc-600" />
             </div>
             <p className="text-lg text-zinc-400 mb-2">
@@ -72,7 +72,7 @@ export default async function CommercialPage() {
                   href={`/inventory/${vehicle.slug}`}
                   className="card-vehicle group block"
                 >
-                  <div className="aspect-[16/10] relative overflow-hidden">
+                  <div className="aspect-16/10 relative overflow-hidden">
                     <VehicleImage
                       src={vehicle.images[0]?.url}
                       alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
@@ -97,7 +97,7 @@ export default async function CommercialPage() {
                           </p>
                         )}
                       </div>
-                      <div className="text-lg font-bold text-accent-light flex-shrink-0">
+                      <div className="text-lg font-bold text-accent-light shrink-0">
                         {formatPrice(vehicle.price)}
                       </div>
                     </div>

@@ -30,13 +30,13 @@ export function LocationsPreview() {
 
               <div className="space-y-3">
                 <div className="flex items-start gap-3 text-sm text-zinc-300">
-                  <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-zinc-500" />
+                  <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-zinc-500" />
                   <span>
                     {loc.address}, {loc.city}, {loc.state} {loc.zip}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
-                  <Phone className="h-4 w-4 flex-shrink-0 text-zinc-500" />
+                  <Phone className="h-4 w-4 shrink-0 text-zinc-500" />
                   <a
                     href={loc.phoneHref}
                     className="text-zinc-300 hover:text-accent-light transition-colors"
@@ -45,7 +45,7 @@ export function LocationsPreview() {
                   </a>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-zinc-500">
-                  <Clock className="h-4 w-4 flex-shrink-0" />
+                  <Clock className="h-4 w-4 shrink-0" />
                   <span>Mon–Sat 9:30 AM – 7:00 PM</span>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 export function VehicleCardSkeleton() {
   return (
     <div className="card-vehicle animate-pulse">
-      <div className="aspect-[16/10] bg-surface-2" />
+      <div className="aspect-16/10 bg-surface-2" />
       <div className="p-4 pb-5 space-y-3">
         <div className="h-5 bg-surface-3 rounded w-3/4" />
         <div className="h-4 bg-surface-2 rounded w-1/2" />

@@ -54,8 +54,8 @@ export function InventoryAlertBar({ filters }: InventoryAlertBarProps) {
 
   if (status === "success") {
     return (
-      <div className="w-full bg-surface-1 border-b border-white/[0.06] border-l-2 border-l-accent">
-        <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-sm text-emerald-400">
+      <div className="w-full bg-surface-1 border-b border-white/6 border-l-2 border-l-accent">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-sm text-emerald-400">
           <span>✓</span>
           <span>You&apos;ll be notified when matching vehicles arrive</span>
         </div>
@@ -64,10 +64,10 @@ export function InventoryAlertBar({ filters }: InventoryAlertBarProps) {
   }
 
   return (
-    <div className="w-full bg-surface-1 border-b border-white/[0.06] border-l-2 border-l-accent">
-      <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8 py-2.5">
+    <div className="w-full bg-surface-1 border-b border-white/6 border-l-2 border-l-accent">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-2.5">
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 text-sm text-zinc-300 flex-shrink-0">
+          <div className="flex items-center gap-2 text-sm text-zinc-300 shrink-0">
             <Bell className="h-4 w-4 text-accent-light" />
             <span>Get notified when new vehicles match your search</span>
           </div>
@@ -78,12 +78,12 @@ export function InventoryAlertBar({ filters }: InventoryAlertBarProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="input-dark h-9 text-sm rounded-lg max-w-[280px] w-full"
+              className="input-dark h-9 text-sm rounded-lg max-w-70 w-full"
             />
             <button
               type="submit"
               disabled={status === "loading"}
-              className="px-4 py-2 bg-accent text-white text-xs font-semibold rounded-lg hover:bg-accent-light transition-colors disabled:opacity-60 flex-shrink-0"
+              className="px-4 py-2 bg-accent text-white text-xs font-semibold rounded-lg hover:bg-accent-light transition-colors disabled:opacity-60 shrink-0"
             >
               {status === "loading" ? "..." : "Notify Me"}
             </button>

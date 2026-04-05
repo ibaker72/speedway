@@ -27,9 +27,9 @@ export async function NewArrivals() {
             <Link
               key={v.id}
               href={`/inventory/${v.slug}`}
-              className="group snap-start flex-shrink-0 w-[280px] sm:w-[300px] rounded-xl border border-white/5 bg-[#101010] transition-all duration-300 hover:-translate-y-[3px] hover:border-white/15 hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.6)]"
+              className="group snap-start shrink-0 w-[280px] sm:w-[300px] rounded-xl border border-white/5 bg-[#101010] transition-all duration-300 hover:-translate-y-[3px] hover:border-white/15 hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.6)]"
             >
-              <div className="relative aspect-[16/10] overflow-hidden rounded-t-xl">
+              <div className="relative aspect-16/10 overflow-hidden rounded-t-xl">
                 <VehicleImage
                   src={v.images[0]?.url}
                   alt={`Used ${v.year} ${v.make} ${v.model} for sale in Paterson NJ — Speedway Motors`}

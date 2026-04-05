@@ -13,10 +13,10 @@ export function TestDriveToggle({ vehicleId, vehicleTitle }: TestDriveToggleProp
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-surface-1 overflow-hidden">
+    <div className="rounded-2xl border border-white/6 bg-surface-1 overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-white/2 transition-colors"
       >
         <span className="flex items-center gap-3 text-sm font-semibold text-white">
           <Calendar className="h-4 w-4 text-accent-light" />
@@ -29,7 +29,7 @@ export function TestDriveToggle({ vehicleId, vehicleTitle }: TestDriveToggleProp
         )}
       </button>
       {isOpen && (
-        <div className="px-5 pb-5 border-t border-white/[0.04]">
+        <div className="px-5 pb-5 border-t border-white/4">
           <div className="pt-4">
             <TestDriveForm vehicleId={vehicleId} vehicleTitle={vehicleTitle} />
           </div>

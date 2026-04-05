@@ -101,7 +101,7 @@ export function ValueMyCarForm() {
           <Link href="/sell-your-car" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-accent text-white text-sm font-semibold rounded-xl hover:bg-accent-light transition-colors">
             Get Exact Offer <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/inventory" className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-white/[0.15] text-white text-sm font-semibold rounded-xl hover:bg-white/[0.06] transition-colors">
+          <Link href="/inventory" className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-white/15 text-white text-sm font-semibold rounded-xl hover:bg-white/6 transition-colors">
             Browse Inventory
           </Link>
         </div>
@@ -117,7 +117,7 @@ export function ValueMyCarForm() {
         </h2>
         <div className="flex gap-1.5">
           {[1, 2, 3].map((s) => (
-            <div key={s} className={`w-8 h-1 rounded-full ${s <= step ? "bg-accent" : "bg-white/[0.08]"}`} />
+            <div key={s} className={`w-8 h-1 rounded-full ${s <= step ? "bg-accent" : "bg-white/8"}`} />
           ))}
         </div>
       </div>
@@ -178,7 +178,7 @@ export function ValueMyCarForm() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={() => setStep(1)} className="flex-1 h-12 border border-white/[0.15] text-white text-sm font-semibold rounded-xl hover:bg-white/[0.06] transition-colors inline-flex items-center justify-center gap-2">
+              <button type="button" onClick={() => setStep(1)} className="flex-1 h-12 border border-white/15 text-white text-sm font-semibold rounded-xl hover:bg-white/6 transition-colors inline-flex items-center justify-center gap-2">
                 <ArrowLeft className="h-4 w-4" /> Back
               </button>
               <button
@@ -207,7 +207,7 @@ export function ValueMyCarForm() {
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required className="input-dark" placeholder="(555) 123-4567" />
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={() => setStep(2)} className="flex-1 h-12 border border-white/[0.15] text-white text-sm font-semibold rounded-xl hover:bg-white/[0.06] transition-colors inline-flex items-center justify-center gap-2">
+              <button type="button" onClick={() => setStep(2)} className="flex-1 h-12 border border-white/15 text-white text-sm font-semibold rounded-xl hover:bg-white/6 transition-colors inline-flex items-center justify-center gap-2">
                 <ArrowLeft className="h-4 w-4" /> Back
               </button>
               <button

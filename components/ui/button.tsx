@@ -39,12 +39,12 @@ const variantStyles: Record<ButtonVariant, string> = {
   premium:
     "bg-gradient-to-r from-accent via-red-600 to-accent-dark text-white shadow-[0_2px_16px_rgba(211,17,25,0.35)] hover:shadow-[0_4px_24px_rgba(211,17,25,0.5)] hover:brightness-110",
   secondary:
-    "bg-surface-3 text-white hover:bg-surface-4 active:bg-surface-5 border border-white/[0.06] hover:border-white/[0.1]",
+    "bg-surface-3 text-white hover:bg-surface-4 active:bg-surface-5 border border-white/6 hover:border-white/10",
   outline:
-    "border border-white/[0.15] text-white hover:bg-white/[0.06] hover:border-white/[0.25] active:bg-white/[0.08]",
+    "border border-white/15 text-white hover:bg-white/6 hover:border-white/25 active:bg-white/8",
   glass:
-    "bg-white/[0.06] backdrop-blur-md border border-white/[0.1] text-white hover:bg-white/[0.1] hover:border-white/[0.2]",
-  ghost: "text-zinc-400 hover:text-white hover:bg-white/[0.06] active:bg-white/[0.08]",
+    "bg-white/6 backdrop-blur-md border border-white/10 text-white hover:bg-white/10 hover:border-white/[0.2]",
+  ghost: "text-zinc-400 hover:text-white hover:bg-white/6 active:bg-white/8",
   danger:
     "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm",
 };

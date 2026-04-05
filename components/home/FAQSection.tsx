@@ -78,7 +78,7 @@ function FAQItem({
   id: string;
 }) {
   return (
-    <div className="border-b border-white/[0.06] last:border-b-0">
+    <div className="border-b border-white/6 last:border-b-0">
       <button
         type="button"
         onClick={onToggle}
@@ -91,10 +91,10 @@ function FAQItem({
           {question}
         </span>
         <div
-          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300 ${
             isOpen
               ? "bg-accent/10 rotate-180"
-              : "bg-white/[0.04] group-hover:bg-white/[0.08]"
+              : "bg-white/4 group-hover:bg-white/8"
           }`}
         >
           <ChevronDown
@@ -132,7 +132,7 @@ export function FAQSection() {
         title="Frequently Asked Questions"
         subtitle="Answers to common questions about buying from Speedway Motors."
       />
-      <div className="max-w-3xl mx-auto rounded-2xl border border-white/[0.08] bg-surface-1 p-4 sm:p-6">
+      <div className="max-w-3xl mx-auto rounded-2xl border border-white/8 bg-surface-1 p-4 sm:p-6">
         <div className="px-2 sm:px-4">
           {faqs.map((faq, i) => (
             <FAQItem

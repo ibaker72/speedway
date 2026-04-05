@@ -58,10 +58,10 @@ export function BodyTypeShortcuts() {
             <AnimateIn key={type.label} delay={i * 60} variant="scale">
               <Link
                 href={type.href}
-                className="group flex flex-col items-center gap-5 p-6 lg:p-8 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-accent/30 transition-all duration-300 h-full"
+                className="group flex flex-col items-center gap-5 p-6 lg:p-8 rounded-2xl border border-white/6 bg-white/2 hover:bg-white/5 hover:border-accent/30 transition-all duration-300 h-full"
               >
                 {/* Icon container */}
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] group-hover:bg-accent/10 group-hover:border-accent/20 flex items-center justify-center transition-all duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-white/4 border border-white/6 group-hover:bg-accent/10 group-hover:border-accent/20 flex items-center justify-center transition-all duration-300">
                   <Icon className="h-7 w-7 text-zinc-500 group-hover:text-accent-light transition-colors duration-300" />
                 </div>
 

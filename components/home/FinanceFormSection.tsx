@@ -97,7 +97,7 @@ export function FinanceFormSection() {
                 const Icon = b.icon;
                 return (
                   <li key={b.text} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/15 flex items-center justify-center shrink-0 mt-0.5">
                       <Icon className="h-5 w-5 text-accent-light" />
                     </div>
                     <span className="text-zinc-300 leading-relaxed">
@@ -111,7 +111,7 @@ export function FinanceFormSection() {
         </AnimateIn>
 
         <AnimateIn variant="right" delay={150}>
-          <div className="rounded-2xl bg-surface-2 border border-white/[0.08] p-7 sm:p-9 shadow-[0_-2px_24px_-4px_rgba(211,17,25,0.08)]">
+          <div className="rounded-2xl bg-surface-2 border border-white/8 p-7 sm:p-9 shadow-[0_-2px_24px_-4px_rgba(211,17,25,0.08)]">
             {submitted ? (
               <div className="text-center py-12" role="status" aria-live="polite">
                 <div className="w-16 h-16 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 animate-check-scale">

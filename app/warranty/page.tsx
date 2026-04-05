@@ -81,7 +81,7 @@ export default function WarrantyPage() {
                   <ul className="mt-auto space-y-2">
                     {w.features.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-sm text-zinc-300">
-                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
                         {f}
                       </li>
                     ))}

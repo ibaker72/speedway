@@ -100,7 +100,7 @@ export function DealDeskDashboard({ leads: initialLeads }: Props) {
               </thead>
               <tbody>
                 {filtered.map((lead) => (
-                  <tr key={lead.id} onClick={() => setSelectedId(lead.id)} className={`border-b border-white/5 cursor-pointer ${selectedId === lead.id ? "bg-white/[0.04]" : ""}`}>
+                  <tr key={lead.id} onClick={() => setSelectedId(lead.id)} className={`border-b border-white/5 cursor-pointer ${selectedId === lead.id ? "bg-white/4" : ""}`}>
                     <td className="p-2 text-zinc-400">{new Date(lead.createdAt).toLocaleString()}</td>
                     <td className="p-2 text-white">{lead.customer.name}</td>
                     <td className="p-2 text-zinc-300">{lead.vehicle.title}</td>

@@ -106,13 +106,13 @@ export default function ContactPage() {
                 </span>
                 <div className="space-y-2.5 text-sm text-zinc-300">
                   <div className="flex items-start gap-2.5">
-                    <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5 text-zinc-500" />
+                    <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-zinc-500" />
                     <span>
                       {loc.address}, {loc.city}, {loc.state} {loc.zip}
                     </span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <Phone className="h-4 w-4 flex-shrink-0 text-zinc-500" />
+                    <Phone className="h-4 w-4 shrink-0 text-zinc-500" />
                     <a
                       href={loc.phoneHref}
                       className="hover:text-accent-light transition-colors"
@@ -135,7 +135,7 @@ export default function ContactPage() {
           ))}
         </div>
 
-        <div className="rounded-2xl overflow-hidden border border-white/[0.06] h-[400px] bg-surface-1">
+        <div className="rounded-2xl overflow-hidden border border-white/6 h-100 bg-surface-1">
           <iframe
             src="https://www.google.com/maps?q=302+22nd+Ave,+Paterson,+NJ+07513&output=embed"
             width="100%"
@@ -152,11 +152,11 @@ export default function ContactPage() {
           <h3 className="text-lg font-bold text-center text-white mb-4">
             Showroom Hours
           </h3>
-          <div className="rounded-2xl border border-white/[0.06] bg-surface-1 overflow-hidden">
+          <div className="rounded-2xl border border-white/6 bg-surface-1 overflow-hidden">
             {HOURS.map((h) => (
               <div
                 key={h.day}
-                className="flex justify-between px-5 py-3.5 text-sm border-b border-white/[0.04] last:border-b-0"
+                className="flex justify-between px-5 py-3.5 text-sm border-b border-white/4 last:border-b-0"
               >
                 <span className="text-zinc-500">{h.day}</span>
                 <span

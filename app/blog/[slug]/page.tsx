@@ -148,9 +148,9 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Tags */}
           {post.tags.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-white/[0.06] flex flex-wrap gap-2">
+            <div className="mt-8 pt-6 border-t border-white/6 flex flex-wrap gap-2">
               {post.tags.map((tag) => (
-                <span key={tag} className="px-3 py-1 text-xs text-zinc-400 bg-white/[0.04] border border-white/[0.06] rounded-full">
+                <span key={tag} className="px-3 py-1 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full">
                   {tag}
                 </span>
               ))}
@@ -164,14 +164,14 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Related Posts */}
           {relatedPosts.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-white/[0.06]">
+            <div className="mt-12 pt-8 border-t border-white/6">
               <h3 className="text-lg font-bold text-white mb-4">Related Articles</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {relatedPosts.map((rp) => (
                   <Link
                     key={rp.slug}
                     href={`/blog/${rp.slug}`}
-                    className="p-4 rounded-xl border border-white/[0.08] bg-surface-1 hover:bg-surface-2 transition-colors group"
+                    className="p-4 rounded-xl border border-white/8 bg-surface-1 hover:bg-surface-2 transition-colors group"
                   >
                     <span className="inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-accent/10 text-accent-light rounded-full border border-accent/20 mb-2">
                       {categoryLabels[rp.category]}

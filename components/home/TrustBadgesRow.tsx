@@ -12,7 +12,7 @@ const trustSignals = [
 
 export function TrustBadgesRow() {
   return (
-    <section className="border-y border-white/[0.04] bg-[#0A0A0A] px-4 py-6 sm:px-6 md:px-8 md:py-8">
+    <section className="border-y border-white/4 bg-[#0A0A0A] px-4 py-6 sm:px-6 md:px-8 md:py-8">
       <div className="relative mx-auto max-w-6xl">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-gradient-to-r from-[#0A0A0A] to-transparent md:hidden" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-gradient-to-l from-[#0A0A0A] to-transparent md:hidden" />
@@ -23,7 +23,7 @@ export function TrustBadgesRow() {
               const Icon = signal.icon;
 
               const content = (
-                <div className="inline-flex h-12 min-w-[11.25rem] snap-start shrink-0 items-center justify-center gap-2.5 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 text-center backdrop-blur-sm transition-all duration-200 hover:border-white/[0.14] hover:bg-white/[0.05] md:min-w-0">
+                <div className="inline-flex h-12 min-w-[11.25rem] snap-start shrink-0 items-center justify-center gap-2.5 rounded-2xl border border-white/8 bg-white/3 px-4 text-center backdrop-blur-sm transition-all duration-200 hover:border-white/[0.14] hover:bg-white/5 md:min-w-0">
                   <Icon className="h-[17px] w-[17px] shrink-0 text-[#D31119]" />
                   <span className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.14em] text-white sm:text-[11.5px] md:text-xs">
                     {signal.label}

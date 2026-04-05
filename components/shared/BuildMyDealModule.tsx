@@ -118,12 +118,12 @@ export function BuildMyDealModule({ vehicle }: BuildMyDealModuleProps) {
   }, [form.tradeInValue, form.tradePayoff, vehicle.id, vehicle.slug]);
 
   return (
-    <section className="rounded-2xl border border-white/[0.08] bg-surface-2 p-4 md:p-6 space-y-5">
+    <section className="rounded-2xl border border-white/8 bg-surface-2 p-4 md:p-6 space-y-5">
       <div className="grid gap-5 lg:grid-cols-2">
         <div className="space-y-4">
           <h3 className="text-xl font-semibold text-white">Build My Deal</h3>
-          <div className="rounded-xl border border-white/[0.08] bg-surface-1 p-3 flex gap-3 items-center">
-            <div className="relative h-16 w-24 rounded-md bg-white/[0.05] overflow-hidden">
+          <div className="rounded-xl border border-white/8 bg-surface-1 p-3 flex gap-3 items-center">
+            <div className="relative h-16 w-24 rounded-md bg-white/5 overflow-hidden">
               {vehicle.imageUrl ? <VehicleImage src={vehicle.imageUrl} alt={vehicle.title} make="Vehicle" model="Image" className="h-full w-full object-cover" /> : null}
             </div>
             <div>
@@ -160,7 +160,7 @@ export function BuildMyDealModule({ vehicle }: BuildMyDealModuleProps) {
           <p className="text-xs text-zinc-500">Tax {Math.round(DEAL_DESK_CONFIG.taxAssumptions.taxRate * 10000) / 100}% • Doc fee {money.format(DEAL_DESK_CONFIG.feeAssumptions.docFee)} • Title/Reg {money.format(DEAL_DESK_CONFIG.feeAssumptions.titleAndRegistrationFee)}</p>
         </div>
 
-        <div className="rounded-xl border border-white/[0.08] bg-surface-1 p-4 space-y-3 h-fit">
+        <div className="rounded-xl border border-white/8 bg-surface-1 p-4 space-y-3 h-fit">
           <p className="text-xs uppercase tracking-wide text-zinc-500">Estimated Results</p>
           <div className="flex justify-between text-sm"><span className="text-zinc-400">Estimated Monthly</span><span className="font-semibold text-accent-light">{money.format(result.estimatedMonthlyPayment)}</span></div>
           <div className="flex justify-between text-sm"><span className="text-zinc-400">Amount Financed</span><span className="text-white">{money.format(result.amountFinanced)}</span></div>

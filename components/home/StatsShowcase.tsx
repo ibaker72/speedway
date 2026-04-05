@@ -45,8 +45,8 @@ function AnimatedCounter({ end, suffix, isDecimal }: { end: number; suffix: stri
 
 export function StatsShowcase() {
   return (
-    <section className="bg-[#050505] py-16 md:py-24 border-t border-white/[0.04] border-b border-b-white/[0.04]">
-      <div className="mx-auto max-w-[80rem] px-5 sm:px-6 lg:px-8">
+    <section className="bg-[#050505] py-16 md:py-24 border-t border-white/4 border-b border-b-white/4">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {stats.map((stat) => {
             const Icon = stat.icon;

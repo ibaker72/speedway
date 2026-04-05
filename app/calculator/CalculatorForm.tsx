@@ -30,7 +30,7 @@ export function CalculatorForm({ initialPrice }: { initialPrice?: number }) {
   const principalPercent = 100 - interestPercent;
 
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-surface-2 p-6 md:p-8 space-y-8">
+    <div className="rounded-2xl border border-white/8 bg-surface-2 p-6 md:p-8 space-y-8">
       {/* Vehicle Price */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -47,7 +47,7 @@ export function CalculatorForm({ initialPrice }: { initialPrice?: number }) {
           step={500}
           value={price}
           onChange={(e) => setPrice(Number(e.target.value))}
-          className="w-full h-2 bg-white/[0.08] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(211,17,25,0.4)]"
+          className="w-full h-2 bg-white/8 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(211,17,25,0.4)]"
         />
         <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
           <span>$5,000</span><span>$75,000</span>
@@ -70,7 +70,7 @@ export function CalculatorForm({ initialPrice }: { initialPrice?: number }) {
           step={500}
           value={downPayment}
           onChange={(e) => setDownPayment(Number(e.target.value))}
-          className="w-full h-2 bg-white/[0.08] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(211,17,25,0.4)]"
+          className="w-full h-2 bg-white/8 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(211,17,25,0.4)]"
         />
         <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
           <span>$0</span><span>$20,000</span>
@@ -92,7 +92,7 @@ export function CalculatorForm({ initialPrice }: { initialPrice?: number }) {
               className={`py-2.5 px-3 rounded-xl text-xs font-medium transition-colors ${
                 creditIndex === i
                   ? "bg-accent/20 text-accent-light border border-accent/30"
-                  : "bg-white/[0.04] text-zinc-400 border border-white/[0.06] hover:bg-white/[0.08]"
+                  : "bg-white/4 text-zinc-400 border border-white/6 hover:bg-white/8"
               }`}
             >
               {cr.label}
@@ -116,7 +116,7 @@ export function CalculatorForm({ initialPrice }: { initialPrice?: number }) {
               className={`py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 term === t
                   ? "bg-accent/20 text-accent-light border border-accent/30"
-                  : "bg-white/[0.04] text-zinc-400 border border-white/[0.06] hover:bg-white/[0.08]"
+                  : "bg-white/4 text-zinc-400 border border-white/6 hover:bg-white/8"
               }`}
             >
               {t} mo
@@ -126,7 +126,7 @@ export function CalculatorForm({ initialPrice }: { initialPrice?: number }) {
       </div>
 
       {/* Result */}
-      <div className="bg-surface-1 border border-white/[0.06] rounded-2xl p-6 text-center">
+      <div className="bg-surface-1 border border-white/6 rounded-2xl p-6 text-center">
         <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Estimated Monthly Payment</p>
         <p className="text-5xl font-bold text-white">
           ${monthly.toLocaleString()}

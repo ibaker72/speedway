@@ -4,7 +4,7 @@ import { LayoutGrid, List } from "lucide-react";
 
 export function InventoryViewToggle() {
   return (
-    <div className="flex items-center gap-1 bg-surface-1 border border-white/[0.06] rounded-lg p-1">
+    <div className="flex items-center gap-1 bg-surface-1 border border-white/6 rounded-lg p-1">
       <button
         type="button"
         className="p-1.5 rounded text-accent-light bg-accent/10"

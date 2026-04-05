@@ -35,7 +35,7 @@ export function SectionWrapper({
       <div
         className={cn(
           "relative z-10 mx-auto px-5 sm:px-6 lg:px-8",
-          narrow ? "max-w-5xl" : "max-w-[80rem]"
+          narrow ? "max-w-5xl" : "max-w-7xl"
         )}
       >
         {children}

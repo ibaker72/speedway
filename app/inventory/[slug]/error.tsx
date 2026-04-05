@@ -27,7 +27,7 @@ export default function VehicleDetailError({
           </button>
           <Link
             href="/inventory"
-            className="px-8 py-3.5 border border-white/[0.15] text-white rounded-xl font-semibold hover:bg-white/[0.06] transition-colors"
+            className="px-8 py-3.5 border border-white/15 text-white rounded-xl font-semibold hover:bg-white/6 transition-colors"
           >
             Back to Inventory
           </Link>
