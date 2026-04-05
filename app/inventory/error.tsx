@@ -21,13 +21,13 @@ export default function InventoryError({
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={() => reset()}
-            className="px-8 py-3.5 bg-[#D31119] text-white rounded-xl font-semibold hover:bg-[#ff3a40] transition-colors"
+            className="px-8 py-3.5 bg-accent text-white rounded-xl font-semibold hover:bg-accent-light transition-colors"
           >
             Try Again
           </button>
           <Link
             href="/inventory"
-            className="px-8 py-3.5 border border-white/[0.15] text-white rounded-xl font-semibold hover:bg-white/[0.06] transition-colors"
+            className="px-8 py-3.5 border border-white/15 text-white rounded-xl font-semibold hover:bg-white/6 transition-colors"
           >
             Browse All Inventory
           </Link>
