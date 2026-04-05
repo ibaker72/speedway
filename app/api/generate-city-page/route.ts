@@ -6,11 +6,6 @@ import { supabaseUpsert } from "@/lib/supabase";
 // Types
 // ---------------------------------------------------------------------------
 
-interface GenerateCityPageRequest {
-  city: string;
-  state: string;
-}
-
 interface AgentPageResponse {
   meta_title: string;
   h1_heading: string;
