@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 const REQUIRED_FIELDS = ["vin", "year", "make", "model", "price"] as const;
@@ -185,6 +186,20 @@ export async function POST(request: Request) {
       }
     );
     const deactivated = deactivateRes.ok ? ((await deactivateRes.json()) as unknown[]).length : 0;
+
+    // Invalidate ISR cache for inventory pages so changes are immediately visible
+    revalidatePath("/inventory", "page");
+    revalidatePath("/inventory/[slug]", "page");
+    revalidatePath("/", "page"); // homepage shows featured/new arrivals
+    revalidatePath("/locations/[city]", "page"); // geo pages show nearby inventory
+
+    // Ping Google so the updated sitemap is crawled promptly
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.speedwaymotorsllc.com";
+    fetch(`https://www.google.com/ping?sitemap=${encodeURIComponent(`${siteUrl}/sitemap.xml`)}`, {
+      method: "GET",
+    }).catch(() => {
+      // Non-critical — don't fail the ingest if ping fails
+    });
 
     return NextResponse.json({ inserted, updated, deactivated, errors });
   } catch (err) {
