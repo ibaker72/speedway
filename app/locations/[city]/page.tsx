@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
+import { LocalBusinessJsonLd } from "@/components/seo/LocalBusinessJsonLd";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { LocationCtaStrip } from "@/components/geo/LocationCtaStrip";
 import { LocationFaq } from "@/components/geo/LocationFaq";
@@ -68,29 +69,6 @@ function LocationFaqJsonLd({ faqs }: { faqs: Array<{ question: string; answer: s
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
 }
 
-function GeoAutoDealerJsonLd({ cityName }: { cityName: string }) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "AutoDealer",
-    name: BUSINESS.name,
-    url: BUSINESS.website,
-    telephone: BUSINESS.phone,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "302-304 22nd Ave",
-      addressLocality: "Paterson",
-      addressRegion: "NJ",
-      postalCode: "07513",
-      addressCountry: "US",
-    },
-    areaServed: {
-      "@type": "City",
-      name: cityName,
-    },
-  };
-
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
-}
 
 export default async function LocationPage({ params }: PageProps) {
   const { city } = await params;
@@ -115,7 +93,7 @@ export default async function LocationPage({ params }: PageProps) {
         ]}
       />
       <LocationFaqJsonLd faqs={faqs} />
-      <GeoAutoDealerJsonLd cityName={location.city} />
+      <LocalBusinessJsonLd location={location} />
 
       <LocationHero location={location} />
       <LocationIntro intro={buildLocationIntro(location)} location={location} />

@@ -7,56 +7,52 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.speedwaymotors
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
-    "",
-    "/inventory",
-    "/finance",
-    "/trade",
-    "/sell-your-car",
-    "/about",
-    "/contact",
-    "/reviews",
-    "/faq",
-    "/commercial",
-    "/warranty",
-    "/specials",
-    "/privacy-policy",
-    "/terms-of-service",
-    "/calculator",
-    "/guides/car-buying-guide",
-    "/value-my-car",
-  ].map((route) => ({
+    { route: "", priority: 1.0, freq: "daily" as const },
+    { route: "/inventory", priority: 0.9, freq: "daily" as const },
+    { route: "/finance", priority: 0.8, freq: "weekly" as const },
+    { route: "/trade", priority: 0.8, freq: "weekly" as const },
+    { route: "/sell-your-car", priority: 0.8, freq: "weekly" as const },
+    { route: "/value-my-car", priority: 0.8, freq: "weekly" as const },
+    { route: "/guides/car-buying-guide", priority: 0.8, freq: "monthly" as const },
+    { route: "/about", priority: 0.7, freq: "monthly" as const },
+    { route: "/contact", priority: 0.7, freq: "monthly" as const },
+    { route: "/reviews", priority: 0.7, freq: "monthly" as const },
+    { route: "/faq", priority: 0.7, freq: "monthly" as const },
+    { route: "/commercial", priority: 0.7, freq: "weekly" as const },
+    { route: "/warranty", priority: 0.6, freq: "monthly" as const },
+    { route: "/specials", priority: 0.8, freq: "daily" as const },
+    { route: "/calculator", priority: 0.6, freq: "monthly" as const },
+    { route: "/privacy-policy", priority: 0.3, freq: "yearly" as const },
+    { route: "/terms-of-service", priority: 0.3, freq: "yearly" as const },
+  ].map(({ route, priority, freq }) => ({
     url: `${BASE_URL}${route}`,
     lastModified: new Date(),
-    changeFrequency: route === "" ? ("daily" as const) : ("weekly" as const),
-    priority: route === ""
-      ? 1
-      : route === "/inventory"
-        ? 0.9
-        : ["/guides/car-buying-guide", "/value-my-car"].includes(route)
-          ? 0.8
-          : 0.7,
+    changeFrequency: freq,
+    priority,
   }));
 
   const { vehicles } = await getInventory({ perPage: 999 });
   const vehiclePages = vehicles.map((v) => ({
     url: `${BASE_URL}/inventory/${v.slug}`,
     lastModified: new Date(v.dateModified || v.dateAdded),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
+    // Featured/new arrivals get higher crawl priority and frequency
+    changeFrequency: (v.isFeatured || v.isNewArrival ? "daily" : "weekly") as "daily" | "weekly",
+    priority: v.isFeatured ? 0.9 : v.isNewArrival ? 0.85 : 0.7,
   }));
 
   const locationPages = [
     {
       url: `${BASE_URL}/locations`,
       lastModified: new Date(),
-      changeFrequency: "monthly" as const,
+      changeFrequency: "weekly" as const,
       priority: 0.8,
     },
     ...geoLocations.map((location) => ({
       url: `${BASE_URL}/locations/${location.slug}`,
       lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
+      // Geo pages reference live inventory — refresh weekly
+      changeFrequency: "weekly" as const,
+      priority: location.distanceMiles <= 5 ? 0.8 : 0.7,
     })),
   ];
 

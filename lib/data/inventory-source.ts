@@ -95,7 +95,7 @@ function mapSupabaseVehicle(row: SupabaseVehicleRow): Vehicle {
   };
 }
 
-function buildFilterOptions(vehicles: Vehicle[]) {
+function buildFilterOptions(vehicles: Pick<Vehicle, "make" | "model" | "bodyType" | "price" | "year">[]) {
   const makes = new Map<string, number>();
   const models = new Map<string, number>();
   const bodyTypes = new Map<string, number>();
@@ -155,7 +155,13 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
   if (andConditions.length) query.set("and", `(${andConditions.join(",")})`);
   if (filters.drivetrain) query.set("drivetrain", `eq.${filters.drivetrain}`);
   if (filters.features?.length) query.set("features", `cs.{${filters.features.map((f) => `"${f.replace(/"/g, "")}"`).join(",")}}`);
-  if (filters.search) query.set("or", `(make.ilike.*${filters.search}*,model.ilike.*${filters.search}*,trim.ilike.*${filters.search}*)`);
+  if (filters.search) {
+    // Sanitize search: strip characters that could manipulate PostgREST query syntax
+    const safeSearch = filters.search.replace(/[^a-zA-Z0-9\s\-]/g, "").trim().slice(0, 100);
+    if (safeSearch) {
+      query.set("or", `(make.ilike.*${safeSearch}*,model.ilike.*${safeSearch}*,trim.ilike.*${safeSearch}*)`);
+    }
+  }
 
   switch (filters.sortBy) {
     case "price-asc": query.set("order", "price.asc"); break;
@@ -175,19 +181,29 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
 
   const [dataRes, allRes] = await Promise.all([
     fetch(`${url}/rest/v1/inventory?${query.toString()}`, { headers, next: { revalidate: 60 } }),
-    fetch(`${url}/rest/v1/inventory?select=*&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
+    // Only fetch columns needed to build filter options — avoids pulling all image/description data
+    fetch(`${url}/rest/v1/inventory?select=make,model,body_type,price,year,mileage,drivetrain&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
   ]);
 
   if (!dataRes.ok) throw new Error(`Supabase query failed: ${dataRes.status}`);
   if (!allRes.ok) throw new Error(`Supabase filter options query failed: ${allRes.status}`);
 
   const rows = (await dataRes.json()) as SupabaseVehicleRow[];
-  const allRows = (await allRes.json()) as SupabaseVehicleRow[];
+  const allRows = (await allRes.json()) as Pick<SupabaseVehicleRow, "make" | "model" | "body_type" | "price" | "year" | "mileage" | "drivetrain">[];
   const totalHeader = dataRes.headers.get("content-range");
   const total = totalHeader?.split("/")[1] ? Number(totalHeader.split("/")[1]) : rows.length;
 
   const vehicles = rows.map(mapSupabaseVehicle);
-  const filterOptions = buildFilterOptions(allRows.map(mapSupabaseVehicle));
+  // Build filter options from lightweight rows — avoids full Vehicle mapping overhead
+  const filterOptions = buildFilterOptions(
+    allRows.map((r) => ({
+      make: r.make,
+      model: r.model,
+      bodyType: mapBodyType(r.body_type),
+      price: r.price,
+      year: r.year,
+    }) as Pick<Vehicle, "make" | "model" | "bodyType" | "price" | "year">)
+  );
 
   return {
     vehicles,
@@ -299,6 +315,26 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
 }
 
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
+  const source = process.env.INVENTORY_SOURCE || "local";
+
+  if (source === "supabase") {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) throw new Error("Supabase environment variables are not configured");
+
+    const res = await fetch(
+      `${url}/rest/v1/inventory?select=*&slug=eq.${encodeURIComponent(slug)}&is_sold=eq.false&limit=1`,
+      {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        next: { revalidate: 60 },
+      }
+    );
+    if (!res.ok) return null;
+    const rows = (await res.json()) as SupabaseVehicleRow[];
+    return rows.length > 0 ? mapSupabaseVehicle(rows[0]) : null;
+  }
+
+  // Non-Supabase sources: filter from full list
   const { vehicles } = await getInventory({ perPage: 999 });
   return vehicles.find((v) => v.slug === slug) || null;
 }

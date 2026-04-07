@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-geo-pages",
+      "schedule": "0 4 * * 1"
+    },
+    {
+      "path": "/api/cron/ping-sitemap",
+      "schedule": "0 5 * * 1"
+    }
+  ]
+}

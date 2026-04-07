@@ -1,4 +1,35 @@
+import { dealerConfig } from "@/dealer.config";
+
 export function AutoDealerJsonLd() {
+  const { stats } = dealerConfig;
+
+  const areaServedCities = [
+    { name: "Paterson", state: "New Jersey" },
+    { name: "Clifton", state: "New Jersey" },
+    { name: "Passaic", state: "New Jersey" },
+    { name: "Totowa", state: "New Jersey" },
+    { name: "Fair Lawn", state: "New Jersey" },
+    { name: "Hawthorne", state: "New Jersey" },
+    { name: "Wayne", state: "New Jersey" },
+    { name: "Garfield", state: "New Jersey" },
+    { name: "Elmwood Park", state: "New Jersey" },
+    { name: "Saddle Brook", state: "New Jersey" },
+    { name: "Little Falls", state: "New Jersey" },
+    { name: "Woodland Park", state: "New Jersey" },
+    { name: "Haledon", state: "New Jersey" },
+    { name: "Prospect Park", state: "New Jersey" },
+    { name: "North Haledon", state: "New Jersey" },
+    { name: "Newark", state: "New Jersey" },
+    { name: "Jersey City", state: "New Jersey" },
+    { name: "Hackensack", state: "New Jersey" },
+    { name: "Elizabeth", state: "New Jersey" },
+    { name: "Hoboken", state: "New Jersey" },
+    { name: "Union City", state: "New Jersey" },
+    { name: "Bloomfield", state: "New Jersey" },
+    { name: "Yonkers", state: "New York" },
+    { name: "Bronx", state: "New York" },
+  ];
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "AutoDealer",
@@ -9,7 +40,7 @@ export function AutoDealerJsonLd() {
     logo: "https://www.speedwaymotorsllc.com/logo.png",
     image: "https://www.speedwaymotorsllc.com/og-image.jpg",
     description:
-      "used car dealership in Paterson, NJ offering 180+ quality pre-owned vehicles, flexible financing for all credit levels, and competitive trade-in values. Serving Passaic County since 2005.",
+      "Used car dealership in Paterson, NJ offering 180+ quality pre-owned vehicles, flexible financing for all credit levels, and competitive trade-in values. Serving Passaic County since 2005.",
     telephone: "+1-862-264-2777",
     email: "info@speedwaymotorsllc.com",
     foundingDate: "2005",
@@ -58,32 +89,16 @@ export function AutoDealerJsonLd() {
     ],
     aggregateRating: {
       "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "120",
+      ratingValue: String(stats.googleRating),
+      reviewCount: String(stats.totalReviews),
       bestRating: "5",
       worstRating: "1",
     },
-    areaServed: [
-      {
-        "@type": "City",
-        name: "Paterson",
-        containedInPlace: { "@type": "State", name: "New Jersey" },
-      },
-      { "@type": "City", name: "Clifton" },
-      { "@type": "City", name: "Passaic" },
-      { "@type": "City", name: "Totowa" },
-      { "@type": "City", name: "Fair Lawn" },
-      { "@type": "City", name: "Hawthorne" },
-      { "@type": "City", name: "Wayne" },
-      { "@type": "City", name: "Garfield" },
-      { "@type": "City", name: "Elmwood Park" },
-      { "@type": "City", name: "Saddle Brook" },
-      { "@type": "City", name: "Little Falls" },
-      { "@type": "City", name: "Woodland Park" },
-      { "@type": "City", name: "Haledon" },
-      { "@type": "City", name: "Prospect Park" },
-      { "@type": "City", name: "North Haledon" },
-    ],
+    areaServed: areaServedCities.map(({ name, state }) => ({
+      "@type": "City",
+      name,
+      containedInPlace: { "@type": "State", name: state },
+    })),
     sameAs: [
       "https://www.facebook.com/speedwaynj/",
       "https://www.instagram.com/speedwaymotorsnj/",
