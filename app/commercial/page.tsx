@@ -80,7 +80,7 @@ export default async function CommercialPage() {
                       model={vehicle.model}
                       className="w-full h-full group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
                     <span className="absolute top-3 left-3 badge-premium text-[10px]">
                       Commercial
                     </span>
