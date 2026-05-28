@@ -1,5 +1,23 @@
 import { NextResponse } from "next/server";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { ProxyAgent, fetch: undiciFetch } = require("undici") as typeof import("undici");
 import { parseAutofundsCsv } from "@/lib/feed/autofunds-parser";
+
+/**
+ * Fetch feedUrl through a Fixie static-IP proxy when FIXIE_URL is set.
+ * Fixie provides a stable egress IP so AutoFunds can whitelist it.
+ * Set FIXIE_URL=http://fixie:<token>@speedboat.usefixie.com:80 in Vercel env.
+ * Without FIXIE_URL, falls back to normal fetch (dynamic Vercel IP).
+ */
+async function fetchFeed(feedUrl: string): Promise<Response> {
+  const fixieUrl = process.env.FIXIE_URL;
+  if (fixieUrl) {
+    const dispatcher = new ProxyAgent(fixieUrl);
+    // undici fetch accepts `dispatcher` as an extended RequestInit option
+    return undiciFetch(feedUrl, { dispatcher, cache: "no-store" } as Parameters<typeof undiciFetch>[1]) as unknown as Response;
+  }
+  return fetch(feedUrl, { cache: "no-store" });
+}
 
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
@@ -17,7 +35,7 @@ export async function GET(request: Request) {
 
   let csvText: string;
   try {
-    const feedRes = await fetch(feedUrl, { cache: "no-store" });
+    const feedRes = await fetchFeed(feedUrl);
     if (!feedRes.ok) {
       return NextResponse.json(
         { message: `AutoFunds feed returned HTTP ${feedRes.status}` },
