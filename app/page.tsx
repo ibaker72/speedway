@@ -13,6 +13,8 @@ import { TrustBadgesRow } from "@/components/home/TrustBadgesRow";
 import { FAQSection } from "@/components/home/FAQSection";
 import { LocationsPreview } from "@/components/home/LocationsPreview";
 
+export const dynamic = "force-dynamic";
+
 export default function HomePage() {
   return (
     <>

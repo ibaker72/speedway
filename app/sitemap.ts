@@ -31,7 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   }));
 
-  const { vehicles } = await getInventory({ perPage: 999 });
+  let vehicles: Awaited<ReturnType<typeof getInventory>>["vehicles"] = [];
+  try {
+    ({ vehicles } = await getInventory({ perPage: 999 }));
+  } catch {
+    // Supabase unavailable at build time — sitemap will omit vehicle pages
+  }
   const vehiclePages = vehicles.map((v) => ({
     url: `${BASE_URL}/inventory/${v.slug}`,
     lastModified: new Date(v.dateModified || v.dateAdded),
