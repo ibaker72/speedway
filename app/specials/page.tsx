@@ -8,6 +8,8 @@ import { getInventory } from "@/lib/data/inventory-source";
 import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Specials & Deals",
   description:

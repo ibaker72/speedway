@@ -8,6 +8,8 @@ import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/v
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Compare Vehicles",
   description:

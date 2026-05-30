@@ -16,6 +16,8 @@ import { buildFaqs, buildLocationIntro, buildLocationMetaDescription } from "@/l
 import { getGeoInventoryHeading, getGeoPrimaryTitle, getLocationUrl, pickNearbyInventory, pickNearbyLocations } from "@/lib/geo/geo-helpers";
 import { geoLocationBySlug, geoLocations } from "@/lib/geo/locations";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ city: string }>;
 }

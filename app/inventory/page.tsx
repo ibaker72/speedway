@@ -14,6 +14,8 @@ import { parseInventoryFilters } from "@/lib/inventory/filter-params";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Used Cars, SUVs & Trucks for Sale in Paterson, NJ | Speedway Motors",
   description:

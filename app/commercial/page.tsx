@@ -10,6 +10,8 @@ import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Commercial Vehicles for Sale in Paterson, NJ",
   description:
