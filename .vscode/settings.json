@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "db/migrations/*.sql": "postgres"
+  },
+  "mssql.intelliSense.enableErrorChecking": false
+}
