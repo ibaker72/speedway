@@ -159,7 +159,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   isFeatured={vehicle.isFeatured}
                 />
               ) : (
-                <div className="aspect-16/10 rounded-2xl overflow-hidden relative bg-gradient-to-br from-surface-2 via-surface-3 to-surface-1">
+                <div className="aspect-16/10 rounded-2xl overflow-hidden relative bg-linear-to-br from-surface-2 via-surface-3 to-surface-1">
                   {vehicle.images[0]?.url ? (
                     <VehicleImage
                       src={vehicle.images[0].url}
@@ -398,7 +398,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         model={rv.model}
                         className="group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-sm text-white group-hover:text-accent-light transition-colors">
