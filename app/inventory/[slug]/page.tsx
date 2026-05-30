@@ -67,9 +67,9 @@ export const dynamicParams = true;
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  // Only pre-render a small subset; the rest will be generated on-demand with ISR
-  const { vehicles } = await getInventory({ perPage: 20 });
-  return vehicles.map((v) => ({ slug: v.slug }));
+  // Skip pre-rendering at build time; all slugs are served on-demand via ISR
+  // (dynamicParams = true handles unknown slugs without a Supabase call at build)
+  return [];
 }
 
 function getCarfaxUrl(vin: string) {
