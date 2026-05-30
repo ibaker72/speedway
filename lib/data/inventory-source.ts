@@ -189,8 +189,14 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     fetch(`${url}/rest/v1/inventory?select=make,model,body_type,price,year,mileage,drivetrain&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
   ]);
 
-  if (!dataRes.ok) throw new Error(`Supabase query failed: ${dataRes.status}`);
-  if (!allRes.ok) throw new Error(`Supabase filter options query failed: ${allRes.status}`);
+  if (!dataRes.ok) {
+    console.error(`[inventory-source] Supabase query failed: ${dataRes.status} ${await dataRes.text()}`);
+    return { vehicles: [], total: 0, page, perPage, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
+  }
+  if (!allRes.ok) {
+    console.error(`[inventory-source] Supabase filter options query failed: ${allRes.status}`);
+    return { vehicles: [], total: 0, page, perPage, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
+  }
 
   const rows = (await dataRes.json()) as SupabaseVehicleRow[];
   const allRows = (await allRes.json()) as Pick<SupabaseVehicleRow, "make" | "model" | "body_type" | "price" | "year" | "mileage" | "drivetrain">[];
@@ -274,7 +280,12 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
   const source = process.env.INVENTORY_SOURCE || "local";
 
   if (source === "supabase") {
-    return fetchFromSupabase(filters);
+    try {
+      return await fetchFromSupabase(filters);
+    } catch (err) {
+      console.error("[inventory-source] fetchFromSupabase threw unexpectedly:", err);
+      return { vehicles: [], total: 0, page: filters.page || 1, perPage: filters.perPage || 24, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
+    }
   }
 
   let vehicles: Vehicle[];
