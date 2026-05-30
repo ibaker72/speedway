@@ -3,6 +3,8 @@ import { parseAutofundsCsv } from "@/lib/feed/autofunds-parser";
 import { fetchCsvViaSftp } from "@/lib/feed/sftp-client";
 import { importVehicles } from "@/lib/server/importVehicles";
 
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
   // Auth: Bearer token in header OR ?secret= query param
   const cronSecret = process.env.CRON_SECRET;
