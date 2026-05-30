@@ -128,7 +128,8 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    throw new Error("Supabase environment variables are not configured");
+    console.warn("[inventory-source] Supabase environment variables are not configured — returning empty inventory");
+    return { vehicles: [], total: 0, page: filters.page || 1, perPage: filters.perPage || 24, totalPages: 0 };
   }
 
   const page = filters.page || 1;
@@ -320,7 +321,7 @@ export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
   if (source === "supabase") {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) throw new Error("Supabase environment variables are not configured");
+    if (!url || !key) return null;
 
     const res = await fetch(
       `${url}/rest/v1/inventory?select=*&slug=eq.${encodeURIComponent(slug)}&is_sold=eq.false&limit=1`,
