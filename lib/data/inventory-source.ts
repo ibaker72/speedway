@@ -129,7 +129,10 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
 
   if (!url || !key) {
     console.warn("[inventory-source] Supabase environment variables are not configured — returning empty inventory");
-    return { vehicles: [], total: 0, page: filters.page || 1, perPage: filters.perPage || 24, totalPages: 0 };
+    return {
+      vehicles: [], total: 0, page: filters.page || 1, perPage: filters.perPage || 24, totalPages: 0,
+      filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } },
+    };
   }
 
   const page = filters.page || 1;
