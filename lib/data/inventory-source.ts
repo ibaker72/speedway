@@ -9,7 +9,8 @@ interface SupabaseVehicleRow {
   make: string;
   model: string;
   trim: string | null;
-  body_type: string;
+  body_type?: string;
+  body_style?: string;
   condition: "used" | "certified";
   price: number;
   msrp: number | null;
@@ -33,6 +34,46 @@ interface SupabaseVehicleRow {
   date_added: string;
   date_modified: string | null;
   estimated_payment: number | null;
+}
+
+interface SupabaseRuntimeConfig {
+  url: string;
+  key: string;
+}
+
+function getSupabaseRuntimeConfig(strict: true): SupabaseRuntimeConfig;
+function getSupabaseRuntimeConfig(strict?: false): SupabaseRuntimeConfig | null;
+function getSupabaseRuntimeConfig(strict = false): SupabaseRuntimeConfig | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    if (strict) {
+      throw new Error(
+        "INVENTORY_SOURCE is set to 'supabase' but NEXT_PUBLIC_SUPABASE_URL and/or Supabase key env var is missing."
+      );
+    }
+    return null;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL is not a valid URL.");
+  }
+
+  if (!/^https?:$/.test(parsed.protocol)) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL must start with http:// or https://.");
+  }
+
+  if (strict && !parsed.hostname.endsWith(".supabase.co")) {
+    throw new Error(
+      `NEXT_PUBLIC_SUPABASE_URL hostname looks incorrect for Supabase: ${parsed.hostname}.`
+    );
+  }
+
+  return { url, key };
 }
 
 async function fetchFromLocalJson(): Promise<Vehicle[]> {
@@ -68,7 +109,7 @@ function mapSupabaseVehicle(row: SupabaseVehicleRow): Vehicle {
     make: row.make,
     model: row.model,
     trim: row.trim || undefined,
-    bodyType: mapBodyType(row.body_type),
+    bodyType: mapBodyType(row.body_style ?? row.body_type ?? ""),
     condition: row.condition,
     price: row.price,
     msrp: row.msrp ?? undefined,
@@ -124,16 +165,18 @@ function buildFilterOptions(vehicles: Pick<Vehicle, "make" | "model" | "bodyType
 }
 
 async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryResponse> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const config = getSupabaseRuntimeConfig();
+  const bodyTypeColumn = process.env.SUPABASE_BODY_TYPE_COLUMN || "body_style";
 
-  if (!url || !key) {
+  if (!config) {
     console.warn("[inventory-source] Supabase environment variables are not configured — returning empty inventory");
     return {
       vehicles: [], total: 0, page: filters.page || 1, perPage: filters.perPage || 24, totalPages: 0,
       filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } },
     };
   }
+
+  const { url, key } = config;
 
   const page = filters.page || 1;
   const perPage = filters.perPage || 24;
@@ -148,7 +191,7 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
   if (filters.isCommercial !== undefined) query.set("is_commercial", `eq.${filters.isCommercial}`);
   if (filters.make) query.set("make", `eq.${filters.make}`);
   if (filters.model) query.set("model", `eq.${filters.model}`);
-  if (filters.bodyType) query.set("body_type", `eq.${filters.bodyType}`);
+  if (filters.bodyType) query.set(bodyTypeColumn, `eq.${filters.bodyType}`);
   const andConditions: string[] = [];
   if (filters.minPrice !== undefined) andConditions.push(`price.gte.${filters.minPrice}`);
   if (filters.maxPrice !== undefined) andConditions.push(`price.lte.${filters.maxPrice}`);
@@ -189,7 +232,7 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     [dataRes, allRes] = await Promise.all([
       fetch(`${url}/rest/v1/inventory?${query.toString()}`, { headers, next: { revalidate: 60 } }),
       // Only fetch columns needed to build filter options — avoids pulling all image/description data
-      fetch(`${url}/rest/v1/inventory?select=make,model,body_type,price,year,mileage,drivetrain&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
+      fetch(`${url}/rest/v1/inventory?select=make,model,${encodeURIComponent(bodyTypeColumn)},price,year,mileage,drivetrain&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
     ]);
   } catch (err) {
     const host = (() => {
@@ -223,7 +266,7 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
   }
 
   const rows = (await dataRes.json()) as SupabaseVehicleRow[];
-  const allRows = (await allRes.json()) as Pick<SupabaseVehicleRow, "make" | "model" | "body_type" | "price" | "year" | "mileage" | "drivetrain">[];
+  const allRows = (await allRes.json()) as Pick<SupabaseVehicleRow, "make" | "model" | "body_type" | "body_style" | "price" | "year" | "mileage" | "drivetrain">[];
   const totalHeader = dataRes.headers.get("content-range");
   const total = totalHeader?.split("/")[1] ? Number(totalHeader.split("/")[1]) : rows.length;
 
@@ -233,7 +276,7 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     allRows.map((r) => ({
       make: r.make,
       model: r.model,
-      bodyType: mapBodyType(r.body_type),
+      bodyType: mapBodyType(r.body_style ?? r.body_type ?? ""),
       price: r.price,
       year: r.year,
     }) as Pick<Vehicle, "make" | "model" | "bodyType" | "price" | "year">)
@@ -304,6 +347,8 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
   const source = process.env.INVENTORY_SOURCE || "local";
 
   if (source === "supabase") {
+    // Fail fast on malformed/missing env to avoid silently publishing empty inventory.
+    getSupabaseRuntimeConfig(true);
     try {
       return await fetchFromSupabase(filters);
     } catch (err) {
@@ -358,9 +403,7 @@ export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
   const source = process.env.INVENTORY_SOURCE || "local";
 
   if (source === "supabase") {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
+    const { url, key } = getSupabaseRuntimeConfig(true);
 
     const res = await fetch(
       `${url}/rest/v1/inventory?select=*&slug=eq.${encodeURIComponent(slug)}&is_sold=eq.false&limit=1`,
