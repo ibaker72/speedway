@@ -183,11 +183,35 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     Prefer: "count=exact",
   };
 
-  const [dataRes, allRes] = await Promise.all([
-    fetch(`${url}/rest/v1/inventory?${query.toString()}`, { headers, next: { revalidate: 60 } }),
-    // Only fetch columns needed to build filter options — avoids pulling all image/description data
-    fetch(`${url}/rest/v1/inventory?select=make,model,body_type,price,year,mileage,drivetrain&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
-  ]);
+  let dataRes: Response;
+  let allRes: Response;
+  try {
+    [dataRes, allRes] = await Promise.all([
+      fetch(`${url}/rest/v1/inventory?${query.toString()}`, { headers, next: { revalidate: 60 } }),
+      // Only fetch columns needed to build filter options — avoids pulling all image/description data
+      fetch(`${url}/rest/v1/inventory?select=make,model,body_type,price,year,mileage,drivetrain&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
+    ]);
+  } catch (err) {
+    const host = (() => {
+      try {
+        return new URL(url).hostname;
+      } catch {
+        return "<invalid NEXT_PUBLIC_SUPABASE_URL>";
+      }
+    })();
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[inventory-source] Supabase fetch failed for host ${host}. Check NEXT_PUBLIC_SUPABASE_URL in deployment env. ${message}`
+    );
+    return {
+      vehicles: [],
+      total: 0,
+      page,
+      perPage,
+      totalPages: 0,
+      filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } },
+    };
+  }
 
   if (!dataRes.ok) {
     console.error(`[inventory-source] Supabase query failed: ${dataRes.status} ${await dataRes.text()}`);
@@ -283,7 +307,8 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
     try {
       return await fetchFromSupabase(filters);
     } catch (err) {
-      console.error("[inventory-source] fetchFromSupabase threw unexpectedly:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[inventory-source] fetchFromSupabase threw unexpectedly: ${message}`);
       return { vehicles: [], total: 0, page: filters.page || 1, perPage: filters.perPage || 24, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
     }
   }
