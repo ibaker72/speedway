@@ -36,7 +36,12 @@ export async function GET(request: Request) {
           ? parseInt(process.env.AUTOFUNDS_SFTP_PORT, 10)
           : undefined,
         username: process.env.SFTP_USERNAME ?? process.env.AUTOFUNDS_SFTP_USER ?? "",
-        password: process.env.SFTP_PASSWORD ?? process.env.AUTOFUNDS_SFTP_PASS ?? "",
+        password: process.env.SFTP_PASSWORD ?? process.env.AUTOFUNDS_SFTP_PASS,
+        privateKey:
+          process.env.SFTP_PRIVATE_KEY ?? process.env.AUTOFUNDS_SFTP_PRIVATE_KEY,
+        passphrase:
+          process.env.SFTP_PRIVATE_KEY_PASSPHRASE ??
+          process.env.AUTOFUNDS_SFTP_PRIVATE_KEY_PASSPHRASE,
         remotePath,
       });
       console.log(`[sync-autofunds] SFTP download complete, ${csvText.length} bytes`);

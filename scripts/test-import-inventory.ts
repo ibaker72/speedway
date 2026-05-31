@@ -46,9 +46,18 @@ async function main() {
     console.log(`[test-import] connecting to SFTP ${host}${remotePath} ...`);
     csvText = await fetchCsvViaSftp({
       host,
-      port: process.env.SFTP_PORT ? parseInt(process.env.SFTP_PORT, 10) : 22,
+      port: process.env.SFTP_PORT
+        ? parseInt(process.env.SFTP_PORT, 10)
+        : process.env.AUTOFUNDS_SFTP_PORT
+        ? parseInt(process.env.AUTOFUNDS_SFTP_PORT, 10)
+        : 22,
       username: process.env.SFTP_USERNAME ?? process.env.AUTOFUNDS_SFTP_USER ?? "",
-      password: process.env.SFTP_PASSWORD ?? process.env.AUTOFUNDS_SFTP_PASS ?? "",
+      password: process.env.SFTP_PASSWORD ?? process.env.AUTOFUNDS_SFTP_PASS,
+      privateKey:
+        process.env.SFTP_PRIVATE_KEY ?? process.env.AUTOFUNDS_SFTP_PRIVATE_KEY,
+      passphrase:
+        process.env.SFTP_PRIVATE_KEY_PASSPHRASE ??
+        process.env.AUTOFUNDS_SFTP_PRIVATE_KEY_PASSPHRASE,
       remotePath,
     });
     console.log(`[test-import] downloaded ${csvText.length} bytes`);

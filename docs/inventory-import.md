@@ -30,6 +30,8 @@ Set these in the Vercel dashboard under **Settings → Environment Variables**. 
 | `SFTP_PORT`               | SFTP port (default 22)                             | `22`                        |
 | `SFTP_USERNAME`           | SFTP login user                                    | `autofunds-upload`          |
 | `SFTP_PASSWORD`           | SFTP password — **server-side only**               | (from DO droplet setup)     |
+| `SFTP_PRIVATE_KEY`        | Optional SSH private key (PEM) instead of password | `-----BEGIN OPENSSH...`     |
+| `SFTP_PRIVATE_KEY_PASSPHRASE` | Optional passphrase for encrypted private key  | (if key is encrypted)       |
 | `SFTP_REMOTE_DIR`         | Directory on SFTP server                           | `/speedwaymotors/inventory` |
 | `SFTP_FILE_NAME`          | File name to download                              | `daily_inventory.csv`       |
 | `NEXT_PUBLIC_SUPABASE_URL`| Supabase project URL                               | `https://xyz.supabase.co`   |
