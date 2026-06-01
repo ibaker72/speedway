@@ -6,6 +6,8 @@ const SOURCE = "autofunds";
 interface ImportSummary {
   totalRows: number;
   upserted: number;
+  inserted: number;
+  updated: number;
   skipped: number;
   markedInactive: number;
   errors: string[];
@@ -73,6 +75,8 @@ export async function importVehicles(
   const summary: ImportSummary = {
     totalRows: vehicles.length,
     upserted: 0,
+    inserted: 0,
+    updated: 0,
     skipped: 0,
     markedInactive: 0,
     errors: [],
@@ -113,6 +117,30 @@ export async function importVehicles(
     return summary;
   }
 
+  // Pre-fetch existing VINs so we can split inserted vs updated counts after the upsert.
+  // Done in chunks to avoid blowing past PostgREST URL length limits on large feeds.
+  const existingVins = new Set<string>();
+  const VIN_LOOKUP_CHUNK = 200;
+  for (let i = 0; i < upsertedVins.length; i += VIN_LOOKUP_CHUNK) {
+    const chunk = upsertedVins.slice(i, i + VIN_LOOKUP_CHUNK);
+    const vinList = chunk.map((v) => `"${v}"`).join(",");
+    const res = await fetch(
+      `${url}/rest/v1/inventory?select=vin&vin=in.(${vinList})`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
+    );
+    if (res.ok) {
+      const found = (await res.json()) as { vin: string }[];
+      for (const r of found) existingVins.add(r.vin);
+    } else {
+      console.warn(
+        `[importVehicles] existing-VIN lookup failed at offset ${i}: ${res.status} — inserted/updated split may be inaccurate`
+      );
+    }
+  }
+  console.log(
+    `[importVehicles] existing VINs found in DB: ${existingVins.size} / ${upsertedVins.length}`
+  );
+
   const BATCH = 100;
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
@@ -130,9 +158,20 @@ export async function importVehicles(
       continue;
     }
 
-    const upserted = (await res.json()) as unknown[];
+    const upserted = (await res.json()) as { vin?: string }[];
     summary.upserted += upserted.length;
-    console.log(`[importVehicles] batch ${i}–${i + batch.length}: upserted ${upserted.length}`);
+
+    let batchInserted = 0;
+    let batchUpdated = 0;
+    for (const row of upserted) {
+      if (row.vin && existingVins.has(row.vin)) batchUpdated++;
+      else batchInserted++;
+    }
+    summary.inserted += batchInserted;
+    summary.updated += batchUpdated;
+    console.log(
+      `[importVehicles] batch ${i}–${i + batch.length}: upserted ${upserted.length} (inserted ${batchInserted}, updated ${batchUpdated})`
+    );
   }
 
   // Mark vehicles from this source that weren't in the payload as inactive

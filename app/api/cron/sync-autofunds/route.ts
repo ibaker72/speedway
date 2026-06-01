@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseAutofundsCsv } from "@/lib/feed/autofunds-parser";
+import { parseAutofundsCsvDetailed } from "@/lib/feed/autofunds-parser";
 import { fetchCsvViaSftp } from "@/lib/feed/sftp-client";
 import { importVehicles } from "@/lib/server/importVehicles";
 
@@ -79,17 +79,47 @@ export async function GET(request: Request) {
   }
 
   console.log("[sync-autofunds] parsing CSV...");
-  const vehicles = parseAutofundsCsv(csvText);
+  const { vehicles, diagnostics } = parseAutofundsCsvDetailed(csvText);
+
+  console.log(
+    `[sync-autofunds] CSV diagnostics — csvRows=${diagnostics.csvRowCount} dataRows=${diagnostics.dataRowCount} ` +
+      `parsed=${vehicles.length} headers=${diagnostics.headers.length} ` +
+      `missingRequired=[${diagnostics.missingRequiredHeaders.join(",")}] ` +
+      `unknown=[${diagnostics.unknownHeaders.join(",")}] ` +
+      `skipReasons=${JSON.stringify(diagnostics.skipReasons)}`
+  );
 
   if (vehicles.length === 0) {
-    return NextResponse.json({ message: "No vehicles parsed from feed" }, { status: 422 });
+    const reason =
+      diagnostics.missingRequiredHeaders.length > 0
+        ? `Missing required headers: ${diagnostics.missingRequiredHeaders.join(", ")}`
+        : diagnostics.csvRowCount < 2
+        ? "CSV had fewer than 2 rows (header + at least one data row required)"
+        : "All data rows failed required-field validation";
+    console.error(`[sync-autofunds] 0 vehicles parsed — ${reason}`);
+    return NextResponse.json(
+      {
+        message: `No vehicles parsed from feed: ${reason}`,
+        diagnostics: {
+          csvRowCount: diagnostics.csvRowCount,
+          dataRowCount: diagnostics.dataRowCount,
+          headersDetected: diagnostics.headers,
+          missingRequiredHeaders: diagnostics.missingRequiredHeaders,
+          unknownHeaders: diagnostics.unknownHeaders,
+          skipReasons: diagnostics.skipReasons,
+        },
+      },
+      { status: 422 }
+    );
   }
 
   console.log(`[sync-autofunds] parsed ${vehicles.length} vehicles, importing to Supabase...`);
   const summary = await importVehicles(vehicles);
 
   console.log(
-    `[sync-autofunds] done — upserted=${summary.upserted} skipped=${summary.skipped} inactive=${summary.markedInactive} errors=${summary.errors.length}`
+    `[sync-autofunds] done — inserted=${summary.inserted} updated=${summary.updated} ` +
+      `(upserted=${summary.upserted}) skipped=${summary.skipped} inactive=${summary.markedInactive} ` +
+      `errors=${summary.errors.length}`
   );
 
   return NextResponse.json({
@@ -98,9 +128,19 @@ export async function GET(request: Request) {
     file: fileName,
     summary: {
       totalRows: summary.totalRows,
+      inserted: summary.inserted,
+      updated: summary.updated,
       upserted: summary.upserted,
       skipped: summary.skipped,
       markedInactive: summary.markedInactive,
+    },
+    diagnostics: {
+      csvRowCount: diagnostics.csvRowCount,
+      dataRowCount: diagnostics.dataRowCount,
+      headersDetected: diagnostics.headers.length,
+      missingRequiredHeaders: diagnostics.missingRequiredHeaders,
+      unknownHeaders: diagnostics.unknownHeaders,
+      skipReasons: diagnostics.skipReasons,
     },
     errors: summary.errors.length > 0 ? summary.errors : undefined,
   });

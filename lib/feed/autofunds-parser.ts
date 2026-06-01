@@ -37,6 +37,51 @@ export interface AutofundsVehicle {
   dateModified?: string;
 }
 
+export interface ParseDiagnostics {
+  csvRowCount: number;
+  dataRowCount: number;
+  headers: string[];
+  missingRequiredHeaders: string[];
+  unknownHeaders: string[];
+  skipReasons: Record<string, number>;
+}
+
+export interface ParseResult {
+  vehicles: AutofundsVehicle[];
+  diagnostics: ParseDiagnostics;
+}
+
+const REQUIRED_HEADERS = ["VIN", "Year", "Make", "Model"] as const;
+
+const KNOWN_HEADERS = new Set<string>([
+  "DealerID",
+  "StockNumber",
+  "VIN",
+  "Year",
+  "Make",
+  "Model",
+  "Trim",
+  "Condition",
+  "InternetSpecial",
+  "InternetReduced",
+  "Mileage",
+  "FuelType",
+  "Transmission",
+  "Body",
+  "SeatingCapacity",
+  "DoorsCount",
+  "EngineDescription",
+  "Cylinders",
+  "ExteriorColor",
+  "InteriorColor",
+  "Comments",
+  "PhotoUrls",
+  "Options",
+  "DriveTrain",
+  "PaymentPrice",
+  "LastModifiedDate",
+]);
+
 function parsePrice(raw: string): number {
   const n = parseFloat(raw.replace(/[$,]/g, "").trim());
   return isNaN(n) ? 0 : n;
@@ -134,10 +179,36 @@ function parseCsvRows(text: string): string[][] {
 }
 
 export function parseAutofundsCsv(csvText: string): AutofundsVehicle[] {
+  return parseAutofundsCsvDetailed(csvText).vehicles;
+}
+
+export function parseAutofundsCsvDetailed(csvText: string): ParseResult {
   const rows = parseCsvRows(csvText);
-  if (rows.length < 2) return [];
+  const diagnostics: ParseDiagnostics = {
+    csvRowCount: rows.length,
+    dataRowCount: Math.max(0, rows.length - 1),
+    headers: [],
+    missingRequiredHeaders: [],
+    unknownHeaders: [],
+    skipReasons: {},
+  };
+
+  if (rows.length < 2) {
+    diagnostics.missingRequiredHeaders = [...REQUIRED_HEADERS];
+    return { vehicles: [], diagnostics };
+  }
 
   const headers = rows[0].map((h) => h.trim());
+  diagnostics.headers = headers;
+  diagnostics.missingRequiredHeaders = REQUIRED_HEADERS.filter(
+    (h) => !headers.includes(h)
+  );
+  diagnostics.unknownHeaders = headers.filter((h) => h && !KNOWN_HEADERS.has(h));
+
+  const bump = (reason: string) => {
+    diagnostics.skipReasons[reason] = (diagnostics.skipReasons[reason] ?? 0) + 1;
+  };
+
   const idx = (name: string) => headers.indexOf(name);
 
   const COL = {
@@ -180,10 +251,13 @@ export function parseAutofundsCsv(csvText: string): AutofundsVehicle[] {
     const make = get(COL.make);
     const model = get(COL.model);
 
-    if (!vin || !yearRaw || !make || !model) continue;
+    if (!vin) { bump("missing VIN"); continue; }
+    if (!yearRaw) { bump("missing Year"); continue; }
+    if (!make) { bump("missing Make"); continue; }
+    if (!model) { bump("missing Model"); continue; }
 
     const year = parseInt(yearRaw, 10);
-    if (isNaN(year)) continue;
+    if (isNaN(year)) { bump("invalid Year"); continue; }
 
     const internetSpecialRaw = get(COL.internetSpecial);
     const internetReducedRaw = get(COL.internetReduced);
@@ -249,5 +323,5 @@ export function parseAutofundsCsv(csvText: string): AutofundsVehicle[] {
     });
   }
 
-  return vehicles;
+  return { vehicles, diagnostics };
 }

@@ -15,7 +15,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { fetchCsvViaSftp } from "../lib/feed/sftp-client";
-import { parseAutofundsCsv } from "../lib/feed/autofunds-parser";
+import { parseAutofundsCsvDetailed } from "../lib/feed/autofunds-parser";
 import { importVehicles } from "../lib/server/importVehicles";
 
 const args = process.argv.slice(2);
@@ -64,11 +64,31 @@ async function main() {
   }
 
   console.log("[test-import] parsing CSV ...");
-  const vehicles = parseAutofundsCsv(csvText);
+  const { vehicles, diagnostics } = parseAutofundsCsvDetailed(csvText);
   console.log(`[test-import] parsed ${vehicles.length} vehicles`);
 
+  console.log("\nCSV diagnostics:");
+  console.log(`  CSV rows (incl header) : ${diagnostics.csvRowCount}`);
+  console.log(`  Data rows              : ${diagnostics.dataRowCount}`);
+  console.log(`  Headers detected (${diagnostics.headers.length}): ${diagnostics.headers.join(", ")}`);
+  if (diagnostics.missingRequiredHeaders.length > 0) {
+    console.error(`  ❌ Missing required    : ${diagnostics.missingRequiredHeaders.join(", ")}`);
+  } else {
+    console.log(`  ✓ All required headers present`);
+  }
+  if (diagnostics.unknownHeaders.length > 0) {
+    console.log(`  ⚠ Unknown headers      : ${diagnostics.unknownHeaders.join(", ")}`);
+  }
+  const reasons = Object.entries(diagnostics.skipReasons);
+  if (reasons.length > 0) {
+    console.log(`  Skipped rows:`);
+    for (const [reason, count] of reasons) {
+      console.log(`    - ${reason}: ${count}`);
+    }
+  }
+
   if (vehicles.length === 0) {
-    console.warn("[test-import] no vehicles parsed — check the CSV format");
+    console.warn("\n[test-import] no vehicles parsed — see diagnostics above");
     process.exit(1);
   }
 
@@ -90,7 +110,9 @@ async function main() {
 
   console.log("\nImport summary:");
   console.log(`  Total rows parsed : ${summary.totalRows}`);
-  console.log(`  Upserted          : ${summary.upserted}`);
+  console.log(`  Inserted (new VIN): ${summary.inserted}`);
+  console.log(`  Updated (existing): ${summary.updated}`);
+  console.log(`  Upserted total    : ${summary.upserted}`);
   console.log(`  Skipped           : ${summary.skipped}`);
   console.log(`  Marked inactive   : ${summary.markedInactive}`);
   if (summary.errors.length > 0) {
