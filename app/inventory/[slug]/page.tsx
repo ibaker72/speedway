@@ -160,9 +160,9 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 />
               ) : (
                 <div className="aspect-16/10 rounded-2xl overflow-hidden relative bg-linear-to-br from-surface-2 via-surface-3 to-surface-1">
-                  {vehicle.images[0]?.url ? (
+                  {(vehicle.thumbnailUrl || vehicle.images[0]?.url) ? (
                     <VehicleImage
-                      src={vehicle.images[0].url}
+                      src={vehicle.thumbnailUrl || vehicle.images[0].url}
                       alt={`Used ${vehicleTitle} ${vehicle.trim || ""} for sale in Paterson NJ — Speedway Motors`.trim()}
                       make={vehicle.make}
                       model={vehicle.model}

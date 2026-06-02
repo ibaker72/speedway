@@ -23,7 +23,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
     <Link href={`/inventory/${vehicle.slug}`} className="card-vehicle group block">
       <div className="aspect-16/10 relative overflow-hidden">
         <VehicleImage
-          src={vehicle.images[0]?.url}
+          src={vehicle.thumbnailUrl || vehicle.images[0]?.url}
           alt={`Used ${vehicle.year} ${vehicle.make} ${vehicle.model} for sale in Paterson NJ — Speedway Motors`}
           make={vehicle.make}
           model={vehicle.model}

@@ -121,7 +121,7 @@ function mapSupabaseVehicle(row: SupabaseVehicleRow): Vehicle {
     drivetrain: mapDrivetrain(row.drivetrain),
     engine: row.engine,
     fuelType: mapFuelType(row.fuel_type),
-    images: mapImages(row.images),
+    images: ensureImages(mapImages(row.images), row.thumbnail_url),
     thumbnailUrl: row.thumbnail_url || undefined,
     description: row.description || undefined,
     features: Array.isArray(row.features) ? row.features : [],
@@ -341,6 +341,12 @@ function mapImages(raw: unknown): VehicleImage[] {
     const obj = img as Record<string, unknown>;
     return { url: String(obj.url || obj.src || obj.image_url || ""), alt: String(obj.alt || obj.caption || ""), isPrimary: i === 0 };
   }).filter((img) => img.url);
+}
+
+function ensureImages(images: VehicleImage[], thumbnailUrl: string | null | undefined): VehicleImage[] {
+  if (images.length > 0) return images;
+  if (thumbnailUrl) return [{ url: thumbnailUrl, alt: "", isPrimary: true }];
+  return [];
 }
 
 export async function getInventory(filters: InventoryFilters = {}): Promise<InventoryResponse> {

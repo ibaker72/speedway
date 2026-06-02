@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.dealereprocess.com" },
       { protocol: "https", hostname: "**.dealercloud.com" },
       { protocol: "https", hostname: "**.izmo.com" },
+      { protocol: "https", hostname: "**.autofunds.net" },
+      { protocol: "http",  hostname: "**.autofunds.net" },
     ],
   },
 };
