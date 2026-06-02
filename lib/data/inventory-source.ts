@@ -166,7 +166,7 @@ function buildFilterOptions(vehicles: Pick<Vehicle, "make" | "model" | "bodyType
 
 async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryResponse> {
   const config = getSupabaseRuntimeConfig();
-  const bodyTypeColumn = process.env.SUPABASE_BODY_TYPE_COLUMN || "body_style";
+  const bodyTypeColumn = process.env.SUPABASE_BODY_TYPE_COLUMN || "body_type";
 
   if (!config) {
     console.warn("[inventory-source] Supabase environment variables are not configured — returning empty inventory");
