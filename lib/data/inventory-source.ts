@@ -405,6 +405,98 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
   return { vehicles, total, page, perPage, totalPages, filters: filterOptions };
 }
 
+export interface HeroVehicleImage {
+  url: string;
+  alt: string;
+}
+
+function pickHeroImageUrl(images: unknown, thumbnailUrl: string | null): string | null {
+  if (thumbnailUrl) return thumbnailUrl;
+  if (!Array.isArray(images) || images.length === 0) return null;
+  const first = images[0];
+  if (typeof first === "string") return first;
+  if (first && typeof first === "object") {
+    const obj = first as Record<string, unknown>;
+    const candidate = obj.url ?? obj.src ?? obj.image_url;
+    return typeof candidate === "string" && candidate.length > 0 ? candidate : null;
+  }
+  return null;
+}
+
+export async function getHeroVehicleImages(limit = 5): Promise<HeroVehicleImage[]> {
+  const safeLimit = Math.max(1, Math.min(limit, 5));
+  const source = process.env.INVENTORY_SOURCE || "local";
+
+  if (source === "supabase") {
+    const config = getSupabaseRuntimeConfig();
+    if (!config) return [];
+    const { url, key } = config;
+
+    const query = new URLSearchParams();
+    query.set("select", "year,make,model,thumbnail_url,images,is_featured,is_new_arrival,date_added");
+    query.set("is_sold", "eq.false");
+    // Featured first, then new arrivals, then newest added rows.
+    query.set("order", "is_featured.desc.nullslast,is_new_arrival.desc.nullslast,date_added.desc.nullslast");
+    // Over-fetch slightly to allow filtering out rows whose images are unusable.
+    query.set("limit", String(safeLimit * 3));
+
+    try {
+      const res = await fetch(`${url}/rest/v1/inventory?${query.toString()}`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        next: { revalidate: 60 },
+      });
+      if (!res.ok) {
+        console.error(`[inventory-source] getHeroVehicleImages failed: ${res.status} ${await res.text()}`);
+        return [];
+      }
+      const rows = (await res.json()) as Array<{
+        year: number;
+        make: string;
+        model: string;
+        thumbnail_url: string | null;
+        images: unknown;
+      }>;
+
+      const picked: HeroVehicleImage[] = [];
+      const seen = new Set<string>();
+      for (const row of rows) {
+        const src = pickHeroImageUrl(row.images, row.thumbnail_url);
+        if (!src || seen.has(src)) continue;
+        seen.add(src);
+        picked.push({ url: src, alt: `${row.year} ${row.make} ${row.model}`.trim() });
+        if (picked.length >= safeLimit) break;
+      }
+      return picked;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[inventory-source] getHeroVehicleImages exception: ${message}`);
+      return [];
+    }
+  }
+
+  // Non-Supabase sources: derive from existing inventory loader.
+  try {
+    const { vehicles } = await getInventory({ perPage: 24 });
+    const ranked = [...vehicles].sort((a, b) => {
+      if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+      if (a.isNewArrival !== b.isNewArrival) return a.isNewArrival ? -1 : 1;
+      return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+    });
+    const picked: HeroVehicleImage[] = [];
+    const seen = new Set<string>();
+    for (const v of ranked) {
+      const src = v.thumbnailUrl || v.images[0]?.url;
+      if (!src || seen.has(src)) continue;
+      seen.add(src);
+      picked.push({ url: src, alt: `${v.year} ${v.make} ${v.model}`.trim() });
+      if (picked.length >= safeLimit) break;
+    }
+    return picked;
+  } catch {
+    return [];
+  }
+}
+
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
   const source = process.env.INVENTORY_SOURCE || "local";
 

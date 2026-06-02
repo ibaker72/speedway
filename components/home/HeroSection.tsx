@@ -1,20 +1,23 @@
 import Link from "next/link";
 import { HeroLocationBadge } from "./HeroVeteranBadge";
-import { HeroVideo } from "./HeroVideo";
+import { HeroBackgroundSlideshow } from "./HeroBackgroundSlideshow";
+import { getHeroVehicleImages } from "@/lib/data/inventory-source";
 
-export function HeroSection() {
+const HERO_FALLBACK_GRADIENT =
+  "radial-gradient(circle at 18% 30%, rgba(211,17,25,0.22) 0%, rgba(10,10,10,0.82) 40%, #050505 100%)";
+
+export async function HeroSection() {
+  const heroImages = await getHeroVehicleImages(5);
+
   return (
     <section className="hero-full-bleed relative isolate w-full overflow-hidden border-b border-white/10 bg-black text-white">
       <div className="absolute inset-0">
-        <HeroVideo />
         <div
-          className="hidden h-full w-full motion-reduce:block"
-          style={{
-            background:
-              "radial-gradient(circle at 18% 30%, rgba(211,17,25,0.22) 0%, rgba(10,10,10,0.82) 40%, #050505 100%)",
-          }}
+          className="absolute inset-0"
+          style={{ background: HERO_FALLBACK_GRADIENT }}
           aria-hidden="true"
         />
+        {heroImages.length > 0 && <HeroBackgroundSlideshow images={heroImages} />}
       </div>
 
       <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(4,4,4,0.9)_8%,rgba(4,4,4,0.58)_45%,rgba(4,4,4,0.8)_100%)]" />
