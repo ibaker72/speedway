@@ -137,11 +137,18 @@ async function runOpenClawAgent(city: string, state: string): Promise<AgentPageR
 
 export async function POST(request: Request) {
   try {
-    // 1. Admin-only access
-    const authed = await isAdminAuthenticated();
-    if (!authed) {
+    // 1. Allow either an authenticated admin OR an internal cron request.
+    //    Cron bypass requires CRON_SECRET to be set; otherwise cron is rejected.
+    const cronSecret = process.env.CRON_SECRET;
+    const cronHeader = request.headers.get("x-cron-secret");
+    const isCronRequest = Boolean(cronSecret && cronHeader === cronSecret);
+    const isAdmin = await isAdminAuthenticated();
+
+    if (!isAdmin && !isCronRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    const authSource = isAdmin ? "admin" : "cron";
 
     // 2. Parse & validate input
     const body = (await request.json()) as Record<string, unknown>;
@@ -156,11 +163,30 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log(
+      `[generate-city-page] start city="${city}" state="${state}" auth=${authSource} dry_run=${dryRun}`
+    );
+
     // 3. Generate content via OpenClaw agent
-    const agentData = await runOpenClawAgent(city, state);
+    let agentData: AgentPageResponse;
+    try {
+      agentData = await runOpenClawAgent(city, state);
+      console.log(
+        `[generate-city-page] OpenClaw ok city="${city}" state="${state}"`
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        `[generate-city-page] OpenClaw failed city="${city}" state="${state}": ${message}`
+      );
+      throw err;
+    }
 
     // 4. Dry run — return preview without saving
     if (dryRun) {
+      console.log(
+        `[generate-city-page] dry_run complete city="${city}" state="${state}" auth=${authSource}`
+      );
       return NextResponse.json({ ok: true, dry_run: true, preview: agentData });
     }
 
@@ -180,9 +206,16 @@ export async function POST(request: Request) {
     );
 
     if (error) {
-      console.error("Supabase upsert error:", error);
+      console.error(
+        `[generate-city-page] Supabase upsert failed city="${city}" state="${state}":`,
+        error
+      );
       return NextResponse.json({ message: "Failed to save landing page", detail: error }, { status: 500 });
     }
+
+    console.log(
+      `[generate-city-page] Supabase upsert ok city="${city}" state="${state}"`
+    );
 
     // 6. Invalidate ISR cache for the affected location page(s)
     //    Slug is derived by converting "Jersey City" → "jersey-city-nj"
@@ -190,6 +223,10 @@ export async function POST(request: Request) {
     const stateAbbr = state.length === 2 ? state.toLowerCase() : state.slice(0, 2).toLowerCase();
     revalidatePath(`/locations/${citySlug}-${stateAbbr}`);
     revalidatePath("/locations");
+
+    console.log(
+      `[generate-city-page] done city="${city}" state="${state}" auth=${authSource}`
+    );
 
     return NextResponse.json({
       ok: true,
