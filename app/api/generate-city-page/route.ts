@@ -20,6 +20,108 @@ interface GeoLandingPage extends AgentPageResponse {
   state: string;
 }
 
+type ErrorStage = "config" | "inventory" | "openclaw" | "supabase" | "unknown";
+type FetchFailureKind =
+  | "dns"
+  | "connection"
+  | "timeout"
+  | "tls"
+  | "abort"
+  | "http"
+  | "unknown";
+
+interface FetchFailureDetails {
+  kind: FetchFailureKind;
+  message: string;
+  code?: string;
+  syscall?: string;
+  hostname?: string;
+}
+
+class StageError extends Error {
+  readonly stage: ErrorStage;
+  readonly details: Record<string, unknown>;
+  constructor(stage: ErrorStage, message: string, details: Record<string, unknown> = {}) {
+    super(message);
+    this.name = "StageError";
+    this.stage = stage;
+    this.details = details;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Error classification — distinguish DNS / connection / timeout / TLS / HTTP
+// ---------------------------------------------------------------------------
+
+function classifyFetchError(err: unknown): FetchFailureDetails {
+  if (!(err instanceof Error)) {
+    return { kind: "unknown", message: String(err) };
+  }
+  // Node's undici-based fetch wraps the real network failure on err.cause.
+  const cause = (err as Error & { cause?: unknown }).cause;
+  const causeObj =
+    cause && typeof cause === "object" ? (cause as Record<string, unknown>) : null;
+
+  const code =
+    (typeof causeObj?.code === "string" ? (causeObj.code as string) : undefined) ??
+    ((err as Error & { code?: string }).code as string | undefined);
+  const syscall =
+    typeof causeObj?.syscall === "string" ? (causeObj.syscall as string) : undefined;
+  const hostname =
+    typeof causeObj?.hostname === "string" ? (causeObj.hostname as string) : undefined;
+  const causeMessage =
+    typeof causeObj?.message === "string" ? (causeObj.message as string) : undefined;
+
+  let kind: FetchFailureKind = "unknown";
+  if (code === "ENOTFOUND" || code === "EAI_AGAIN") kind = "dns";
+  else if (
+    code === "ECONNREFUSED" ||
+    code === "ECONNRESET" ||
+    code === "EHOSTUNREACH" ||
+    code === "ENETUNREACH" ||
+    code === "EPIPE"
+  )
+    kind = "connection";
+  else if (
+    code === "ETIMEDOUT" ||
+    code === "UND_ERR_CONNECT_TIMEOUT" ||
+    code === "UND_ERR_HEADERS_TIMEOUT" ||
+    code === "UND_ERR_BODY_TIMEOUT" ||
+    code === "UND_ERR_SOCKET_TIMEOUT"
+  )
+    kind = "timeout";
+  else if (
+    typeof code === "string" &&
+    (code === "DEPTH_ZERO_SELF_SIGNED_CERT" ||
+      code.startsWith("CERT_") ||
+      code.startsWith("ERR_TLS_") ||
+      code.startsWith("ERR_SSL_"))
+  )
+    kind = "tls";
+  else if (err.name === "AbortError" || code === "UND_ERR_ABORTED" || code === "ABORT_ERR")
+    kind = "abort";
+
+  return {
+    kind,
+    message: causeMessage ? `${err.message}: ${causeMessage}` : err.message,
+    code,
+    syscall,
+    hostname,
+  };
+}
+
+function safeHostname(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "<invalid URL>";
+  }
+}
+
+function getOpenClawBaseUrl(): string {
+  return (process.env.OPENCLAW_API_BASE_URL ?? "https://api.openclaw.com/v1").replace(/\/$/, "");
+}
+
 // ---------------------------------------------------------------------------
 // OpenClaw helper with retry
 // ---------------------------------------------------------------------------
@@ -27,34 +129,96 @@ interface GeoLandingPage extends AgentPageResponse {
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
+  stage: ErrorStage,
   maxAttempts = 3
 ): Promise<Response> {
-  let lastError: Error = new Error("Unknown error");
+  let lastFailure: FetchFailureDetails = { kind: "unknown", message: "Unknown error" };
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const res = await fetch(url, options);
       if (res.ok) return res;
-      // 429 or 5xx — retry; 4xx client errors are not retryable
+      // Retry only on 429 / 5xx — return 4xx (e.g. 401, 403, 404) to caller for handling.
       if (res.status < 500 && res.status !== 429) return res;
-      lastError = new Error(`HTTP ${res.status}`);
+      lastFailure = {
+        kind: "http",
+        message: `HTTP ${res.status}`,
+        code: String(res.status),
+      };
+      console.error(
+        `[${stage}] retryable HTTP ${res.status} on attempt ${attempt}/${maxAttempts} host=${safeHostname(url)}`
+      );
     } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
+      lastFailure = classifyFetchError(err);
+      console.error(
+        `[${stage}] fetch threw on attempt ${attempt}/${maxAttempts} kind=${lastFailure.kind}` +
+          (lastFailure.code ? ` code=${lastFailure.code}` : "") +
+          (lastFailure.hostname ? ` host=${lastFailure.hostname}` : ` host=${safeHostname(url)}`) +
+          `: ${lastFailure.message}`
+      );
     }
     if (attempt < maxAttempts) {
       await new Promise((r) => setTimeout(r, 2 ** attempt * 1000)); // 2s, 4s
     }
   }
-  throw lastError;
+  throw new StageError(
+    stage,
+    `${stage} fetch failed after ${maxAttempts} attempts (${lastFailure.kind}` +
+      `${lastFailure.code ? `, ${lastFailure.code}` : ""})`,
+    {
+      kind: lastFailure.kind,
+      code: lastFailure.code,
+      syscall: lastFailure.syscall,
+      hostname: lastFailure.hostname ?? safeHostname(url),
+      attempts: maxAttempts,
+      cause_message: lastFailure.message,
+    }
+  );
 }
 
 async function runOpenClawAgent(city: string, state: string): Promise<AgentPageResponse> {
   const apiKey = process.env.OPENCLAW_API_KEY;
-  if (!apiKey) throw new Error("Missing OPENCLAW_API_KEY environment variable");
+  const apiBase = getOpenClawBaseUrl();
+  const apiHost = safeHostname(apiBase);
 
-  const apiBase = (process.env.OPENCLAW_API_BASE_URL ?? "https://api.openclaw.com/v1").replace(/\/$/, "");
+  console.log(
+    `[generate-city-page] OpenClaw config base_url=${apiBase} host=${apiHost} api_key_present=${Boolean(apiKey)}`
+  );
 
-  // Pull a snapshot of current inventory to give the agent real context
-  const { vehicles, total } = await getInventory({ perPage: 12, sortBy: "date-added" });
+  if (!apiKey) {
+    throw new StageError("config", "Missing OPENCLAW_API_KEY environment variable", {
+      openclaw_base_url: apiBase,
+      openclaw_host: apiHost,
+      openclaw_api_key_present: false,
+    });
+  }
+
+  // Pull a snapshot of current inventory to give the agent real context.
+  // Failures here are inventory/Supabase-side, not OpenClaw-side — tag clearly.
+  let vehicles: Awaited<ReturnType<typeof getInventory>>["vehicles"] = [];
+  let total = 0;
+  try {
+    const inventory = await getInventory({ perPage: 12, sortBy: "date-added" });
+    vehicles = inventory.vehicles;
+    total = inventory.total;
+    console.log(
+      `[generate-city-page] inventory snapshot vehicles=${vehicles.length} total=${total}`
+    );
+  } catch (err) {
+    const details = classifyFetchError(err);
+    console.error(
+      `[generate-city-page] Supabase inventory fetch failed kind=${details.kind}` +
+        (details.code ? ` code=${details.code}` : "") +
+        (details.hostname ? ` host=${details.hostname}` : "") +
+        `: ${details.message}`
+    );
+    throw new StageError("inventory", "Supabase inventory fetch failed", {
+      kind: details.kind,
+      code: details.code,
+      hostname: details.hostname,
+      cause_message: details.message,
+    });
+  }
+
   const inventorySnapshot = vehicles
     .slice(0, 8)
     .map((v) => `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""} — $${v.price.toLocaleString()}`)
@@ -97,38 +261,86 @@ async function runOpenClawAgent(city: string, state: string): Promise<AgentPageR
     "  page_content_html — the full HTML body content as a string",
   ].join("\n");
 
-  const res = await fetchWithRetry(
-    `${apiBase}/agent/tasks`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+  let res: Response;
+  try {
+    res = await fetchWithRetry(
+      `${apiBase}/agent/tasks`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt, response_format: "json" }),
       },
-      body: JSON.stringify({ prompt, response_format: "json" }),
-    },
-    3
-  );
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`OpenClaw API error ${res.status}: ${text}`);
+      "openclaw",
+      3
+    );
+  } catch (err) {
+    // Annotate StageError from fetchWithRetry with OpenClaw context before re-throw.
+    if (err instanceof StageError) {
+      err.details.openclaw_base_url = apiBase;
+      err.details.openclaw_host = apiHost;
+      err.details.openclaw_api_key_present = true;
+    }
+    throw err;
   }
 
-  const result = await res.json();
+  if (!res.ok) {
+    const rawBody = await res.text().catch(() => "");
+    const bodyPreview = rawBody.length > 300 ? `${rawBody.slice(0, 300)}…` : rawBody;
+    console.error(
+      `[generate-city-page] OpenClaw HTTP ${res.status} host=${apiHost} body="${bodyPreview}"`
+    );
+    throw new StageError("openclaw", `OpenClaw API returned HTTP ${res.status}`, {
+      kind: "http",
+      status: res.status,
+      body_preview: bodyPreview,
+      openclaw_base_url: apiBase,
+      openclaw_host: apiHost,
+      openclaw_api_key_present: true,
+    });
+  }
+
+  let result: unknown;
+  try {
+    result = await res.json();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new StageError("openclaw", "OpenClaw response was not valid JSON", {
+      openclaw_base_url: apiBase,
+      openclaw_host: apiHost,
+      cause_message: message,
+    });
+  }
 
   // Normalize: agent may return JSON inside `content`, `output`, or at root
-  const raw: unknown = result.output ?? result.content ?? result;
-  const parsed: AgentPageResponse =
-    typeof raw === "string" ? JSON.parse(raw) : (raw as AgentPageResponse);
+  const root = result && typeof result === "object" ? (result as Record<string, unknown>) : null;
+  const raw: unknown = root?.output ?? root?.content ?? result;
+  let parsed: Partial<AgentPageResponse> | null;
+  try {
+    parsed =
+      typeof raw === "string"
+        ? (JSON.parse(raw) as Partial<AgentPageResponse>)
+        : (raw as Partial<AgentPageResponse> | null);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new StageError("openclaw", "OpenClaw response JSON could not be parsed", {
+      openclaw_base_url: apiBase,
+      openclaw_host: apiHost,
+      cause_message: message,
+    });
+  }
 
-  if (!parsed.meta_title || !parsed.h1_heading || !parsed.page_content_html) {
-    throw new Error(
-      "OpenClaw response missing required fields (meta_title, h1_heading, page_content_html)"
+  if (!parsed || !parsed.meta_title || !parsed.h1_heading || !parsed.page_content_html) {
+    throw new StageError(
+      "openclaw",
+      "OpenClaw response missing required fields (meta_title, h1_heading, page_content_html)",
+      { openclaw_base_url: apiBase, openclaw_host: apiHost }
     );
   }
 
-  return parsed;
+  return parsed as AgentPageResponse;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,9 +387,20 @@ export async function POST(request: Request) {
         `[generate-city-page] OpenClaw ok city="${city}" state="${state}"`
       );
     } catch (err) {
+      if (err instanceof StageError) {
+        console.error(
+          `[generate-city-page] stage=${err.stage} failed city="${city}" state="${state}": ${err.message}`,
+          err.details
+        );
+        const status = err.stage === "config" ? 500 : 502;
+        return NextResponse.json(
+          { message: err.message, stage: err.stage, ...err.details },
+          { status }
+        );
+      }
       const message = err instanceof Error ? err.message : String(err);
       console.error(
-        `[generate-city-page] OpenClaw failed city="${city}" state="${state}": ${message}`
+        `[generate-city-page] OpenClaw failed (unclassified) city="${city}" state="${state}": ${message}`
       );
       throw err;
     }
@@ -210,7 +433,10 @@ export async function POST(request: Request) {
         `[generate-city-page] Supabase upsert failed city="${city}" state="${state}":`,
         error
       );
-      return NextResponse.json({ message: "Failed to save landing page", detail: error }, { status: 500 });
+      return NextResponse.json(
+        { message: "Failed to save landing page", stage: "supabase", detail: error },
+        { status: 500 }
+      );
     }
 
     console.log(
@@ -233,8 +459,19 @@ export async function POST(request: Request) {
       page: data?.[0] ?? row,
     });
   } catch (err) {
+    if (err instanceof StageError) {
+      console.error(
+        `[generate-city-page] uncaught stage=${err.stage}: ${err.message}`,
+        err.details
+      );
+      const status = err.stage === "config" ? 500 : 502;
+      return NextResponse.json(
+        { message: err.message, stage: err.stage, ...err.details },
+        { status }
+      );
+    }
     console.error("generate-city-page error:", err);
     const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ message }, { status: 500 });
+    return NextResponse.json({ message, stage: "unknown" }, { status: 500 });
   }
 }
