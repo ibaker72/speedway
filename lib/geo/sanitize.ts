@@ -124,6 +124,7 @@ function stripStrayMarkup(text: string): string {
 const BAD_MERGE_PAIRS: ReadonlyArray<readonly [string, string]> = [
   // Function-word smushes — observed across Clifton & Newark dry-runs.
   ["a", "short"],
+  ["an", "unwavering"],
   ["and", "the"],
   ["of", "the"],
   ["in", "from"],
@@ -138,6 +139,7 @@ const BAD_MERGE_PAIRS: ReadonlyArray<readonly [string, string]> = [
   ["includes", "a"],
   ["one", "roof"],
   ["there", "is"],
+  ["look", "far"],
 
   // Verb / adjective + common noun.
   ["looking", "for"],
@@ -175,6 +177,13 @@ const BAD_MERGE_PAIRS: ReadonlyArray<readonly [string, string]> = [
   ["whether", "you"],
   ["whether", "you're"],
   ["their", "very"],
+
+  // Proper-noun smushes — anchor pass should catch these when the proper
+  // noun matches the active anchor list, but list them explicitly so the
+  // sanitizer fixes them even when the city context differs.
+  ["in", "Paterson"],
+  ["Jersey", "area"],
+  ["Newark", "families"],
 ];
 
 interface CompiledMerge {
@@ -459,15 +468,28 @@ export function detectSuspiciousMerges(text: string): string[] {
 // The route — not the model — controls every H2 heading, every inline
 // link, and every paragraph wrapper, so failures like "can<a" or "</a>any"
 // cannot occur regardless of model output. Spaces around the inline links
-// are hard-coded into the template.
+// are hard-coded into the template, then a final guard pass enforces
+// "letter <a" and "</a> letter" boundaries in case anything elsewhere
+// collapses them.
 // ---------------------------------------------------------------------------
+
+// Belt-and-suspenders guard run AFTER the template is assembled. Even
+// though the template literal contains the right spaces, a later
+// formatter, copy-paste, or model emission can still produce "can<a" or
+// "</a>any". The two replacements below restore the boundary spaces
+// unconditionally.
+export function enforceAnchorTagSpacing(html: string): string {
+  return html
+    .replace(/([A-Za-z])<a\b/g, "$1 <a")
+    .replace(/<\/a>([A-Za-z])/g, "</a> $1");
+}
 
 export function buildPageContentHtml(
   sections: GeoPageSections,
   ctx: SanitizationContext
 ): string {
   const { city, state } = ctx;
-  return [
+  const assembled = [
     `<p>${sections.intro_paragraph}</p>`,
     `<h2>Quality Used Cars Serving ${city}, ${state}</h2>`,
     `<p>${sections.inventory_paragraph}</p>`,
@@ -480,6 +502,7 @@ export function buildPageContentHtml(
     `<h2>Why Choose Speedway Motors LLC</h2>`,
     `<p>${sections.why_choose_paragraph}</p>`,
   ].join("\n");
+  return enforceAnchorTagSpacing(assembled);
 }
 
 // ---------------------------------------------------------------------------

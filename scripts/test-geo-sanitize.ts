@@ -14,6 +14,8 @@ import {
   buildProperNounAnchors,
   detectSuspiciousMerges,
   sanitizeGeneratedGeoPage,
+  enforceAnchorTagSpacing,
+  buildPageContentHtml,
 } from "../lib/geo/sanitize.ts";
 
 type SanitizerCase = { input: string; expected: string };
@@ -52,6 +54,12 @@ const SANITIZER_CASES: SanitizerCase[] = [
   { input: "badcredit", expected: "bad credit" },
   { input: "Thereis", expected: "There is" },
   { input: "greatvehicle", expected: "great vehicle" },
+  // Newark dry-run round 2 — additional merges and proper-noun smushes.
+  { input: "lookfar", expected: "look far" },
+  { input: "New Jerseyarea", expected: "New Jersey area" },
+  { input: "anunwavering commitment", expected: "an unwavering commitment" },
+  { input: "inPaterson", expected: "in Paterson" },
+  { input: "Newarkfamilies", expected: "Newark families" },
 ];
 
 const FALSE_POSITIVE_INPUTS: string[] = [
@@ -256,8 +264,8 @@ function runSanitizerSmokeTest(result: Result) {
 
   const html = out.data.page_content_html;
   const expectedMarkers = [
-    `<a href="/inventory">browse our full inventory</a>`,
-    `<a href="/finance">Apply for financing</a>`,
+    `You can <a href="/inventory">browse our full inventory</a> online any time.`,
+    `Ready to get started? <a href="/finance">Apply for financing</a> in minutes.`,
     `<h2>Quality Used Cars Serving Newark, NJ</h2>`,
     `<h2>Auto Financing for Newark Drivers</h2>`,
     `<h2>Trade In Your Current Vehicle</h2>`,
@@ -310,12 +318,98 @@ function runSanitizerSmokeTest(result: Result) {
   }
 }
 
+function runAnchorTagGuard(result: Result) {
+  console.log("\nHTML anchor-tag spacing guard (enforceAnchorTagSpacing):");
+  const cases: Array<[string, string]> = [
+    [`You can<a href="/inventory">browse</a>`, `You can <a href="/inventory">browse</a>`],
+    [`<a href="/finance">Apply</a>now`, `<a href="/finance">Apply</a> now`],
+    [
+      `can<a href="/inventory">browse our full inventory</a>online`,
+      `can <a href="/inventory">browse our full inventory</a> online`,
+    ],
+    // Idempotent on already-clean HTML.
+    [
+      `You can <a href="/inventory">browse our full inventory</a> online any time.`,
+      `You can <a href="/inventory">browse our full inventory</a> online any time.`,
+    ],
+  ];
+  for (const [input, expected] of cases) {
+    const actual = enforceAnchorTagSpacing(input);
+    if (actual === expected) {
+      result.passes++;
+      ok(`enforceAnchorTagSpacing(${JSON.stringify(input)}) → expected`);
+    } else {
+      result.failures.push({
+        label: `enforceAnchorTagSpacing(${JSON.stringify(input)})`,
+        expected,
+        actual,
+      });
+      fail(
+        `enforceAnchorTagSpacing(${JSON.stringify(input)})`,
+        expected,
+        actual
+      );
+    }
+  }
+
+  // buildPageContentHtml itself must always emit "You can <a" and "</a> online"
+  // — verify on a minimal section payload that nothing is collapsed by the
+  // final guard pass.
+  const html = buildPageContentHtml(
+    {
+      meta_title: "x",
+      h1_heading: "x",
+      intro_paragraph: "Intro.",
+      inventory_paragraph: "Inventory paragraph.",
+      financing_paragraph: "Financing paragraph.",
+      trade_in_paragraph: "Trade-in paragraph.",
+      why_choose_paragraph: "Why choose paragraph.",
+    },
+    { city: "Newark", state: "NJ", vehicleMakes: [] }
+  );
+  const mustContain = [
+    `You can <a href="/inventory">browse our full inventory</a> online any time.`,
+    `Ready to get started? <a href="/finance">Apply for financing</a> in minutes.`,
+  ];
+  for (const m of mustContain) {
+    if (html.includes(m)) {
+      result.passes++;
+      ok(`buildPageContentHtml contains ${JSON.stringify(m)}`);
+    } else {
+      result.failures.push({
+        label: `buildPageContentHtml contains ${JSON.stringify(m)}`,
+        expected: "present",
+        actual: "missing",
+      });
+      fail(`buildPageContentHtml contains ${m}`, "present", "missing");
+    }
+  }
+
+  // The two failure patterns must NEVER appear in built HTML, even if a
+  // paragraph happens to end with "can" or start with a lowercase letter.
+  const banned = [/[A-Za-z]<a\b/, /<\/a>[A-Za-z]/];
+  for (const bad of banned) {
+    if (!bad.test(html)) {
+      result.passes++;
+      ok(`buildPageContentHtml does NOT match ${bad}`);
+    } else {
+      result.failures.push({
+        label: `buildPageContentHtml does NOT match ${bad}`,
+        expected: "no match",
+        actual: "matched",
+      });
+      fail(`buildPageContentHtml does NOT match ${bad}`, "no match", "matched");
+    }
+  }
+}
+
 function main() {
   const result: Result = { passes: 0, failures: [] };
   runCityStateNormalization(result);
   runSanitizerCases(result);
   runFalsePositiveGuard(result);
   runSuspiciousMergeWarningCases(result);
+  runAnchorTagGuard(result);
   runSanitizerSmokeTest(result);
 
   console.log(
