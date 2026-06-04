@@ -126,6 +126,28 @@ function getAnthropicModel(): string {
   return process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
 }
 
+// Strip the common ways a model can wrap a JSON object even when told not to:
+// markdown fences (```json … ``` or ``` … ```), a leading "Here is the JSON:"
+// preamble, or trailing prose. Falls back to slicing the first balanced
+// {…} block so we still parse usable output instead of bailing on a stray
+// preamble.
+function stripJsonWrapper(text: string): string {
+  let s = text.trim();
+  // ```json … ``` or ``` … ``` (case-insensitive language tag)
+  const fence = s.match(/^```[a-zA-Z]*\s*\n?([\s\S]*?)\n?\s*```\s*$/);
+  if (fence) s = fence[1].trim();
+  // If the model added prose on either side of the object, keep only the
+  // outermost {…} span. This is a best-effort fallback for slips.
+  if (!s.startsWith("{") || !s.endsWith("}")) {
+    const first = s.indexOf("{");
+    const last = s.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      s = s.slice(first, last + 1).trim();
+    }
+  }
+  return s;
+}
+
 // ---------------------------------------------------------------------------
 // Anthropic helper with retry
 // ---------------------------------------------------------------------------
@@ -482,16 +504,19 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
     "6. If any of the forbidden tokens above (Visitus, Whetheryou're, etc.) appears, fix it and re-check.",
     "Only emit JSON after every item above passes.",
     "",
-    "OUTPUT FORMAT:",
-    "Return ONLY a raw JSON object (no markdown fences) with exactly these three keys:",
+    "OUTPUT FORMAT (strict):",
+    "Your entire reply MUST be exactly one raw JSON object and nothing else.",
+    "- The first character of your reply must be {",
+    "- The last character of your reply must be }",
+    "- Do NOT wrap the JSON in markdown code fences (no ``` and no ```json).",
+    "- Do NOT include any explanatory prose, headings, or text before or after the JSON.",
+    "- Do NOT include comments inside the JSON.",
+    "Required keys (exactly these three, no others):",
     "  meta_title   — 55–60 characters, includes city name and primary keyword",
     "  h1_heading   — 60–80 characters, compelling H1 for the page",
     "  page_content_html — the full HTML body content as a string",
   ].join("\n");
 
-  // Prefill the assistant turn with `{` to coax the model into a strict JSON
-  // object response — Anthropic has no native json_object mode, so prefill is
-  // the standard pattern. The returned content[0].text continues after `{`.
   let res: Response;
   try {
     res = await fetchWithRetry(
@@ -509,9 +534,12 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
           // Lower temperature reduces missed-space / smushed-word artifacts
           // in the generated copy without sacrificing meaningful variety.
           temperature: 0.6,
+          // No assistant prefill — Sonnet 4.6 and other recent models reject
+          // conversations that don't end with a user turn. The strict OUTPUT
+          // FORMAT block in the user prompt is what enforces JSON-only output;
+          // stripJsonWrapper() defends against the rare wrap-in-fences slip.
           messages: [
             { role: "user", content: prompt },
-            { role: "assistant", content: "{" },
           ],
         }),
       },
@@ -580,8 +608,10 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
     });
   }
 
-  // The model continues after the prefilled `{`, so re-attach it before parsing.
-  const jsonText = text.startsWith("{") ? text : `{${text}`;
+  // No assistant prefill is sent (Sonnet 4.6 forbids it), so the model returns
+  // the entire JSON object itself. Strip any markdown fences / surrounding
+  // prose the model might add despite the OUTPUT FORMAT instructions.
+  const jsonText = stripJsonWrapper(text);
   let parsed: Partial<AgentPageResponse> | null;
   try {
     parsed = JSON.parse(jsonText) as Partial<AgentPageResponse>;
