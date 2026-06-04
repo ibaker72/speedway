@@ -183,9 +183,14 @@ async function fetchWithRetry(
 // Post-parse sanitizer — repair common spacing artifacts in model output
 // ---------------------------------------------------------------------------
 //
-// The model occasionally drops spaces ("inClifton", "HondaHR-V",
-// "Mercedes-BenzGLC", "and you can<a …>browse</a>any time"). These passes
-// stitch the most common ones back together without touching HTML structure.
+// Layered defense:
+//   (1) Structural rules: case boundaries, punctuation, inline-tag adjacency.
+//   (2) Proper-noun anchoring: city, state, dealership name, vehicle makes.
+//   (3) Known-bad merge dictionary: lowercase-into-lowercase pairs observed
+//       in live runs that no structural rule can detect (e.g. "Visitus",
+//       "whetheryou're").
+//   (4) Validation pass that emits a warning list of any merged-looking
+//       tokens still present, so the dry_run response surfaces them.
 
 const INLINE_TAG = /(?:a|strong|em|b|i|span|u|small|mark)/i;
 
@@ -197,8 +202,8 @@ function addSpacesAtCaseBoundaries(text: string): string {
 }
 
 function addSpacesAfterPunctuation(text: string): string {
-  // ".Foo" → ". Foo", but only when the next char is a letter — leaves
-  // numbers like "$15,000" and ellipses alone.
+  // ".Foo" → ". Foo", ",Foo" → ", Foo". Triggers only when the next char
+  // is a letter, so numbers like "$15,000" and ellipses stay intact.
   return text.replace(/([.,;:!?])(?=[A-Za-z])/g, "$1 ");
 }
 
@@ -206,47 +211,178 @@ function collapseInlineWhitespace(text: string): string {
   return text.replace(/[ \t]{2,}/g, " ");
 }
 
-function sanitizePlainTextField(text: string): string {
+// Known-bad merges — lowercase-into-lowercase pairs the case rule cannot see.
+// Both casings (sentence-start + mid-sentence) are listed so each pass is
+// case-faithful instead of forcing a single canonical form.
+const KNOWN_BAD_MERGES: Array<[RegExp, string]> = [
+  [/\bWhetheryou're\b/g, "Whether you're"],
+  [/\bWhetheryou\b/g, "Whether you"],
+  [/\bwhetheryou're\b/g, "whether you're"],
+  [/\bwhetheryou\b/g, "whether you"],
+  [/\bMultipledealerships\b/g, "Multiple dealerships"],
+  [/\bMultipledealership\b/g, "Multiple dealership"],
+  [/\bmultipledealerships\b/g, "multiple dealerships"],
+  [/\bmultipledealership\b/g, "multiple dealership"],
+  [/\bWillwork\b/g, "Will work"],
+  [/\bwillwork\b/g, "will work"],
+  [/\bFirstvehicles\b/g, "First vehicles"],
+  [/\bFirstvehicle\b/g, "First vehicle"],
+  [/\bfirstvehicles\b/g, "first vehicles"],
+  [/\bfirstvehicle\b/g, "first vehicle"],
+  [/\bReducesyour\b/g, "Reduces your"],
+  [/\breducesyour\b/g, "reduces your"],
+  [/\bVisitus\b/g, "Visit us"],
+  [/\bvisitus\b/g, "visit us"],
+  [/\bVisitour\b/g, "Visit our"],
+  [/\bvisitour\b/g, "visit our"],
+];
+
+function applyKnownBadMerges(text: string): string {
   let s = text;
-  s = addSpacesAtCaseBoundaries(s);
-  s = addSpacesAfterPunctuation(s);
-  s = s.replace(/\s{2,}/g, " ").trim();
+  for (const [pattern, replacement] of KNOWN_BAD_MERGES) {
+    s = s.replace(pattern, replacement);
+  }
   return s;
 }
 
-function sanitizeHtmlContent(html: string): string {
-  let s = html;
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
-  // 1. Word directly butted against an opening inline tag → insert a space.
-  //    "you can<a href" → "you can <a href"
-  s = s.replace(new RegExp(`(\\w)(?=<${INLINE_TAG.source}\\b)`, "gi"), "$1 ");
-  // 2. Closing inline tag directly butted against a word → insert a space.
-  //    "</a>any" → "</a> any"
-  s = s.replace(new RegExp(`(</${INLINE_TAG.source}>)(?=\\w)`, "gi"), "$1 ");
+function buildProperNounAnchors(
+  city: string,
+  state: string,
+  vehicleMakes: string[]
+): string[] {
+  // Anchors used to detect "letterX" smushes against known proper nouns,
+  // e.g. "MotorsLLC" → "Motors LLC", "Patersonto" → "Paterson to".
+  return Array.from(
+    new Set(
+      [
+        "Speedway Motors LLC",
+        "Speedway Motors",
+        "Speedway",
+        "LLC",
+        city,
+        state,
+        "Paterson",
+        "New Jersey",
+        "NJ",
+        ...vehicleMakes,
+      ]
+        .map((n) => n.trim())
+        .filter((n) => n.length > 0)
+    )
+  );
+}
 
-  // 3. Walk segments: only mutate text nodes, leave HTML tags untouched
-  //    so attribute values like href="…" and class="…" are preserved.
-  s = s.replace(/<[^>]+>|[^<]+/g, (segment) => {
-    if (segment.startsWith("<")) return segment;
-    let t = segment;
-    t = addSpacesAtCaseBoundaries(t);
-    t = addSpacesAfterPunctuation(t);
-    t = collapseInlineWhitespace(t);
-    return t;
-  });
-
+function anchorAroundProperNouns(text: string, names: string[]): string {
+  let s = text;
+  for (const name of names) {
+    const escaped = escapeRegExp(name);
+    // Letter immediately before the name → insert a space.
+    // "ourPaterson" → "our Paterson", "MotorsLLC" → "Motors LLC".
+    s = s.replace(new RegExp(`(?<=[A-Za-z])${escaped}\\b`, "g"), ` ${name}`);
+    // Name immediately before a lowercase letter → insert a space.
+    // "Patersonto" → "Paterson to", "LLCserves" → "LLC serves".
+    s = s.replace(new RegExp(`\\b${escaped}(?=[a-z])`, "g"), `${name} `);
+  }
   return s;
 }
 
-function sanitizeAgentResponse(raw: AgentPageResponse): AgentPageResponse {
-  return {
-    meta_title: sanitizePlainTextField(raw.meta_title),
-    h1_heading: sanitizePlainTextField(raw.h1_heading),
-    page_content_html: sanitizeHtmlContent(raw.page_content_html),
+// Validation: scan plain text for tokens that look like English words
+// glued together (typically lowercase, ≥12 chars, containing an interior
+// substring that is a known standalone word).
+function detectSuspiciousMerges(textOrHtml: string): string[] {
+  const plain = textOrHtml.replace(/<[^>]+>/g, " ");
+  const tokens = plain.match(/[A-Za-z']{12,}/g) ?? [];
+  const interiorMarkers = [
+    "your", "ours", "their", "them",
+    "from", "with", "into", "onto", "this", "that", "these", "today", "tomorrow",
+    "whether", "while", "every", "vehicle", "vehicles", "dealership", "dealerships",
+    "financing", "credit", "trade",
+    "paterson", "clifton", "newark",
+  ];
+  const flagged = new Set<string>();
+  for (const token of tokens) {
+    const lower = token.toLowerCase();
+    for (const marker of interiorMarkers) {
+      const idx = lower.indexOf(marker);
+      if (idx > 0 && idx + marker.length <= lower.length) {
+        flagged.add(token);
+        break;
+      }
+    }
+  }
+  return Array.from(flagged);
+}
+
+interface SanitizationContext {
+  city: string;
+  state: string;
+  vehicleMakes: string[];
+}
+
+interface SanitizationResult {
+  data: AgentPageResponse;
+  warnings: string[];
+}
+
+function sanitizeGeneratedGeoPage(
+  raw: AgentPageResponse,
+  ctx: SanitizationContext
+): SanitizationResult {
+  const anchors = buildProperNounAnchors(ctx.city, ctx.state, ctx.vehicleMakes);
+
+  const sanitizePlainText = (text: string): string => {
+    let s = text;
+    s = applyKnownBadMerges(s);
+    s = anchorAroundProperNouns(s, anchors);
+    s = addSpacesAtCaseBoundaries(s);
+    s = addSpacesAfterPunctuation(s);
+    s = s.replace(/\s{2,}/g, " ").trim();
+    return s;
   };
+
+  const sanitizeHtml = (html: string): string => {
+    let s = html;
+    // Word directly butted against an opening inline tag → insert a space.
+    s = s.replace(new RegExp(`(\\w)(?=<${INLINE_TAG.source}\\b)`, "gi"), "$1 ");
+    // Closing inline tag butted against a word → insert a space.
+    s = s.replace(new RegExp(`(</${INLINE_TAG.source}>)(?=\\w)`, "gi"), "$1 ");
+    // Walk segments — only mutate text nodes so attribute values like
+    // href="…" and class="…" are preserved.
+    s = s.replace(/<[^>]+>|[^<]+/g, (segment) => {
+      if (segment.startsWith("<")) return segment;
+      let t = segment;
+      t = applyKnownBadMerges(t);
+      t = anchorAroundProperNouns(t, anchors);
+      t = addSpacesAtCaseBoundaries(t);
+      t = addSpacesAfterPunctuation(t);
+      t = collapseInlineWhitespace(t);
+      return t;
+    });
+    return s;
+  };
+
+  const data: AgentPageResponse = {
+    meta_title: sanitizePlainText(raw.meta_title),
+    h1_heading: sanitizePlainText(raw.h1_heading),
+    page_content_html: sanitizeHtml(raw.page_content_html),
+  };
+
+  const warnings = Array.from(
+    new Set([
+      ...detectSuspiciousMerges(data.meta_title),
+      ...detectSuspiciousMerges(data.h1_heading),
+      ...detectSuspiciousMerges(data.page_content_html),
+    ])
+  );
+
+  return { data, warnings };
 }
 
-async function runAnthropicAgent(city: string, state: string): Promise<AgentPageResponse> {
+async function runAnthropicAgent(city: string, state: string): Promise<SanitizationResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   const apiBase = getAnthropicBaseUrl();
   const apiHost = safeHostname(apiBase);
@@ -330,10 +466,21 @@ async function runAnthropicAgent(city: string, state: string): Promise<AgentPage
     "FORMATTING REQUIREMENTS (strict — the output will be rejected if violated):",
     "- Put exactly one space between every word. Never run two words together.",
     "  Examples: write \"in " + city + "\" (NOT \"in" + city + "\"); write \"the greater Paterson area\" (NOT \"thegreater Paterson area\"); write \"minutes from " + city + "\" (NOT \"minutesfrom " + city + "\").",
+    "- Forbidden specifically: \"Visitus\", \"Whetheryou're\", \"willwork\", \"firstvehicle\", \"reducesyour\", \"multipledealerships\", \"helping" + city + "\", \"" + city + "to\", \"our" + city + "\", \"MotorsLLC\", \"Speedway MotorsLLC\".",
     "- Always put a space between a vehicle's make and model. Examples: \"Honda HR-V\" (NOT \"HondaHR-V\"); \"Mercedes-Benz GLC\" (NOT \"Mercedes-BenzGLC\"); \"Toyota RAV4\" (NOT \"ToyotaRAV4\").",
+    "- Always write the dealership name as \"Speedway Motors LLC\" with single spaces between each word (NOT \"SpeedwayMotors\", NOT \"MotorsLLC\", NOT \"Speedway MotorsLLC\").",
+    "- Always surround \"" + city + "\", \"" + state + "\", \"Paterson\", and \"NJ\" with spaces wherever they appear in the prose.",
     "- Always put a space before <a and after </a> when they sit next to words. Example: \"and you can <a href=\\\"/inventory\\\">browse our full inventory</a> any time\" (NOT \"and you can<a href=\\\"/inventory\\\">browse our full inventory</a>any time\").",
-    "- Put a space after every comma and period before the next word.",
-    "- Treat this as production HTML — proofread spacing before emitting.",
+    "- Put a space after every comma, period, semicolon, and colon before the next word.",
+    "",
+    "PROOFREAD CHECKLIST — perform internally before emitting the JSON:",
+    "1. Re-read each sentence and confirm every adjacent pair of words is separated by exactly one space.",
+    "2. Search the page for any token longer than 12 characters that is all lowercase — if it contains two English words back-to-back (e.g. \"reducesyour\", \"willwork\"), split it.",
+    "3. Confirm every vehicle make is followed by a space before its model, and every model is followed by a space before whatever comes next.",
+    "4. Confirm every inline <a> tag has a space immediately before \"<a\" and immediately after \"</a>\" if a word sits beside it.",
+    "5. Confirm \"Speedway Motors LLC\" appears as three space-separated words with no merging.",
+    "6. If any of the forbidden tokens above (Visitus, Whetheryou're, etc.) appears, fix it and re-check.",
+    "Only emit JSON after every item above passes.",
     "",
     "OUTPUT FORMAT:",
     "Return ONLY a raw JSON object (no markdown fences) with exactly these three keys:",
@@ -464,7 +611,25 @@ async function runAnthropicAgent(city: string, state: string): Promise<AgentPage
     );
   }
 
-  return sanitizeAgentResponse(parsed as AgentPageResponse);
+  const vehicleMakes = vehicles
+    .map((v) => v.make)
+    .filter((m): m is string => Boolean(m && m.trim().length));
+
+  const result = sanitizeGeneratedGeoPage(parsed as AgentPageResponse, {
+    city,
+    state,
+    vehicleMakes,
+  });
+
+  if (result.warnings.length > 0) {
+    console.warn(
+      `[generate-city-page] sanitizer flagged ${result.warnings.length} suspicious tokens ` +
+        `city="${city}" state="${state}": ${result.warnings.slice(0, 10).join(", ")}` +
+        (result.warnings.length > 10 ? " …" : "")
+    );
+  }
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -504,11 +669,11 @@ export async function POST(request: Request) {
     );
 
     // 3. Generate content via Anthropic Messages API
-    let agentData: AgentPageResponse;
+    let agentResult: SanitizationResult;
     try {
-      agentData = await runAnthropicAgent(city, state);
+      agentResult = await runAnthropicAgent(city, state);
       console.log(
-        `[generate-city-page] Anthropic ok city="${city}" state="${state}"`
+        `[generate-city-page] Anthropic ok city="${city}" state="${state}" warnings=${agentResult.warnings.length}`
       );
     } catch (err) {
       if (err instanceof StageError) {
@@ -529,21 +694,28 @@ export async function POST(request: Request) {
       throw err;
     }
 
-    // 4. Dry run — return preview without saving
+    // 4. Dry run — return preview without saving (warnings surfaced as a
+    //    sibling field so the preview object itself keeps the strict
+    //    { meta_title, h1_heading, page_content_html } contract).
     if (dryRun) {
       console.log(
-        `[generate-city-page] dry_run complete city="${city}" state="${state}" auth=${authSource}`
+        `[generate-city-page] dry_run complete city="${city}" state="${state}" auth=${authSource} warnings=${agentResult.warnings.length}`
       );
-      return NextResponse.json({ ok: true, dry_run: true, preview: agentData });
+      return NextResponse.json({
+        ok: true,
+        dry_run: true,
+        preview: agentResult.data,
+        ...(agentResult.warnings.length > 0 && { warnings: agentResult.warnings }),
+      });
     }
 
     // 5. Upsert into Supabase (city+state as natural composite key)
     const row: Record<string, unknown> = {
       city,
       state,
-      meta_title: agentData.meta_title,
-      h1_heading: agentData.h1_heading,
-      page_content_html: agentData.page_content_html,
+      meta_title: agentResult.data.meta_title,
+      h1_heading: agentResult.data.h1_heading,
+      page_content_html: agentResult.data.page_content_html,
     };
 
     const { data, error } = await supabaseUpsert<GeoLandingPage>(
