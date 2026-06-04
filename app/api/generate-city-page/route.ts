@@ -126,27 +126,51 @@ function getAnthropicModel(): string {
   return process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
 }
 
-// Strip the common ways a model can wrap a JSON object even when told not to:
-// markdown fences (```json … ``` or ``` … ```), a leading "Here is the JSON:"
-// preamble, or trailing prose. Falls back to slicing the first balanced
-// {…} block so we still parse usable output instead of bailing on a stray
-// preamble.
-function stripJsonWrapper(text: string): string {
-  let s = text.trim();
-  // ```json … ``` or ``` … ``` (case-insensitive language tag)
-  const fence = s.match(/^```[a-zA-Z]*\s*\n?([\s\S]*?)\n?\s*```\s*$/);
-  if (fence) s = fence[1].trim();
-  // If the model added prose on either side of the object, keep only the
-  // outermost {…} span. This is a best-effort fallback for slips.
-  if (!s.startsWith("{") || !s.endsWith("}")) {
-    const first = s.indexOf("{");
-    const last = s.lastIndexOf("}");
-    if (first !== -1 && last > first) {
-      s = s.slice(first, last + 1).trim();
-    }
-  }
-  return s;
+// Convert ASCII inch (") and foot (') marks that follow a digit into
+// spelled-out form ("159\" WB" → "159-inch WB", "12'" → "12-foot"). Used to
+// scrub inventory trim strings before they enter the prompt so the model
+// reads clean prose rather than embedded quote chars.
+function spellOutInchAndFoot(text: string): string {
+  return text
+    .replace(/(\d(?:\.\d+)?)\s*"/g, "$1-inch")
+    .replace(/(\d(?:\.\d+)?)\s*'/g, "$1-foot");
 }
+
+// Anthropic tool schema for the forced tool call. Using a tool sidesteps the
+// entire class of JSON-text fragility (unescaped quotes inside HTML strings,
+// markdown fences, runaway prose): the API serializes tool_use.input itself
+// and returns it as a structured object we can read directly.
+const GEO_PAGE_TOOL = {
+  name: "generate_geo_landing_page",
+  description:
+    "Emit the SEO-optimized landing page content for the requested city. " +
+    "All three fields are required and must follow the content / formatting / " +
+    "proofread rules in the user prompt verbatim.",
+  input_schema: {
+    type: "object",
+    required: ["meta_title", "h1_heading", "page_content_html"],
+    additionalProperties: false,
+    properties: {
+      meta_title: {
+        type: "string",
+        description:
+          "55–60 characters. Includes the city name and the primary keyword.",
+      },
+      h1_heading: {
+        type: "string",
+        description: "60–80 characters. Compelling H1 for the page.",
+      },
+      page_content_html: {
+        type: "string",
+        description:
+          "Full HTML body content (400–600 words) with H2/H3 subheadings " +
+          "(never H1), the required inline anchor links to /inventory and " +
+          "/finance, clean human-readable spacing throughout, and no CTA " +
+          "button or form.",
+      },
+    },
+  },
+} as const;
 
 // ---------------------------------------------------------------------------
 // Anthropic helper with retry
@@ -452,7 +476,13 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
 
   const inventorySnapshot = vehicles
     .slice(0, 8)
-    .map((v) => `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""} — $${v.price.toLocaleString()}`)
+    .map((v) => {
+      // Vehicle trims sometimes carry raw inch/foot marks (e.g. "159\" WB",
+      // "6'5\" cab"). Spell them out so the string is unambiguous prose
+      // before it goes into the prompt.
+      const trim = v.trim ? " " + spellOutInchAndFoot(v.trim) : "";
+      return `${v.year} ${v.make} ${v.model}${trim} — $${v.price.toLocaleString()}`;
+    })
     .join("; ");
 
   const featuredMakesList = [...new Set(vehicles.map((v) => v.make))].slice(0, 6).join(", ");
@@ -502,19 +532,10 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
     "4. Confirm every inline <a> tag has a space immediately before \"<a\" and immediately after \"</a>\" if a word sits beside it.",
     "5. Confirm \"Speedway Motors LLC\" appears as three space-separated words with no merging.",
     "6. If any of the forbidden tokens above (Visitus, Whetheryou're, etc.) appears, fix it and re-check.",
-    "Only emit JSON after every item above passes.",
+    "Only invoke the tool after every item above passes.",
     "",
-    "OUTPUT FORMAT (strict):",
-    "Your entire reply MUST be exactly one raw JSON object and nothing else.",
-    "- The first character of your reply must be {",
-    "- The last character of your reply must be }",
-    "- Do NOT wrap the JSON in markdown code fences (no ``` and no ```json).",
-    "- Do NOT include any explanatory prose, headings, or text before or after the JSON.",
-    "- Do NOT include comments inside the JSON.",
-    "Required keys (exactly these three, no others):",
-    "  meta_title   — 55–60 characters, includes city name and primary keyword",
-    "  h1_heading   — 60–80 characters, compelling H1 for the page",
-    "  page_content_html — the full HTML body content as a string",
+    "OUTPUT FORMAT:",
+    "Return your output by invoking the generate_geo_landing_page tool with the three required string fields populated. Do not emit any conversational text — only the tool invocation.",
   ].join("\n");
 
   let res: Response;
@@ -534,10 +555,12 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
           // Lower temperature reduces missed-space / smushed-word artifacts
           // in the generated copy without sacrificing meaningful variety.
           temperature: 0.6,
-          // No assistant prefill — Sonnet 4.6 and other recent models reject
-          // conversations that don't end with a user turn. The strict OUTPUT
-          // FORMAT block in the user prompt is what enforces JSON-only output;
-          // stripJsonWrapper() defends against the rare wrap-in-fences slip.
+          // Forced tool use — the model MUST call generate_geo_landing_page.
+          // The API serializes tool_use.input as structured JSON itself, so
+          // we never have to JSON.parse model-emitted text. This removes the
+          // entire class of "unescaped quote inside an HTML string" failures.
+          tools: [GEO_PAGE_TOOL],
+          tool_choice: { type: "tool", name: GEO_PAGE_TOOL.name },
           messages: [
             { role: "user", content: prompt },
           ],
@@ -587,46 +610,69 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
     });
   }
 
-  // Anthropic Messages API: { content: [{ type: "text", text: "..." }, ...], stop_reason, ... }
-  const content =
+  // Anthropic Messages API with tool_choice forced returns:
+  //   { content: [{ type: "tool_use", name, id, input: {…} }, …],
+  //     stop_reason: "tool_use", … }
+  // The model MAY also emit a leading text block (rare under forced choice),
+  // which we keep around for diagnostics if no tool_use block appears.
+  type AnthropicContentBlock =
+    | { type: "text"; text?: string }
+    | { type: "tool_use"; name?: string; id?: string; input?: unknown };
+  const envelopeObj =
     envelope && typeof envelope === "object"
-      ? (envelope as { content?: Array<{ type?: string; text?: string }> }).content
-      : undefined;
-  const stopReason =
-    envelope && typeof envelope === "object"
-      ? (envelope as { stop_reason?: string }).stop_reason
-      : undefined;
-  const text = Array.isArray(content)
-    ? content.find((c) => c?.type === "text")?.text ?? ""
-    : "";
-  if (!text) {
-    throw new StageError("anthropic", "Anthropic response had no text content", {
-      anthropic_base_url: apiBase,
-      anthropic_host: apiHost,
-      anthropic_model: model,
-      stop_reason: stopReason,
-    });
+      ? (envelope as Record<string, unknown>)
+      : null;
+  const content = envelopeObj?.content as AnthropicContentBlock[] | undefined;
+  const stopReason = envelopeObj?.stop_reason as string | undefined;
+
+  const toolUse = Array.isArray(content)
+    ? (content.find(
+        (c): c is Extract<AnthropicContentBlock, { type: "tool_use" }> =>
+          c?.type === "tool_use" && c?.name === GEO_PAGE_TOOL.name
+      ) ?? undefined)
+    : undefined;
+
+  if (!toolUse) {
+    // Diagnostic: surface any text the model emitted instead of calling
+    // the tool, so the failure mode is obvious in the response.
+    const textPreview = Array.isArray(content)
+      ? content
+          .filter(
+            (c): c is Extract<AnthropicContentBlock, { type: "text" }> =>
+              c?.type === "text"
+          )
+          .map((c) => c.text ?? "")
+          .join("\n")
+          .slice(0, 300)
+      : "";
+    throw new StageError(
+      "anthropic",
+      `Anthropic did not invoke the ${GEO_PAGE_TOOL.name} tool`,
+      {
+        anthropic_base_url: apiBase,
+        anthropic_host: apiHost,
+        anthropic_model: model,
+        stop_reason: stopReason,
+        text_preview: textPreview,
+      }
+    );
   }
 
-  // No assistant prefill is sent (Sonnet 4.6 forbids it), so the model returns
-  // the entire JSON object itself. Strip any markdown fences / surrounding
-  // prose the model might add despite the OUTPUT FORMAT instructions.
-  const jsonText = stripJsonWrapper(text);
-  let parsed: Partial<AgentPageResponse> | null;
-  try {
-    parsed = JSON.parse(jsonText) as Partial<AgentPageResponse>;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    const preview = jsonText.length > 300 ? `${jsonText.slice(0, 300)}…` : jsonText;
-    throw new StageError("anthropic", "Anthropic content was not valid JSON", {
-      anthropic_base_url: apiBase,
-      anthropic_host: apiHost,
-      anthropic_model: model,
-      stop_reason: stopReason,
-      content_preview: preview,
-      cause_message: message,
-    });
+  const rawInput = toolUse.input;
+  if (!rawInput || typeof rawInput !== "object") {
+    throw new StageError(
+      "anthropic",
+      `${GEO_PAGE_TOOL.name} tool returned non-object input`,
+      {
+        anthropic_base_url: apiBase,
+        anthropic_host: apiHost,
+        anthropic_model: model,
+        stop_reason: stopReason,
+        input_type: typeof rawInput,
+      }
+    );
   }
+  const parsed = rawInput as Partial<AgentPageResponse>;
 
   if (!parsed || !parsed.meta_title || !parsed.h1_heading || !parsed.page_content_html) {
     throw new StageError(
