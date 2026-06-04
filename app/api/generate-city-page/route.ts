@@ -4,28 +4,19 @@ import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { supabaseUpsert } from "@/lib/supabase";
 import { dealerConfig } from "@/dealer.config";
 import { getInventory } from "@/lib/data/inventory-source";
+import {
+  AgentPageResponse,
+  GeoPageSections,
+  SanitizationResult,
+  normalizeCity,
+  normalizeState,
+  sanitizeGeneratedGeoPage,
+  spellOutInchAndFoot,
+} from "@/lib/geo/sanitize";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface AgentPageResponse {
-  meta_title: string;
-  h1_heading: string;
-  page_content_html: string;
-}
-
-// The model returns these seven plain-text fields via tool use; the route
-// then assembles page_content_html deterministically from them.
-interface GeoPageSections {
-  meta_title: string;
-  h1_heading: string;
-  intro_paragraph: string;
-  inventory_paragraph: string;
-  financing_paragraph: string;
-  trade_in_paragraph: string;
-  why_choose_paragraph: string;
-}
 
 interface GeoLandingPage extends AgentPageResponse {
   city: string;
@@ -134,44 +125,8 @@ function getAnthropicBaseUrl(): string {
   return (process.env.ANTHROPIC_API_BASE_URL ?? "https://api.anthropic.com/v1").replace(/\/$/, "");
 }
 
-// ---------------------------------------------------------------------------
-// Input normalization — every downstream consumer (prompt, sanitizer, Supabase
-// upsert, revalidatePath) should see the canonical title-cased city and the
-// canonical uppercased two-letter state, regardless of what the caller sent.
-// ---------------------------------------------------------------------------
-
-function toTitleCase(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/\b([a-z])/g, (m) => m.toUpperCase())
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function normalizeCity(input: string): string {
-  return toTitleCase(input);
-}
-
-function normalizeState(input: string): string {
-  const trimmed = input.trim();
-  // Two-letter postal codes (NJ, NY, CA) — uppercase. Anything longer (e.g.
-  // "new jersey") — title-case.
-  if (trimmed.length === 2) return trimmed.toUpperCase();
-  return toTitleCase(trimmed);
-}
-
 function getAnthropicModel(): string {
-  return process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
-}
-
-// Convert ASCII inch (") and foot (') marks that follow a digit into
-// spelled-out form ("159\" WB" → "159-inch WB", "12'" → "12-foot"). Used to
-// scrub inventory trim strings before they enter the prompt so the model
-// reads clean prose rather than embedded quote chars.
-function spellOutInchAndFoot(text: string): string {
-  return text
-    .replace(/(\d(?:\.\d+)?)\s*"/g, "$1-inch")
-    .replace(/(\d(?:\.\d+)?)\s*'/g, "$1-foot");
+  return process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 }
 
 // Anthropic tool schema for the forced tool call. Using a tool sidesteps the
@@ -289,358 +244,8 @@ async function fetchWithRetry(
 }
 
 // ---------------------------------------------------------------------------
-// Post-parse sanitizer — repair common spacing artifacts in model output
+// Anthropic call
 // ---------------------------------------------------------------------------
-//
-// Layered defense:
-//   (1) Structural rules: case boundaries, punctuation, inline-tag adjacency.
-//   (2) Proper-noun anchoring: city, state, dealership name, vehicle makes.
-//   (3) Known-bad merge dictionary: lowercase-into-lowercase pairs observed
-//       in live runs that no structural rule can detect (e.g. "Visitus",
-//       "whetheryou're").
-//   (4) Validation pass that emits a warning list of any merged-looking
-//       tokens still present, so the dry_run response surfaces them.
-
-function addSpacesAtCaseBoundaries(text: string): string {
-  // "inClifton" → "in Clifton", "HondaHR-V" → "Honda HR-V". Conservative:
-  // only triggers on [a-z] followed by [A-Z], which avoids breaking
-  // acronyms like "BMW" and trim codes like "HR-V" themselves.
-  return text.replace(/([a-z])([A-Z])/g, "$1 $2");
-}
-
-function addSpacesAfterPunctuation(text: string): string {
-  // ".Foo" → ". Foo", ",Foo" → ", Foo". Triggers only when the next char
-  // is a letter, so numbers like "$15,000" and ellipses stay intact.
-  return text.replace(/([.,;:!?])(?=[A-Za-z])/g, "$1 ");
-}
-
-// Known-bad merges — lowercase-into-lowercase pairs the case rule cannot see.
-// Both casings (sentence-start + mid-sentence) are listed so each pass is
-// case-faithful instead of forcing a single canonical form.
-const KNOWN_BAD_MERGES: Array<[RegExp, string]> = [
-  [/\bWhetheryou're\b/g, "Whether you're"],
-  [/\bWhetheryou\b/g, "Whether you"],
-  [/\bwhetheryou're\b/g, "whether you're"],
-  [/\bwhetheryou\b/g, "whether you"],
-  [/\bMultipledealerships\b/g, "Multiple dealerships"],
-  [/\bMultipledealership\b/g, "Multiple dealership"],
-  [/\bmultipledealerships\b/g, "multiple dealerships"],
-  [/\bmultipledealership\b/g, "multiple dealership"],
-  [/\bWillwork\b/g, "Will work"],
-  [/\bwillwork\b/g, "will work"],
-  [/\bFirstvehicles\b/g, "First vehicles"],
-  [/\bFirstvehicle\b/g, "First vehicle"],
-  [/\bfirstvehicles\b/g, "first vehicles"],
-  [/\bfirstvehicle\b/g, "first vehicle"],
-  [/\bReducesyour\b/g, "Reduces your"],
-  [/\breducesyour\b/g, "reduces your"],
-  [/\bVisitus\b/g, "Visit us"],
-  [/\bvisitus\b/g, "visit us"],
-  [/\bVisitour\b/g, "Visit our"],
-  [/\bvisitour\b/g, "visit our"],
-  // Added after Sonnet tool-use run on Clifton:
-  [/\bNearClifton\b/g, "Near Clifton"],
-  [/\bnearClifton\b/g, "near Clifton"],
-  [/\bReliableused\b/g, "Reliable used"],
-  [/\breliableused\b/g, "reliable used"],
-  [/\bLookingfor\b/g, "Looking for"],
-  [/\blookingfor\b/g, "looking for"],
-  [/\bCVTat\b/g, "CVT at"],
-  [/\bMakesand\b/g, "Makes and"],
-  [/\bmakesand\b/g, "makes and"],
-  [/\bSportHybrid\b/g, "Sport Hybrid"],
-  [/\bsportHybrid\b/g, "sport Hybrid"],
-  [/\bToheavy\b/g, "To heavy"],
-  [/\btoheavy\b/g, "to heavy"],
-  [/\bOneroof\b/g, "One roof"],
-  [/\boneroof\b/g, "one roof"],
-  [/\bPathto\b/g, "Path to"],
-  [/\bpathto\b/g, "path to"],
-  [/\bCurrentvehicle\b/g, "Current vehicle"],
-  [/\bcurrentvehicle\b/g, "current vehicle"],
-  [/\bCurrentvehicles\b/g, "Current vehicles"],
-  [/\bcurrentvehicles\b/g, "current vehicles"],
-  [/\bInfrom\b/g, "In from"],
-  [/\binfrom\b/g, "in from"],
-  [/\bAndthe\b/g, "And the"],
-  [/\bandthe\b/g, "and the"],
-  [/\bUsput\b/g, "Us put"],
-  [/\busput\b/g, "us put"],
-  [/\bVehicleat\b/g, "Vehicle at"],
-  [/\bvehicleat\b/g, "vehicle at"],
-  [/\bVehiclesat\b/g, "Vehicles at"],
-  [/\bvehiclesat\b/g, "vehicles at"],
-  // Additional pairs from the Sonnet template-driven Clifton dry_run:
-  [/\bthanluck\b/g, "than luck"],
-  [/\bThanluck\b/g, "Than luck"],
-  [/\bincludesa\b/g, "includes a"],
-  [/\bIncludesa\b/g, "Includes a"],
-  [/\bbadcredit\b/g, "bad credit"],
-  [/\bBadcredit\b/g, "Bad credit"],
-  [/\binyour\b/g, "in your"],
-  [/\bInyour\b/g, "In your"],
-  [/\binour\b/g, "in our"],
-  [/\bInour\b/g, "In our"],
-  [/\bThereis\b/g, "There is"],
-  [/\bthereis\b/g, "there is"],
-  [/\bgreatvehicle\b/g, "great vehicle"],
-  [/\bGreatvehicle\b/g, "Great vehicle"],
-  [/\bgreatvehicles\b/g, "great vehicles"],
-  [/\bGreatvehicles\b/g, "Great vehicles"],
-  // Newark dry_run additions:
-  [/\bSpeedwayMotors\b/g, "Speedway Motors"],
-  [/\bofthe\b/g, "of the"],
-  [/\bOfthe\b/g, "Of the"],
-  [/\bfinanceteam\b/g, "finance team"],
-  [/\bFinanceteam\b/g, "Finance team"],
-  [/\btheirvery\b/g, "their very"],
-  [/\bTheirvery\b/g, "Their very"],
-  [/\bloanterms\b/g, "loan terms"],
-  [/\bLoanterms\b/g, "Loan terms"],
-  [/\bcommunityplaces\b/g, "community places"],
-  [/\bCommunityplaces\b/g, "Community places"],
-];
-
-function applyKnownBadMerges(text: string): string {
-  let s = text;
-  for (const [pattern, replacement] of KNOWN_BAD_MERGES) {
-    s = s.replace(pattern, replacement);
-  }
-  return s;
-}
-
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function buildProperNounAnchors(
-  city: string,
-  state: string,
-  vehicleMakes: string[]
-): string[] {
-  // Anchors used to detect "letterX" smushes against known proper nouns,
-  // e.g. "MotorsLLC" → "Motors LLC", "Patersonto" → "Paterson to".
-  return Array.from(
-    new Set(
-      [
-        "Speedway Motors LLC",
-        "Speedway Motors",
-        "Speedway",
-        "LLC",
-        city,
-        state,
-        "Paterson",
-        "New Jersey",
-        "NJ",
-        ...vehicleMakes,
-      ]
-        .map((n) => n.trim())
-        .filter((n) => n.length > 0)
-    )
-  );
-}
-
-function sortByLengthDescending(names: string[]): string[] {
-  return [...names].sort((a, b) => b.length - a.length);
-}
-
-function anchorAroundProperNouns(text: string, names: string[]): string {
-  let s = text;
-  // Longer anchors first so "Speedway Motors LLC" is matched before
-  // "Speedway" or "LLC" individually capture a piece of it.
-  for (const name of sortByLengthDescending(names)) {
-    const escaped = escapeRegExp(name);
-    // Letter immediately before the name → insert a space. Case-insensitive
-    // so the model writing "Servingnewark" or "Servingnewark" both repair.
-    // The replacement uses the canonical title-cased name.
-    s = s.replace(new RegExp(`(?<=[A-Za-z])${escaped}\\b`, "gi"), ` ${name}`);
-    // Name immediately before a lowercase letter → insert a space.
-    s = s.replace(new RegExp(`\\b${escaped}(?=[a-z])`, "gi"), `${name} `);
-  }
-  return s;
-}
-
-// Re-case standalone occurrences of known proper nouns to their canonical
-// form. This catches the case where the model writes "newark Drivers" (lower
-// "n") or "speedway motors llc" — the anchor pass above only triggers when a
-// letter sits adjacent, not when the proper noun is already a standalone
-// word.
-function canonicalizeProperNouns(text: string, names: string[]): string {
-  let s = text;
-  for (const name of sortByLengthDescending(names)) {
-    // Skip anchors that are entirely lowercase — no canonical case to enforce.
-    if (!/[A-Z]/.test(name)) continue;
-    const escaped = escapeRegExp(name);
-    s = s.replace(new RegExp(`\\b${escaped}\\b`, "gi"), name);
-  }
-  return s;
-}
-
-// Validation: scan plain text for tokens that look like two English words
-// glued together. A token is suspicious if it is at least 7 chars and
-// contains a known SEO/dealer marker as a strict substring while NOT
-// being equal to any marker itself (so legit single words like "vehicles"
-// and "dealership" are not flagged).
-const SUSPICIOUS_MERGE_MARKERS: ReadonlySet<string> = new Set([
-  // SEO / dealer vocabulary that almost never appears as the inside of a
-  // legitimate compound English word.
-  "used", "car", "cars", "vehicle", "vehicles", "inventory",
-  "financing", "finance", "credit", "dealer", "dealers", "dealership",
-  "dealerships", "makes", "models", "near", "looking", "current",
-  "trade", "apply", "browse", "visit", "roof", "path", "hybrid",
-  "commercial", "reliable",
-  // Geography / proper nouns relevant to this dealer.
-  "clifton", "paterson", "newark",
-  // Function words frequently found on the right-hand side of a merge.
-  "your", "ours", "their", "them", "from", "with", "into", "onto",
-  "this", "that", "these", "today", "tomorrow", "whether", "while",
-  "every",
-]);
-
-// Strict detector: a token is flagged ONLY if it can be split into two halves
-// that are BOTH known markers (length ≥ 4). This eliminates the previous
-// false positives like "Clifton's", "without", "Tradesman", and "everything"
-// — for each of those, only one half is a marker and the other half ("'s",
-// "out", "sman", "thing") is not, so they no longer trigger.
-function detectSuspiciousMerges(text: string): string[] {
-  const tokens = text.match(/[A-Za-z']{8,}/g) ?? [];
-  const flagged = new Set<string>();
-  for (const token of tokens) {
-    const lower = token.toLowerCase();
-    if (SUSPICIOUS_MERGE_MARKERS.has(lower)) continue;
-    let didFlag = false;
-    for (const marker of SUSPICIOUS_MERGE_MARKERS) {
-      if (didFlag) break;
-      if (marker.length < 4) continue;
-      if (lower.length <= marker.length) continue;
-      // Marker at start: remainder must itself be a known marker.
-      if (lower.startsWith(marker)) {
-        const rest = lower.slice(marker.length);
-        if (
-          rest.length >= 4 &&
-          SUSPICIOUS_MERGE_MARKERS.has(rest)
-        ) {
-          flagged.add(token);
-          didFlag = true;
-          continue;
-        }
-      }
-      // Marker at end: prefix must itself be a known marker.
-      if (lower.endsWith(marker)) {
-        const rest = lower.slice(0, lower.length - marker.length);
-        if (
-          rest.length >= 4 &&
-          SUSPICIOUS_MERGE_MARKERS.has(rest)
-        ) {
-          flagged.add(token);
-          didFlag = true;
-        }
-      }
-    }
-  }
-  return Array.from(flagged);
-}
-
-interface SanitizationContext {
-  city: string;
-  state: string;
-  vehicleMakes: string[];
-}
-
-interface SanitizationResult {
-  data: AgentPageResponse;
-  warnings: string[];
-}
-
-// Strip any HTML / markdown that slipped into a paragraph field despite the
-// prompt asking for plain prose. Defensive — the seven tool fields should
-// never contain markup, but the model occasionally inserts it.
-function stripStrayMarkup(text: string): string {
-  return text
-    .replace(/<[^>]+>/g, "") // raw HTML tags
-    .replace(/\r?\n+/g, " ") // newlines → spaces
-    .replace(/\*\*([^*\n]+)\*\*/g, "$1") // **bold**
-    .replace(/__([^_\n]+)__/g, "$1") // __bold__
-    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2") // *italic* (not **bold**)
-    .replace(/^#{1,6}\s+/gm, "") // # heading
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"); // [text](url) → text
-}
-
-// Single-pass cleaner for plain-text paragraph fields. Used to produce the
-// strings that will be interpolated into the HTML template.
-function normalizeTextSpacing(text: string, anchors: string[]): string {
-  let s = text;
-  s = stripStrayMarkup(s);
-  s = applyKnownBadMerges(s);
-  s = anchorAroundProperNouns(s, anchors);
-  s = canonicalizeProperNouns(s, anchors);
-  s = addSpacesAtCaseBoundaries(s);
-  s = addSpacesAfterPunctuation(s);
-  s = s.replace(/\s{2,}/g, " ").trim();
-  return s;
-}
-
-// Deterministic HTML template. The route — not the model — controls every
-// H2 heading, every inline link, and every paragraph wrapper, so failures
-// like "can<a" or "</a>any" cannot occur regardless of model output.
-function buildPageContentHtml(
-  sections: GeoPageSections,
-  ctx: SanitizationContext
-): string {
-  const city = ctx.city;
-  const state = ctx.state;
-  return [
-    `<p>${sections.intro_paragraph}</p>`,
-    `<h2>Quality Used Cars Serving ${city}, ${state}</h2>`,
-    `<p>${sections.inventory_paragraph}</p>`,
-    `<p>You can <a href="/inventory">browse our full inventory</a> online any time.</p>`,
-    `<h2>Auto Financing for ${city} Drivers</h2>`,
-    `<p>${sections.financing_paragraph}</p>`,
-    `<p>Ready to get started? <a href="/finance">Apply for financing</a> in minutes.</p>`,
-    `<h2>Trade In Your Current Vehicle</h2>`,
-    `<p>${sections.trade_in_paragraph}</p>`,
-    `<h2>Why Choose Speedway Motors LLC</h2>`,
-    `<p>${sections.why_choose_paragraph}</p>`,
-  ].join("\n");
-}
-
-function sanitizeGeneratedGeoPage(
-  raw: GeoPageSections,
-  ctx: SanitizationContext
-): SanitizationResult {
-  const anchors = buildProperNounAnchors(ctx.city, ctx.state, ctx.vehicleMakes);
-
-  const cleaned: GeoPageSections = {
-    meta_title: normalizeTextSpacing(raw.meta_title, anchors),
-    h1_heading: normalizeTextSpacing(raw.h1_heading, anchors),
-    intro_paragraph: normalizeTextSpacing(raw.intro_paragraph, anchors),
-    inventory_paragraph: normalizeTextSpacing(raw.inventory_paragraph, anchors),
-    financing_paragraph: normalizeTextSpacing(raw.financing_paragraph, anchors),
-    trade_in_paragraph: normalizeTextSpacing(raw.trade_in_paragraph, anchors),
-    why_choose_paragraph: normalizeTextSpacing(raw.why_choose_paragraph, anchors),
-  };
-
-  const data: AgentPageResponse = {
-    meta_title: cleaned.meta_title,
-    h1_heading: cleaned.h1_heading,
-    page_content_html: buildPageContentHtml(cleaned, ctx),
-  };
-
-  // Detector runs on plain text (paragraphs + headings) so HTML structure
-  // doesn't dilute the signal.
-  const combined = [
-    cleaned.meta_title,
-    cleaned.h1_heading,
-    cleaned.intro_paragraph,
-    cleaned.inventory_paragraph,
-    cleaned.financing_paragraph,
-    cleaned.trade_in_paragraph,
-    cleaned.why_choose_paragraph,
-  ].join(" ");
-  const warnings = detectSuspiciousMerges(combined);
-
-  return { data, warnings };
-}
 
 async function runAnthropicAgent(city: string, state: string): Promise<SanitizationResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -691,9 +296,6 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
   const inventorySnapshot = vehicles
     .slice(0, 8)
     .map((v) => {
-      // Vehicle trims sometimes carry raw inch/foot marks (e.g. "159\" WB",
-      // "6'5\" cab"). Spell them out so the string is unambiguous prose
-      // before it goes into the prompt.
       const trim = v.trim ? " " + spellOutInchAndFoot(v.trim) : "";
       return `${v.year} ${v.make} ${v.model}${trim} — $${v.price.toLocaleString()}`;
     })
@@ -742,6 +344,8 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
     "- Always write the dealership name as \"Speedway Motors LLC\" with single spaces (NOT \"SpeedwayMotors\", NOT \"MotorsLLC\").",
     "- Always surround \"" + city + "\", \"" + state + "\", \"Paterson\", and \"NJ\" with spaces wherever they appear.",
     "- Put a space after every comma, period, semicolon, and colon before the next word.",
+    "- Put a space between a digit and an adjacent word (NOT \"21years\", NOT \"107vehicles\").",
+    "- Put a space between a trim/drivetrain token (SE, EX, LX, AWD, FWD, RWD, 4WD, CVT) and the next word (NOT \"SEAWD\", NOT \"CVTat\").",
     "",
     "PROOFREAD CHECKLIST — perform internally before invoking the tool:",
     "1. Re-read each paragraph and confirm every adjacent pair of words is separated by exactly one space.",
