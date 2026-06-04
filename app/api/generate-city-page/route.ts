@@ -15,6 +15,18 @@ interface AgentPageResponse {
   page_content_html: string;
 }
 
+// The model returns these seven plain-text fields via tool use; the route
+// then assembles page_content_html deterministically from them.
+interface GeoPageSections {
+  meta_title: string;
+  h1_heading: string;
+  intro_paragraph: string;
+  inventory_paragraph: string;
+  financing_paragraph: string;
+  trade_in_paragraph: string;
+  why_choose_paragraph: string;
+}
+
 interface GeoLandingPage extends AgentPageResponse {
   city: string;
   state: string;
@@ -143,30 +155,55 @@ function spellOutInchAndFoot(text: string): string {
 const GEO_PAGE_TOOL = {
   name: "generate_geo_landing_page",
   description:
-    "Emit the SEO-optimized landing page content for the requested city. " +
-    "All three fields are required and must follow the content / formatting / " +
-    "proofread rules in the user prompt verbatim.",
+    "Emit the SEO landing-page sections for the requested city as seven " +
+    "plain-text fields. The route assembles the final HTML — never emit " +
+    "HTML tags, markdown, or inline links inside any field.",
   input_schema: {
     type: "object",
-    required: ["meta_title", "h1_heading", "page_content_html"],
+    required: [
+      "meta_title",
+      "h1_heading",
+      "intro_paragraph",
+      "inventory_paragraph",
+      "financing_paragraph",
+      "trade_in_paragraph",
+      "why_choose_paragraph",
+    ],
     additionalProperties: false,
     properties: {
       meta_title: {
         type: "string",
         description:
-          "55–60 characters. Includes the city name and the primary keyword.",
+          "55–60 characters. Plain text. Includes the city name and the primary keyword.",
       },
       h1_heading: {
         type: "string",
-        description: "60–80 characters. Compelling H1 for the page.",
+        description: "60–80 characters. Plain text. Compelling H1 heading.",
       },
-      page_content_html: {
+      intro_paragraph: {
         type: "string",
         description:
-          "Full HTML body content (400–600 words) with H2/H3 subheadings " +
-          "(never H1), the required inline anchor links to /inventory and " +
-          "/finance, clean human-readable spacing throughout, and no CTA " +
-          "button or form.",
+          "80–120 words of plain prose. No HTML, no markdown, no links. Welcomes the city's drivers and sets up the page.",
+      },
+      inventory_paragraph: {
+        type: "string",
+        description:
+          "80–120 words of plain prose. References real makes/models from the inventory snapshot. No HTML, no markdown, no links.",
+      },
+      financing_paragraph: {
+        type: "string",
+        description:
+          "80–120 words of plain prose covering credit options including bad credit, no credit, and first-time buyers. No HTML, no markdown, no links.",
+      },
+      trade_in_paragraph: {
+        type: "string",
+        description:
+          "60–100 words of plain prose covering the trade-in process. No HTML, no markdown, no links.",
+      },
+      why_choose_paragraph: {
+        type: "string",
+        description:
+          "60–100 words of plain prose closing the page. No HTML, no markdown, no links.",
       },
     },
   },
@@ -238,8 +275,6 @@ async function fetchWithRetry(
 //   (4) Validation pass that emits a warning list of any merged-looking
 //       tokens still present, so the dry_run response surfaces them.
 
-const INLINE_TAG = /(?:a|strong|em|b|i|span|u|small|mark)/i;
-
 function addSpacesAtCaseBoundaries(text: string): string {
   // "inClifton" → "in Clifton", "HondaHR-V" → "Honda HR-V". Conservative:
   // only triggers on [a-z] followed by [A-Z], which avoids breaking
@@ -251,10 +286,6 @@ function addSpacesAfterPunctuation(text: string): string {
   // ".Foo" → ". Foo", ",Foo" → ", Foo". Triggers only when the next char
   // is a letter, so numbers like "$15,000" and ellipses stay intact.
   return text.replace(/([.,;:!?])(?=[A-Za-z])/g, "$1 ");
-}
-
-function collapseInlineWhitespace(text: string): string {
-  return text.replace(/[ \t]{2,}/g, " ");
 }
 
 // Known-bad merges — lowercase-into-lowercase pairs the case rule cannot see.
@@ -313,6 +344,23 @@ const KNOWN_BAD_MERGES: Array<[RegExp, string]> = [
   [/\bvehicleat\b/g, "vehicle at"],
   [/\bVehiclesat\b/g, "Vehicles at"],
   [/\bvehiclesat\b/g, "vehicles at"],
+  // Additional pairs from the Sonnet template-driven Clifton dry_run:
+  [/\bthanluck\b/g, "than luck"],
+  [/\bThanluck\b/g, "Than luck"],
+  [/\bincludesa\b/g, "includes a"],
+  [/\bIncludesa\b/g, "Includes a"],
+  [/\bbadcredit\b/g, "bad credit"],
+  [/\bBadcredit\b/g, "Bad credit"],
+  [/\binyour\b/g, "in your"],
+  [/\bInyour\b/g, "In your"],
+  [/\binour\b/g, "in our"],
+  [/\bInour\b/g, "In our"],
+  [/\bThereis\b/g, "There is"],
+  [/\bthereis\b/g, "there is"],
+  [/\bgreatvehicle\b/g, "great vehicle"],
+  [/\bGreatvehicle\b/g, "Great vehicle"],
+  [/\bgreatvehicles\b/g, "great vehicles"],
+  [/\bGreatvehicles\b/g, "Great vehicles"],
 ];
 
 function applyKnownBadMerges(text: string): string {
@@ -389,22 +437,44 @@ const SUSPICIOUS_MERGE_MARKERS: ReadonlySet<string> = new Set([
   "every",
 ]);
 
-function detectSuspiciousMerges(textOrHtml: string): string[] {
-  const plain = textOrHtml.replace(/<[^>]+>/g, " ");
-  const tokens = plain.match(/[A-Za-z']{7,}/g) ?? [];
+// Strict detector: a token is flagged ONLY if it can be split into two halves
+// that are BOTH known markers (length ≥ 4). This eliminates the previous
+// false positives like "Clifton's", "without", "Tradesman", and "everything"
+// — for each of those, only one half is a marker and the other half ("'s",
+// "out", "sman", "thing") is not, so they no longer trigger.
+function detectSuspiciousMerges(text: string): string[] {
+  const tokens = text.match(/[A-Za-z']{8,}/g) ?? [];
   const flagged = new Set<string>();
   for (const token of tokens) {
     const lower = token.toLowerCase();
-    // Legitimate single words: skip.
     if (SUSPICIOUS_MERGE_MARKERS.has(lower)) continue;
+    let didFlag = false;
     for (const marker of SUSPICIOUS_MERGE_MARKERS) {
-      // Skip very short markers (≤3 chars) — too many false positives like
-      // "car" inside "cargo", "and" inside "android".
+      if (didFlag) break;
       if (marker.length < 4) continue;
       if (lower.length <= marker.length) continue;
-      if (lower.includes(marker)) {
-        flagged.add(token);
-        break;
+      // Marker at start: remainder must itself be a known marker.
+      if (lower.startsWith(marker)) {
+        const rest = lower.slice(marker.length);
+        if (
+          rest.length >= 4 &&
+          SUSPICIOUS_MERGE_MARKERS.has(rest)
+        ) {
+          flagged.add(token);
+          didFlag = true;
+          continue;
+        }
+      }
+      // Marker at end: prefix must itself be a known marker.
+      if (lower.endsWith(marker)) {
+        const rest = lower.slice(0, lower.length - marker.length);
+        if (
+          rest.length >= 4 &&
+          SUSPICIOUS_MERGE_MARKERS.has(rest)
+        ) {
+          flagged.add(token);
+          didFlag = true;
+        }
       }
     }
   }
@@ -422,56 +492,91 @@ interface SanitizationResult {
   warnings: string[];
 }
 
+// Strip any HTML / markdown that slipped into a paragraph field despite the
+// prompt asking for plain prose. Defensive — the seven tool fields should
+// never contain markup, but the model occasionally inserts it.
+function stripStrayMarkup(text: string): string {
+  return text
+    .replace(/<[^>]+>/g, "") // raw HTML tags
+    .replace(/\r?\n+/g, " ") // newlines → spaces
+    .replace(/\*\*([^*\n]+)\*\*/g, "$1") // **bold**
+    .replace(/__([^_\n]+)__/g, "$1") // __bold__
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1$2") // *italic* (not **bold**)
+    .replace(/^#{1,6}\s+/gm, "") // # heading
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"); // [text](url) → text
+}
+
+// Single-pass cleaner for plain-text paragraph fields. Used to produce the
+// strings that will be interpolated into the HTML template.
+function normalizeTextSpacing(text: string, anchors: string[]): string {
+  let s = text;
+  s = stripStrayMarkup(s);
+  s = applyKnownBadMerges(s);
+  s = anchorAroundProperNouns(s, anchors);
+  s = addSpacesAtCaseBoundaries(s);
+  s = addSpacesAfterPunctuation(s);
+  s = s.replace(/\s{2,}/g, " ").trim();
+  return s;
+}
+
+// Deterministic HTML template. The route — not the model — controls every
+// H2 heading, every inline link, and every paragraph wrapper, so failures
+// like "can<a" or "</a>any" cannot occur regardless of model output.
+function buildPageContentHtml(
+  sections: GeoPageSections,
+  ctx: SanitizationContext
+): string {
+  const city = ctx.city;
+  const state = ctx.state;
+  return [
+    `<p>${sections.intro_paragraph}</p>`,
+    `<h2>Quality Used Cars Serving ${city}, ${state}</h2>`,
+    `<p>${sections.inventory_paragraph}</p>`,
+    `<p>You can <a href="/inventory">browse our full inventory</a> online any time.</p>`,
+    `<h2>Auto Financing for ${city} Drivers</h2>`,
+    `<p>${sections.financing_paragraph}</p>`,
+    `<p>Ready to get started? <a href="/finance">Apply for financing</a> in minutes.</p>`,
+    `<h2>Trade In Your Current Vehicle</h2>`,
+    `<p>${sections.trade_in_paragraph}</p>`,
+    `<h2>Why Choose Speedway Motors LLC</h2>`,
+    `<p>${sections.why_choose_paragraph}</p>`,
+  ].join("\n");
+}
+
 function sanitizeGeneratedGeoPage(
-  raw: AgentPageResponse,
+  raw: GeoPageSections,
   ctx: SanitizationContext
 ): SanitizationResult {
   const anchors = buildProperNounAnchors(ctx.city, ctx.state, ctx.vehicleMakes);
 
-  const sanitizePlainText = (text: string): string => {
-    let s = text;
-    s = applyKnownBadMerges(s);
-    s = anchorAroundProperNouns(s, anchors);
-    s = addSpacesAtCaseBoundaries(s);
-    s = addSpacesAfterPunctuation(s);
-    s = s.replace(/\s{2,}/g, " ").trim();
-    return s;
-  };
-
-  const sanitizeHtml = (html: string): string => {
-    let s = html;
-    // Word directly butted against an opening inline tag → insert a space.
-    s = s.replace(new RegExp(`(\\w)(?=<${INLINE_TAG.source}\\b)`, "gi"), "$1 ");
-    // Closing inline tag butted against a word → insert a space.
-    s = s.replace(new RegExp(`(</${INLINE_TAG.source}>)(?=\\w)`, "gi"), "$1 ");
-    // Walk segments — only mutate text nodes so attribute values like
-    // href="…" and class="…" are preserved.
-    s = s.replace(/<[^>]+>|[^<]+/g, (segment) => {
-      if (segment.startsWith("<")) return segment;
-      let t = segment;
-      t = applyKnownBadMerges(t);
-      t = anchorAroundProperNouns(t, anchors);
-      t = addSpacesAtCaseBoundaries(t);
-      t = addSpacesAfterPunctuation(t);
-      t = collapseInlineWhitespace(t);
-      return t;
-    });
-    return s;
+  const cleaned: GeoPageSections = {
+    meta_title: normalizeTextSpacing(raw.meta_title, anchors),
+    h1_heading: normalizeTextSpacing(raw.h1_heading, anchors),
+    intro_paragraph: normalizeTextSpacing(raw.intro_paragraph, anchors),
+    inventory_paragraph: normalizeTextSpacing(raw.inventory_paragraph, anchors),
+    financing_paragraph: normalizeTextSpacing(raw.financing_paragraph, anchors),
+    trade_in_paragraph: normalizeTextSpacing(raw.trade_in_paragraph, anchors),
+    why_choose_paragraph: normalizeTextSpacing(raw.why_choose_paragraph, anchors),
   };
 
   const data: AgentPageResponse = {
-    meta_title: sanitizePlainText(raw.meta_title),
-    h1_heading: sanitizePlainText(raw.h1_heading),
-    page_content_html: sanitizeHtml(raw.page_content_html),
+    meta_title: cleaned.meta_title,
+    h1_heading: cleaned.h1_heading,
+    page_content_html: buildPageContentHtml(cleaned, ctx),
   };
 
-  const warnings = Array.from(
-    new Set([
-      ...detectSuspiciousMerges(data.meta_title),
-      ...detectSuspiciousMerges(data.h1_heading),
-      ...detectSuspiciousMerges(data.page_content_html),
-    ])
-  );
+  // Detector runs on plain text (paragraphs + headings) so HTML structure
+  // doesn't dilute the signal.
+  const combined = [
+    cleaned.meta_title,
+    cleaned.h1_heading,
+    cleaned.intro_paragraph,
+    cleaned.inventory_paragraph,
+    cleaned.financing_paragraph,
+    cleaned.trade_in_paragraph,
+    cleaned.why_choose_paragraph,
+  ].join(" ");
+  const warnings = detectSuspiciousMerges(combined);
 
   return { data, warnings };
 }
@@ -551,39 +656,43 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
     `- Financing: available for all credit levels including bad credit and first-time buyers`,
     `- Services: used car sales, auto financing, vehicle trade-ins, commercial vehicle sales`,
     "",
-    "CONTENT REQUIREMENTS:",
-    "1. The page must target buyers searching from " + city + ", " + state + " who are willing to drive to Paterson, NJ.",
-    "2. Naturally weave in geographic references to " + city + " and its surrounding neighborhoods.",
-    "3. Include at least one paragraph on financing options (mention bad credit / no credit welcome).",
-    "4. Include at least one paragraph on trade-in value.",
-    "5. Reference real makes/models from the inventory snapshot above to show live availability.",
-    "6. Include an internal link anchor tag to the inventory page: <a href=\"/inventory\">browse our full inventory</a>.",
-    "7. Include an internal link to the financing page: <a href=\"/finance\">apply for financing</a>.",
-    "8. Structure the HTML content with H2 and H3 subheadings (never H1 — that is provided separately).",
-    "9. Aim for 400–600 words of body content.",
-    "10. Do NOT include a CTA button or form — the page template handles those.",
+    "SECTION REQUIREMENTS:",
+    "You will return SEVEN plain-text fields via the generate_geo_landing_page tool. The route assembles the final HTML — your job is to write clean prose for each section.",
     "",
-    "FORMATTING REQUIREMENTS (strict — the output will be rejected if violated):",
+    "EVERY paragraph field must be plain prose only:",
+    "- NO HTML tags (no <p>, <a>, <h2>, no \"<\" or \">\" anywhere).",
+    "- NO markdown (no **bold**, *italic*, # headings, [text](links), backticks).",
+    "- NO inline links — the route inserts the links to /inventory and /finance itself.",
+    "- NO bullet lists, headings, or images. Just sentences.",
+    "",
+    "meta_title — 55–60 characters. Plain text. Includes \"" + city + "\" and a primary keyword (e.g. \"used cars\", \"car financing\").",
+    "h1_heading — 60–80 characters. Plain text. Compelling H1.",
+    "intro_paragraph — 80–120 words. Welcomes " + city + ", " + state + " drivers. Establishes Speedway Motors LLC as conveniently located in Paterson, NJ with " + stats.yearsInBusiness + " years in business and a " + stats.googleRating + "-star Google rating.",
+    "inventory_paragraph — 80–120 words. Describes the breadth and quality of pre-owned inventory. References real makes and models from the snapshot above.",
+    "financing_paragraph — 80–120 words. Covers financing for all credit levels — explicitly mention bad credit, no credit, and first-time buyers. Briefly explain the application process.",
+    "trade_in_paragraph — 60–100 words. Covers the trade-in process. Emphasizes fair offers and quick appraisals.",
+    "why_choose_paragraph — 60–100 words. Closing summary of why " + city + " buyers choose Speedway Motors LLC.",
+    "",
+    "FORMATTING REQUIREMENTS (strict — apply to every field):",
     "- Put exactly one space between every word. Never run two words together.",
-    "  Examples: write \"in " + city + "\" (NOT \"in" + city + "\"); write \"the greater Paterson area\" (NOT \"thegreater Paterson area\"); write \"minutes from " + city + "\" (NOT \"minutesfrom " + city + "\").",
-    "- Forbidden specifically: \"Visitus\", \"Whetheryou're\", \"willwork\", \"firstvehicle\", \"reducesyour\", \"multipledealerships\", \"helping" + city + "\", \"" + city + "to\", \"our" + city + "\", \"MotorsLLC\", \"Speedway MotorsLLC\".",
-    "- Always put a space between a vehicle's make and model. Examples: \"Honda HR-V\" (NOT \"HondaHR-V\"); \"Mercedes-Benz GLC\" (NOT \"Mercedes-BenzGLC\"); \"Toyota RAV4\" (NOT \"ToyotaRAV4\").",
-    "- Always write the dealership name as \"Speedway Motors LLC\" with single spaces between each word (NOT \"SpeedwayMotors\", NOT \"MotorsLLC\", NOT \"Speedway MotorsLLC\").",
-    "- Always surround \"" + city + "\", \"" + state + "\", \"Paterson\", and \"NJ\" with spaces wherever they appear in the prose.",
-    "- Always put a space before <a and after </a> when they sit next to words. Example: \"and you can <a href=\\\"/inventory\\\">browse our full inventory</a> any time\" (NOT \"and you can<a href=\\\"/inventory\\\">browse our full inventory</a>any time\").",
+    "  Examples: write \"in " + city + "\" (NOT \"in" + city + "\"); write \"minutes from " + city + "\" (NOT \"minutesfrom " + city + "\"); write \"the greater Paterson area\" (NOT \"thegreater Paterson area\").",
+    "- Forbidden specifically: \"Visitus\", \"Whetheryou're\", \"willwork\", \"firstvehicle\", \"reducesyour\", \"multipledealerships\", \"NearClifton\", \"reliableused\", \"Lookingfor\", \"CVTat\", \"Makesand\", \"SportHybrid\", \"toheavy\", \"oneroof\", \"pathto\", \"currentvehicle\", \"infrom\", \"andthe\", \"usput\", \"vehicleat\", \"MotorsLLC\", \"Speedway MotorsLLC\".",
+    "- Always put a space between a vehicle's make and model: \"Honda HR-V\" (NOT \"HondaHR-V\"); \"Mercedes-Benz GLC\" (NOT \"Mercedes-BenzGLC\"); \"Toyota RAV4\" (NOT \"ToyotaRAV4\").",
+    "- Always write the dealership name as \"Speedway Motors LLC\" with single spaces (NOT \"SpeedwayMotors\", NOT \"MotorsLLC\").",
+    "- Always surround \"" + city + "\", \"" + state + "\", \"Paterson\", and \"NJ\" with spaces wherever they appear.",
     "- Put a space after every comma, period, semicolon, and colon before the next word.",
     "",
-    "PROOFREAD CHECKLIST — perform internally before emitting the JSON:",
-    "1. Re-read each sentence and confirm every adjacent pair of words is separated by exactly one space.",
-    "2. Search the page for any token longer than 12 characters that is all lowercase — if it contains two English words back-to-back (e.g. \"reducesyour\", \"willwork\"), split it.",
-    "3. Confirm every vehicle make is followed by a space before its model, and every model is followed by a space before whatever comes next.",
-    "4. Confirm every inline <a> tag has a space immediately before \"<a\" and immediately after \"</a>\" if a word sits beside it.",
-    "5. Confirm \"Speedway Motors LLC\" appears as three space-separated words with no merging.",
-    "6. If any of the forbidden tokens above (Visitus, Whetheryou're, etc.) appears, fix it and re-check.",
+    "PROOFREAD CHECKLIST — perform internally before invoking the tool:",
+    "1. Re-read each paragraph and confirm every adjacent pair of words is separated by exactly one space.",
+    "2. Search each paragraph for any token of 8 or more characters that contains two recognisable English words back-to-back (e.g. \"reducesyour\", \"currentvehicle\", \"vehicleat\") and split it.",
+    "3. Confirm every vehicle make is followed by a space before its model.",
+    "4. Confirm no paragraph contains \"<\", \">\", \"[\", \"]\", \"**\", \"##\", backticks, or any other markup.",
+    "5. Confirm \"Speedway Motors LLC\" appears as three space-separated words.",
+    "6. If any of the forbidden tokens above appears, fix it and re-check.",
     "Only invoke the tool after every item above passes.",
     "",
     "OUTPUT FORMAT:",
-    "Return your output by invoking the generate_geo_landing_page tool with the three required string fields populated. Do not emit any conversational text — only the tool invocation.",
+    "Return your output by invoking the generate_geo_landing_page tool with all seven required string fields populated. Do not emit any conversational text — only the tool invocation.",
   ].join("\n");
 
   let res: Response;
@@ -720,26 +829,40 @@ async function runAnthropicAgent(city: string, state: string): Promise<Sanitizat
       }
     );
   }
-  const parsed = rawInput as Partial<AgentPageResponse>;
-
-  if (!parsed || !parsed.meta_title || !parsed.h1_heading || !parsed.page_content_html) {
+  const partial = rawInput as Partial<GeoPageSections>;
+  const requiredSectionFields: Array<keyof GeoPageSections> = [
+    "meta_title",
+    "h1_heading",
+    "intro_paragraph",
+    "inventory_paragraph",
+    "financing_paragraph",
+    "trade_in_paragraph",
+    "why_choose_paragraph",
+  ];
+  const missingFields = requiredSectionFields.filter(
+    (k) =>
+      typeof partial[k] !== "string" || (partial[k] as string).trim().length === 0
+  );
+  if (missingFields.length > 0) {
     throw new StageError(
       "anthropic",
-      "Anthropic response missing required fields (meta_title, h1_heading, page_content_html)",
+      `Anthropic tool input missing required string fields: ${missingFields.join(", ")}`,
       {
         anthropic_base_url: apiBase,
         anthropic_host: apiHost,
         anthropic_model: model,
         stop_reason: stopReason,
+        missing_fields: missingFields,
       }
     );
   }
+  const sections = partial as GeoPageSections;
 
   const vehicleMakes = vehicles
     .map((v) => v.make)
     .filter((m): m is string => Boolean(m && m.trim().length));
 
-  const result = sanitizeGeneratedGeoPage(parsed as AgentPageResponse, {
+  const result = sanitizeGeneratedGeoPage(sections, {
     city,
     state,
     vehicleMakes,
