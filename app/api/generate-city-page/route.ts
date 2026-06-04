@@ -20,7 +20,7 @@ interface GeoLandingPage extends AgentPageResponse {
   state: string;
 }
 
-type ErrorStage = "config" | "inventory" | "openclaw" | "supabase" | "unknown";
+type ErrorStage = "config" | "inventory" | "anthropic" | "supabase" | "unknown";
 type FetchFailureKind =
   | "dns"
   | "connection"
@@ -118,12 +118,16 @@ function safeHostname(url: string): string {
   }
 }
 
-function getOpenClawBaseUrl(): string {
-  return (process.env.OPENCLAW_API_BASE_URL ?? "https://api.openclaw.com/v1").replace(/\/$/, "");
+function getAnthropicBaseUrl(): string {
+  return (process.env.ANTHROPIC_API_BASE_URL ?? "https://api.anthropic.com/v1").replace(/\/$/, "");
+}
+
+function getAnthropicModel(): string {
+  return process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
 }
 
 // ---------------------------------------------------------------------------
-// OpenClaw helper with retry
+// Anthropic helper with retry
 // ---------------------------------------------------------------------------
 
 async function fetchWithRetry(
@@ -175,25 +179,27 @@ async function fetchWithRetry(
   );
 }
 
-async function runOpenClawAgent(city: string, state: string): Promise<AgentPageResponse> {
-  const apiKey = process.env.OPENCLAW_API_KEY;
-  const apiBase = getOpenClawBaseUrl();
+async function runAnthropicAgent(city: string, state: string): Promise<AgentPageResponse> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiBase = getAnthropicBaseUrl();
   const apiHost = safeHostname(apiBase);
+  const model = getAnthropicModel();
 
   console.log(
-    `[generate-city-page] OpenClaw config base_url=${apiBase} host=${apiHost} api_key_present=${Boolean(apiKey)}`
+    `[generate-city-page] Anthropic config base_url=${apiBase} host=${apiHost} model=${model} api_key_present=${Boolean(apiKey)}`
   );
 
   if (!apiKey) {
-    throw new StageError("config", "Missing OPENCLAW_API_KEY environment variable", {
-      openclaw_base_url: apiBase,
-      openclaw_host: apiHost,
-      openclaw_api_key_present: false,
+    throw new StageError("config", "Missing ANTHROPIC_API_KEY environment variable", {
+      anthropic_base_url: apiBase,
+      anthropic_host: apiHost,
+      anthropic_model: model,
+      anthropic_api_key_present: false,
     });
   }
 
   // Pull a snapshot of current inventory to give the agent real context.
-  // Failures here are inventory/Supabase-side, not OpenClaw-side — tag clearly.
+  // Failures here are inventory/Supabase-side, not provider-side — tag clearly.
   let vehicles: Awaited<ReturnType<typeof getInventory>>["vehicles"] = [];
   let total = 0;
   try {
@@ -261,27 +267,39 @@ async function runOpenClawAgent(city: string, state: string): Promise<AgentPageR
     "  page_content_html — the full HTML body content as a string",
   ].join("\n");
 
+  // Prefill the assistant turn with `{` to coax the model into a strict JSON
+  // object response — Anthropic has no native json_object mode, so prefill is
+  // the standard pattern. The returned content[0].text continues after `{`.
   let res: Response;
   try {
     res = await fetchWithRetry(
-      `${apiBase}/agent/tasks`,
+      `${apiBase}/messages`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt, response_format: "json" }),
+        body: JSON.stringify({
+          model,
+          max_tokens: 4096,
+          messages: [
+            { role: "user", content: prompt },
+            { role: "assistant", content: "{" },
+          ],
+        }),
       },
-      "openclaw",
+      "anthropic",
       3
     );
   } catch (err) {
-    // Annotate StageError from fetchWithRetry with OpenClaw context before re-throw.
+    // Annotate StageError from fetchWithRetry with Anthropic context before re-throw.
     if (err instanceof StageError) {
-      err.details.openclaw_base_url = apiBase;
-      err.details.openclaw_host = apiHost;
-      err.details.openclaw_api_key_present = true;
+      err.details.anthropic_base_url = apiBase;
+      err.details.anthropic_host = apiHost;
+      err.details.anthropic_model = model;
+      err.details.anthropic_api_key_present = true;
     }
     throw err;
   }
@@ -290,53 +308,81 @@ async function runOpenClawAgent(city: string, state: string): Promise<AgentPageR
     const rawBody = await res.text().catch(() => "");
     const bodyPreview = rawBody.length > 300 ? `${rawBody.slice(0, 300)}…` : rawBody;
     console.error(
-      `[generate-city-page] OpenClaw HTTP ${res.status} host=${apiHost} body="${bodyPreview}"`
+      `[generate-city-page] Anthropic HTTP ${res.status} host=${apiHost} model=${model} body="${bodyPreview}"`
     );
-    throw new StageError("openclaw", `OpenClaw API returned HTTP ${res.status}`, {
+    throw new StageError("anthropic", `Anthropic API returned HTTP ${res.status}`, {
       kind: "http",
       status: res.status,
       body_preview: bodyPreview,
-      openclaw_base_url: apiBase,
-      openclaw_host: apiHost,
-      openclaw_api_key_present: true,
+      anthropic_base_url: apiBase,
+      anthropic_host: apiHost,
+      anthropic_model: model,
+      anthropic_api_key_present: true,
     });
   }
 
-  let result: unknown;
+  let envelope: unknown;
   try {
-    result = await res.json();
+    envelope = await res.json();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    throw new StageError("openclaw", "OpenClaw response was not valid JSON", {
-      openclaw_base_url: apiBase,
-      openclaw_host: apiHost,
+    throw new StageError("anthropic", "Anthropic response envelope was not valid JSON", {
+      anthropic_base_url: apiBase,
+      anthropic_host: apiHost,
+      anthropic_model: model,
       cause_message: message,
     });
   }
 
-  // Normalize: agent may return JSON inside `content`, `output`, or at root
-  const root = result && typeof result === "object" ? (result as Record<string, unknown>) : null;
-  const raw: unknown = root?.output ?? root?.content ?? result;
+  // Anthropic Messages API: { content: [{ type: "text", text: "..." }, ...], stop_reason, ... }
+  const content =
+    envelope && typeof envelope === "object"
+      ? (envelope as { content?: Array<{ type?: string; text?: string }> }).content
+      : undefined;
+  const stopReason =
+    envelope && typeof envelope === "object"
+      ? (envelope as { stop_reason?: string }).stop_reason
+      : undefined;
+  const text = Array.isArray(content)
+    ? content.find((c) => c?.type === "text")?.text ?? ""
+    : "";
+  if (!text) {
+    throw new StageError("anthropic", "Anthropic response had no text content", {
+      anthropic_base_url: apiBase,
+      anthropic_host: apiHost,
+      anthropic_model: model,
+      stop_reason: stopReason,
+    });
+  }
+
+  // The model continues after the prefilled `{`, so re-attach it before parsing.
+  const jsonText = text.startsWith("{") ? text : `{${text}`;
   let parsed: Partial<AgentPageResponse> | null;
   try {
-    parsed =
-      typeof raw === "string"
-        ? (JSON.parse(raw) as Partial<AgentPageResponse>)
-        : (raw as Partial<AgentPageResponse> | null);
+    parsed = JSON.parse(jsonText) as Partial<AgentPageResponse>;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    throw new StageError("openclaw", "OpenClaw response JSON could not be parsed", {
-      openclaw_base_url: apiBase,
-      openclaw_host: apiHost,
+    const preview = jsonText.length > 300 ? `${jsonText.slice(0, 300)}…` : jsonText;
+    throw new StageError("anthropic", "Anthropic content was not valid JSON", {
+      anthropic_base_url: apiBase,
+      anthropic_host: apiHost,
+      anthropic_model: model,
+      stop_reason: stopReason,
+      content_preview: preview,
       cause_message: message,
     });
   }
 
   if (!parsed || !parsed.meta_title || !parsed.h1_heading || !parsed.page_content_html) {
     throw new StageError(
-      "openclaw",
-      "OpenClaw response missing required fields (meta_title, h1_heading, page_content_html)",
-      { openclaw_base_url: apiBase, openclaw_host: apiHost }
+      "anthropic",
+      "Anthropic response missing required fields (meta_title, h1_heading, page_content_html)",
+      {
+        anthropic_base_url: apiBase,
+        anthropic_host: apiHost,
+        anthropic_model: model,
+        stop_reason: stopReason,
+      }
     );
   }
 
@@ -379,12 +425,12 @@ export async function POST(request: Request) {
       `[generate-city-page] start city="${city}" state="${state}" auth=${authSource} dry_run=${dryRun}`
     );
 
-    // 3. Generate content via OpenClaw agent
+    // 3. Generate content via Anthropic Messages API
     let agentData: AgentPageResponse;
     try {
-      agentData = await runOpenClawAgent(city, state);
+      agentData = await runAnthropicAgent(city, state);
       console.log(
-        `[generate-city-page] OpenClaw ok city="${city}" state="${state}"`
+        `[generate-city-page] Anthropic ok city="${city}" state="${state}"`
       );
     } catch (err) {
       if (err instanceof StageError) {
@@ -400,7 +446,7 @@ export async function POST(request: Request) {
       }
       const message = err instanceof Error ? err.message : String(err);
       console.error(
-        `[generate-city-page] OpenClaw failed (unclassified) city="${city}" state="${state}": ${message}`
+        `[generate-city-page] Anthropic failed (unclassified) city="${city}" state="${state}": ${message}`
       );
       throw err;
     }
