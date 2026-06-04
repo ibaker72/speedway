@@ -281,6 +281,38 @@ const KNOWN_BAD_MERGES: Array<[RegExp, string]> = [
   [/\bvisitus\b/g, "visit us"],
   [/\bVisitour\b/g, "Visit our"],
   [/\bvisitour\b/g, "visit our"],
+  // Added after Sonnet tool-use run on Clifton:
+  [/\bNearClifton\b/g, "Near Clifton"],
+  [/\bnearClifton\b/g, "near Clifton"],
+  [/\bReliableused\b/g, "Reliable used"],
+  [/\breliableused\b/g, "reliable used"],
+  [/\bLookingfor\b/g, "Looking for"],
+  [/\blookingfor\b/g, "looking for"],
+  [/\bCVTat\b/g, "CVT at"],
+  [/\bMakesand\b/g, "Makes and"],
+  [/\bmakesand\b/g, "makes and"],
+  [/\bSportHybrid\b/g, "Sport Hybrid"],
+  [/\bsportHybrid\b/g, "sport Hybrid"],
+  [/\bToheavy\b/g, "To heavy"],
+  [/\btoheavy\b/g, "to heavy"],
+  [/\bOneroof\b/g, "One roof"],
+  [/\boneroof\b/g, "one roof"],
+  [/\bPathto\b/g, "Path to"],
+  [/\bpathto\b/g, "path to"],
+  [/\bCurrentvehicle\b/g, "Current vehicle"],
+  [/\bcurrentvehicle\b/g, "current vehicle"],
+  [/\bCurrentvehicles\b/g, "Current vehicles"],
+  [/\bcurrentvehicles\b/g, "current vehicles"],
+  [/\bInfrom\b/g, "In from"],
+  [/\binfrom\b/g, "in from"],
+  [/\bAndthe\b/g, "And the"],
+  [/\bandthe\b/g, "and the"],
+  [/\bUsput\b/g, "Us put"],
+  [/\busput\b/g, "us put"],
+  [/\bVehicleat\b/g, "Vehicle at"],
+  [/\bvehicleat\b/g, "vehicle at"],
+  [/\bVehiclesat\b/g, "Vehicles at"],
+  [/\bvehiclesat\b/g, "vehicles at"],
 ];
 
 function applyKnownBadMerges(text: string): string {
@@ -336,25 +368,41 @@ function anchorAroundProperNouns(text: string, names: string[]): string {
   return s;
 }
 
-// Validation: scan plain text for tokens that look like English words
-// glued together (typically lowercase, ≥12 chars, containing an interior
-// substring that is a known standalone word).
+// Validation: scan plain text for tokens that look like two English words
+// glued together. A token is suspicious if it is at least 7 chars and
+// contains a known SEO/dealer marker as a strict substring while NOT
+// being equal to any marker itself (so legit single words like "vehicles"
+// and "dealership" are not flagged).
+const SUSPICIOUS_MERGE_MARKERS: ReadonlySet<string> = new Set([
+  // SEO / dealer vocabulary that almost never appears as the inside of a
+  // legitimate compound English word.
+  "used", "car", "cars", "vehicle", "vehicles", "inventory",
+  "financing", "finance", "credit", "dealer", "dealers", "dealership",
+  "dealerships", "makes", "models", "near", "looking", "current",
+  "trade", "apply", "browse", "visit", "roof", "path", "hybrid",
+  "commercial", "reliable",
+  // Geography / proper nouns relevant to this dealer.
+  "clifton", "paterson", "newark",
+  // Function words frequently found on the right-hand side of a merge.
+  "your", "ours", "their", "them", "from", "with", "into", "onto",
+  "this", "that", "these", "today", "tomorrow", "whether", "while",
+  "every",
+]);
+
 function detectSuspiciousMerges(textOrHtml: string): string[] {
   const plain = textOrHtml.replace(/<[^>]+>/g, " ");
-  const tokens = plain.match(/[A-Za-z']{12,}/g) ?? [];
-  const interiorMarkers = [
-    "your", "ours", "their", "them",
-    "from", "with", "into", "onto", "this", "that", "these", "today", "tomorrow",
-    "whether", "while", "every", "vehicle", "vehicles", "dealership", "dealerships",
-    "financing", "credit", "trade",
-    "paterson", "clifton", "newark",
-  ];
+  const tokens = plain.match(/[A-Za-z']{7,}/g) ?? [];
   const flagged = new Set<string>();
   for (const token of tokens) {
     const lower = token.toLowerCase();
-    for (const marker of interiorMarkers) {
-      const idx = lower.indexOf(marker);
-      if (idx > 0 && idx + marker.length <= lower.length) {
+    // Legitimate single words: skip.
+    if (SUSPICIOUS_MERGE_MARKERS.has(lower)) continue;
+    for (const marker of SUSPICIOUS_MERGE_MARKERS) {
+      // Skip very short markers (≤3 chars) — too many false positives like
+      // "car" inside "cargo", "and" inside "android".
+      if (marker.length < 4) continue;
+      if (lower.length <= marker.length) continue;
+      if (lower.includes(marker)) {
         flagged.add(token);
         break;
       }
