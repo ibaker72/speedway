@@ -179,6 +179,73 @@ async function fetchWithRetry(
   );
 }
 
+// ---------------------------------------------------------------------------
+// Post-parse sanitizer — repair common spacing artifacts in model output
+// ---------------------------------------------------------------------------
+//
+// The model occasionally drops spaces ("inClifton", "HondaHR-V",
+// "Mercedes-BenzGLC", "and you can<a …>browse</a>any time"). These passes
+// stitch the most common ones back together without touching HTML structure.
+
+const INLINE_TAG = /(?:a|strong|em|b|i|span|u|small|mark)/i;
+
+function addSpacesAtCaseBoundaries(text: string): string {
+  // "inClifton" → "in Clifton", "HondaHR-V" → "Honda HR-V". Conservative:
+  // only triggers on [a-z] followed by [A-Z], which avoids breaking
+  // acronyms like "BMW" and trim codes like "HR-V" themselves.
+  return text.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function addSpacesAfterPunctuation(text: string): string {
+  // ".Foo" → ". Foo", but only when the next char is a letter — leaves
+  // numbers like "$15,000" and ellipses alone.
+  return text.replace(/([.,;:!?])(?=[A-Za-z])/g, "$1 ");
+}
+
+function collapseInlineWhitespace(text: string): string {
+  return text.replace(/[ \t]{2,}/g, " ");
+}
+
+function sanitizePlainTextField(text: string): string {
+  let s = text;
+  s = addSpacesAtCaseBoundaries(s);
+  s = addSpacesAfterPunctuation(s);
+  s = s.replace(/\s{2,}/g, " ").trim();
+  return s;
+}
+
+function sanitizeHtmlContent(html: string): string {
+  let s = html;
+
+  // 1. Word directly butted against an opening inline tag → insert a space.
+  //    "you can<a href" → "you can <a href"
+  s = s.replace(new RegExp(`(\\w)(?=<${INLINE_TAG.source}\\b)`, "gi"), "$1 ");
+  // 2. Closing inline tag directly butted against a word → insert a space.
+  //    "</a>any" → "</a> any"
+  s = s.replace(new RegExp(`(</${INLINE_TAG.source}>)(?=\\w)`, "gi"), "$1 ");
+
+  // 3. Walk segments: only mutate text nodes, leave HTML tags untouched
+  //    so attribute values like href="…" and class="…" are preserved.
+  s = s.replace(/<[^>]+>|[^<]+/g, (segment) => {
+    if (segment.startsWith("<")) return segment;
+    let t = segment;
+    t = addSpacesAtCaseBoundaries(t);
+    t = addSpacesAfterPunctuation(t);
+    t = collapseInlineWhitespace(t);
+    return t;
+  });
+
+  return s;
+}
+
+function sanitizeAgentResponse(raw: AgentPageResponse): AgentPageResponse {
+  return {
+    meta_title: sanitizePlainTextField(raw.meta_title),
+    h1_heading: sanitizePlainTextField(raw.h1_heading),
+    page_content_html: sanitizeHtmlContent(raw.page_content_html),
+  };
+}
+
 async function runAnthropicAgent(city: string, state: string): Promise<AgentPageResponse> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   const apiBase = getAnthropicBaseUrl();
@@ -260,6 +327,14 @@ async function runAnthropicAgent(city: string, state: string): Promise<AgentPage
     "9. Aim for 400–600 words of body content.",
     "10. Do NOT include a CTA button or form — the page template handles those.",
     "",
+    "FORMATTING REQUIREMENTS (strict — the output will be rejected if violated):",
+    "- Put exactly one space between every word. Never run two words together.",
+    "  Examples: write \"in " + city + "\" (NOT \"in" + city + "\"); write \"the greater Paterson area\" (NOT \"thegreater Paterson area\"); write \"minutes from " + city + "\" (NOT \"minutesfrom " + city + "\").",
+    "- Always put a space between a vehicle's make and model. Examples: \"Honda HR-V\" (NOT \"HondaHR-V\"); \"Mercedes-Benz GLC\" (NOT \"Mercedes-BenzGLC\"); \"Toyota RAV4\" (NOT \"ToyotaRAV4\").",
+    "- Always put a space before <a and after </a> when they sit next to words. Example: \"and you can <a href=\\\"/inventory\\\">browse our full inventory</a> any time\" (NOT \"and you can<a href=\\\"/inventory\\\">browse our full inventory</a>any time\").",
+    "- Put a space after every comma and period before the next word.",
+    "- Treat this as production HTML — proofread spacing before emitting.",
+    "",
     "OUTPUT FORMAT:",
     "Return ONLY a raw JSON object (no markdown fences) with exactly these three keys:",
     "  meta_title   — 55–60 characters, includes city name and primary keyword",
@@ -284,6 +359,9 @@ async function runAnthropicAgent(city: string, state: string): Promise<AgentPage
         body: JSON.stringify({
           model,
           max_tokens: 4096,
+          // Lower temperature reduces missed-space / smushed-word artifacts
+          // in the generated copy without sacrificing meaningful variety.
+          temperature: 0.6,
           messages: [
             { role: "user", content: prompt },
             { role: "assistant", content: "{" },
@@ -386,7 +464,7 @@ async function runAnthropicAgent(city: string, state: string): Promise<AgentPage
     );
   }
 
-  return parsed as AgentPageResponse;
+  return sanitizeAgentResponse(parsed as AgentPageResponse);
 }
 
 // ---------------------------------------------------------------------------
