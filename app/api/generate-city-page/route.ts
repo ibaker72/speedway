@@ -134,6 +134,32 @@ function getAnthropicBaseUrl(): string {
   return (process.env.ANTHROPIC_API_BASE_URL ?? "https://api.anthropic.com/v1").replace(/\/$/, "");
 }
 
+// ---------------------------------------------------------------------------
+// Input normalization — every downstream consumer (prompt, sanitizer, Supabase
+// upsert, revalidatePath) should see the canonical title-cased city and the
+// canonical uppercased two-letter state, regardless of what the caller sent.
+// ---------------------------------------------------------------------------
+
+function toTitleCase(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (m) => m.toUpperCase())
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeCity(input: string): string {
+  return toTitleCase(input);
+}
+
+function normalizeState(input: string): string {
+  const trimmed = input.trim();
+  // Two-letter postal codes (NJ, NY, CA) — uppercase. Anything longer (e.g.
+  // "new jersey") — title-case.
+  if (trimmed.length === 2) return trimmed.toUpperCase();
+  return toTitleCase(trimmed);
+}
+
 function getAnthropicModel(): string {
   return process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
 }
@@ -361,6 +387,18 @@ const KNOWN_BAD_MERGES: Array<[RegExp, string]> = [
   [/\bGreatvehicle\b/g, "Great vehicle"],
   [/\bgreatvehicles\b/g, "great vehicles"],
   [/\bGreatvehicles\b/g, "Great vehicles"],
+  // Newark dry_run additions:
+  [/\bSpeedwayMotors\b/g, "Speedway Motors"],
+  [/\bofthe\b/g, "of the"],
+  [/\bOfthe\b/g, "Of the"],
+  [/\bfinanceteam\b/g, "finance team"],
+  [/\bFinanceteam\b/g, "Finance team"],
+  [/\btheirvery\b/g, "their very"],
+  [/\bTheirvery\b/g, "Their very"],
+  [/\bloanterms\b/g, "loan terms"],
+  [/\bLoanterms\b/g, "Loan terms"],
+  [/\bcommunityplaces\b/g, "community places"],
+  [/\bCommunityplaces\b/g, "Community places"],
 ];
 
 function applyKnownBadMerges(text: string): string {
@@ -402,16 +440,38 @@ function buildProperNounAnchors(
   );
 }
 
+function sortByLengthDescending(names: string[]): string[] {
+  return [...names].sort((a, b) => b.length - a.length);
+}
+
 function anchorAroundProperNouns(text: string, names: string[]): string {
   let s = text;
-  for (const name of names) {
+  // Longer anchors first so "Speedway Motors LLC" is matched before
+  // "Speedway" or "LLC" individually capture a piece of it.
+  for (const name of sortByLengthDescending(names)) {
     const escaped = escapeRegExp(name);
-    // Letter immediately before the name → insert a space.
-    // "ourPaterson" → "our Paterson", "MotorsLLC" → "Motors LLC".
-    s = s.replace(new RegExp(`(?<=[A-Za-z])${escaped}\\b`, "g"), ` ${name}`);
+    // Letter immediately before the name → insert a space. Case-insensitive
+    // so the model writing "Servingnewark" or "Servingnewark" both repair.
+    // The replacement uses the canonical title-cased name.
+    s = s.replace(new RegExp(`(?<=[A-Za-z])${escaped}\\b`, "gi"), ` ${name}`);
     // Name immediately before a lowercase letter → insert a space.
-    // "Patersonto" → "Paterson to", "LLCserves" → "LLC serves".
-    s = s.replace(new RegExp(`\\b${escaped}(?=[a-z])`, "g"), `${name} `);
+    s = s.replace(new RegExp(`\\b${escaped}(?=[a-z])`, "gi"), `${name} `);
+  }
+  return s;
+}
+
+// Re-case standalone occurrences of known proper nouns to their canonical
+// form. This catches the case where the model writes "newark Drivers" (lower
+// "n") or "speedway motors llc" — the anchor pass above only triggers when a
+// letter sits adjacent, not when the proper noun is already a standalone
+// word.
+function canonicalizeProperNouns(text: string, names: string[]): string {
+  let s = text;
+  for (const name of sortByLengthDescending(names)) {
+    // Skip anchors that are entirely lowercase — no canonical case to enforce.
+    if (!/[A-Z]/.test(name)) continue;
+    const escaped = escapeRegExp(name);
+    s = s.replace(new RegExp(`\\b${escaped}\\b`, "gi"), name);
   }
   return s;
 }
@@ -513,6 +573,7 @@ function normalizeTextSpacing(text: string, anchors: string[]): string {
   s = stripStrayMarkup(s);
   s = applyKnownBadMerges(s);
   s = anchorAroundProperNouns(s, anchors);
+  s = canonicalizeProperNouns(s, anchors);
   s = addSpacesAtCaseBoundaries(s);
   s = addSpacesAfterPunctuation(s);
   s = s.replace(/\s{2,}/g, " ").trim();
@@ -898,18 +959,23 @@ export async function POST(request: Request) {
 
     const authSource = isAdmin ? "admin" : "cron";
 
-    // 2. Parse & validate input
+    // 2. Parse & validate input. Normalize city/state once at the boundary
+    //    so the prompt, sanitizer, Supabase row, and revalidatePath slug all
+    //    use the canonical form ("newark" → "Newark", "nj" → "NJ").
     const body = (await request.json()) as Record<string, unknown>;
-    const city = String(body.city || "").trim();
-    const state = String(body.state || "").trim();
+    const cityRaw = String(body.city || "").trim();
+    const stateRaw = String(body.state || "").trim();
     const dryRun = body.dry_run === true;
 
-    if (!city || !state) {
+    if (!cityRaw || !stateRaw) {
       return NextResponse.json(
         { message: "Both city and state are required" },
         { status: 400 }
       );
     }
+
+    const city = normalizeCity(cityRaw);
+    const state = normalizeState(stateRaw);
 
     console.log(
       `[generate-city-page] start city="${city}" state="${state}" auth=${authSource} dry_run=${dryRun}`
