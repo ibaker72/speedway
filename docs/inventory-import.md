@@ -185,3 +185,43 @@ The parser (`lib/feed/autofunds-parser.ts`) maps these exact Autofunds CSV heade
 | `DriveTrain`        | `drivetrain`     |
 
 If Autofunds changes headers, update the `COL` map in `lib/feed/autofunds-parser.ts`.
+
+## Image URL handling
+
+All vehicle image URLs pass through `normalizeVehicleImageUrl()` in
+`lib/images/vehicle-image-url.ts` — at import time (Autofunds parser) and at
+read time (`lib/data/inventory-source.ts`). It trims whitespace/quotes,
+decodes basic HTML entities, resolves protocol-relative URLs, upgrades
+http→https, rejects unsafe or unapproved hosts, and rewrites decommissioned
+`InvImg*.autofunds.net` hosts to `images.autofunds.net` (AutoFunds retired
+the InvImg* hosts in June 2026; the same paths are served by the new host).
+The approved-host list mirrors `images.remotePatterns` in `next.config.ts` —
+update both together when adding a CDN.
+
+## Slug stability
+
+The `inventory` table has a UNIQUE index on `slug` while the daily sync
+upserts on `vin`. `resolveSlug()` in `lib/server/importVehicles.ts` therefore
+keeps the existing slug for VINs already in the DB and dedupes new slugs
+against every existing row (including sold/inactive ones). Without this, a
+regenerated slug colliding with a sold row aborts the whole upsert batch —
+this took the sync down between 2026-06-30 and 2026-07-11 and left stale
+(dead) image URLs in the DB. If a batch still fails, rows are retried
+individually so one bad row can't sink the sync.
+
+## Repairing legacy image hosts
+
+`scripts/repair-image-hosts.ts` rewrites `InvImg*.autofunds.net` →
+`https://images.autofunds.net/` in `thumbnail_url` and `images[].url`.
+It is idempotent, changes hostnames only (paths/query/ordering untouched),
+deletes nothing, and logs counts only.
+
+```bash
+npx tsx scripts/repair-image-hosts.ts          # dry-run (default)
+npx tsx scripts/repair-image-hosts.ts --apply  # write changes
+```
+
+Requires `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
+(read from `.env.local`). This repair was applied to the production DB on
+2026-07-11 (110 rows, 4,552 image entries); the script remains for any
+environment still holding legacy hosts.

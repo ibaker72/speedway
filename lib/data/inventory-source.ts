@@ -1,4 +1,5 @@
 import type { Vehicle, VehicleImage, InventoryFilters, InventoryResponse } from "@/lib/types/vehicle";
+import { normalizeVehicleImageUrl } from "@/lib/images/vehicle-image-url";
 
 interface SupabaseVehicleRow {
   id: string;
@@ -95,7 +96,7 @@ async function fetchFromAggregator(): Promise<Vehicle[]> { throw new Error("Aggr
 
 function normalizeVehicles(raw: Record<string, unknown>[]): Vehicle[] {
   return raw.map((item: Record<string, unknown>) => ({
-    id: String(item.id || item.stock_number || ""), slug: generateSlug(item), stockNumber: String(item.stock_number || item.stockNumber || ""), vin: String(item.vin || ""), year: Number(item.year), make: String(item.make || ""), model: String(item.model || ""), trim: item.trim ? String(item.trim) : undefined, bodyType: mapBodyType(String(item.body_type || item.bodyType || "")), condition: "used" as const, price: Number(item.price || item.internet_price || 0), msrp: item.msrp ? Number(item.msrp) : undefined, internetPrice: item.internet_price ? Number(item.internet_price) : undefined, mileage: Number(item.mileage || item.odometer || 0), exteriorColor: String(item.exterior_color || item.exteriorColor || ""), interiorColor: String(item.interior_color || item.interiorColor || ""), transmission: mapTransmission(String(item.transmission || "")), drivetrain: mapDrivetrain(String(item.drivetrain || item.drive_type || "")), engine: String(item.engine || ""), fuelType: mapFuelType(String(item.fuel_type || item.fuelType || "")), images: mapImages(item.images || item.photos || []), thumbnailUrl: item.thumbnail ? String(item.thumbnail) : undefined, description: item.description ? String(item.description) : undefined, features: Array.isArray(item.features) ? item.features.map(String) : [], isCommercial: Boolean(item.is_commercial || item.isCommercial), isFeatured: Boolean(item.is_featured || item.isFeatured), isNewArrival: Boolean(item.is_new_arrival), isSold: Boolean(item.is_sold || item.sold), dateAdded: String(item.date_added || item.created_at || new Date().toISOString()),
+    id: String(item.id || item.stock_number || ""), slug: generateSlug(item), stockNumber: String(item.stock_number || item.stockNumber || ""), vin: String(item.vin || ""), year: Number(item.year), make: String(item.make || ""), model: String(item.model || ""), trim: item.trim ? String(item.trim) : undefined, bodyType: mapBodyType(String(item.body_type || item.bodyType || "")), condition: "used" as const, price: Number(item.price || item.internet_price || 0), msrp: item.msrp ? Number(item.msrp) : undefined, internetPrice: item.internet_price ? Number(item.internet_price) : undefined, mileage: Number(item.mileage || item.odometer || 0), exteriorColor: String(item.exterior_color || item.exteriorColor || ""), interiorColor: String(item.interior_color || item.interiorColor || ""), transmission: mapTransmission(String(item.transmission || "")), drivetrain: mapDrivetrain(String(item.drivetrain || item.drive_type || "")), engine: String(item.engine || ""), fuelType: mapFuelType(String(item.fuel_type || item.fuelType || "")), images: mapImages(item.images || item.photos || []), thumbnailUrl: normalizeVehicleImageUrl(item.thumbnail) ?? undefined, description: item.description ? String(item.description) : undefined, features: Array.isArray(item.features) ? item.features.map(String) : [], isCommercial: Boolean(item.is_commercial || item.isCommercial), isFeatured: Boolean(item.is_featured || item.isFeatured), isNewArrival: Boolean(item.is_new_arrival), isSold: Boolean(item.is_sold || item.sold), dateAdded: String(item.date_added || item.created_at || new Date().toISOString()),
   }));
 }
 
@@ -122,7 +123,7 @@ function mapSupabaseVehicle(row: SupabaseVehicleRow): Vehicle {
     engine: row.engine,
     fuelType: mapFuelType(row.fuel_type),
     images: ensureImages(mapImages(row.images), row.thumbnail_url),
-    thumbnailUrl: row.thumbnail_url || undefined,
+    thumbnailUrl: normalizeVehicleImageUrl(row.thumbnail_url) ?? undefined,
     description: row.description || undefined,
     features: Array.isArray(row.features) ? row.features : [],
     highlights: row.highlights ?? undefined,
@@ -336,16 +337,23 @@ function mapFuelType(raw: string): Vehicle["fuelType"] {
 
 function mapImages(raw: unknown): VehicleImage[] {
   if (!Array.isArray(raw)) return [];
-  return raw.map((img: unknown, i: number) => {
-    if (typeof img === "string") return { url: img, alt: "", isPrimary: i === 0 };
-    const obj = img as Record<string, unknown>;
-    return { url: String(obj.url || obj.src || obj.image_url || ""), alt: String(obj.alt || obj.caption || ""), isPrimary: i === 0 };
-  }).filter((img) => img.url);
+  return raw
+    .map((img: unknown) => {
+      if (typeof img === "string") return { url: normalizeVehicleImageUrl(img), alt: "" };
+      const obj = img as Record<string, unknown>;
+      return {
+        url: normalizeVehicleImageUrl(obj.url || obj.src || obj.image_url),
+        alt: String(obj.alt || obj.caption || ""),
+      };
+    })
+    .filter((img): img is { url: string; alt: string } => Boolean(img.url))
+    .map((img, i) => ({ ...img, isPrimary: i === 0 }));
 }
 
 function ensureImages(images: VehicleImage[], thumbnailUrl: string | null | undefined): VehicleImage[] {
   if (images.length > 0) return images;
-  if (thumbnailUrl) return [{ url: thumbnailUrl, alt: "", isPrimary: true }];
+  const thumb = normalizeVehicleImageUrl(thumbnailUrl);
+  if (thumb) return [{ url: thumb, alt: "", isPrimary: true }];
   return [];
 }
 
@@ -411,14 +419,14 @@ export interface HeroVehicleImage {
 }
 
 function pickHeroImageUrl(images: unknown, thumbnailUrl: string | null): string | null {
-  if (thumbnailUrl) return thumbnailUrl;
+  const thumb = normalizeVehicleImageUrl(thumbnailUrl);
+  if (thumb) return thumb;
   if (!Array.isArray(images) || images.length === 0) return null;
   const first = images[0];
-  if (typeof first === "string") return first;
+  if (typeof first === "string") return normalizeVehicleImageUrl(first);
   if (first && typeof first === "object") {
     const obj = first as Record<string, unknown>;
-    const candidate = obj.url ?? obj.src ?? obj.image_url;
-    return typeof candidate === "string" && candidate.length > 0 ? candidate : null;
+    return normalizeVehicleImageUrl(obj.url ?? obj.src ?? obj.image_url);
   }
   return null;
 }

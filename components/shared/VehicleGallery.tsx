@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Star, Camera } from "lucide-react";
 import type { VehicleImage as VehicleImageType } from "@/lib/types/vehicle";
 import { cn } from "@/lib/utils";
 
@@ -12,9 +12,34 @@ interface VehicleGalleryProps {
   isFeatured?: boolean;
 }
 
+function GalleryPlaceholder({ label, compact = false }: { label?: string; compact?: boolean }) {
+  return (
+    <div
+      data-testid="gallery-image-fallback"
+      className="absolute inset-0 bg-gradient-to-br from-surface-2 to-surface-3 flex flex-col items-center justify-center gap-2 text-zinc-600"
+    >
+      <Camera className={compact ? "h-4 w-4" : "h-8 w-8"} />
+      {!compact && label && <div className="text-sm text-zinc-500">{label}</div>}
+    </div>
+  );
+}
+
 export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  // Indexes whose image failed to load. onError fires once per <img> and the
+  // failed slot renders a placeholder instead of an <img>, so a bad URL can
+  // never produce a broken-image icon or an error/retry loop.
+  const [failedIndexes, setFailedIndexes] = useState<ReadonlySet<number>>(new Set());
+
+  const markFailed = useCallback((index: number) => {
+    setFailedIndexes((prev) => {
+      if (prev.has(index)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  }, []);
 
   const goTo = useCallback(
     (index: number) => {
@@ -41,6 +66,16 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
   // Swipe support for lightbox
   const [touchStart, setTouchStart] = useState(0);
 
+  if (images.length === 0) {
+    return (
+      <div className="aspect-16/10 rounded-2xl overflow-hidden relative bg-surface-1">
+        <GalleryPlaceholder label={vehicleTitle} />
+      </div>
+    );
+  }
+
+  const activeFailed = failedIndexes.has(activeIndex);
+
   return (
     <>
       {/* Main Image */}
@@ -49,14 +84,19 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
           className="aspect-16/10 rounded-2xl overflow-hidden relative bg-surface-1 cursor-pointer"
           onClick={() => setLightboxOpen(true)}
         >
-          <Image
-            src={images[activeIndex].url}
-            alt={images[activeIndex].alt || vehicleTitle}
-            fill
-            className="object-cover"
-            priority
-            sizes="(max-width: 1024px) 100vw, 60vw"
-          />
+          {activeFailed ? (
+            <GalleryPlaceholder label={vehicleTitle} />
+          ) : (
+            <Image
+              src={images[activeIndex].url}
+              alt={images[activeIndex].alt || vehicleTitle}
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 1024px) 100vw, 60vw"
+              onError={() => markFailed(activeIndex)}
+            />
+          )}
           {isFeatured && (
             <span className="absolute top-4 left-4 badge-accent">
               <Star className="h-3.5 w-3.5" />
@@ -82,13 +122,18 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
                   : "border-transparent opacity-60 hover:opacity-100"
               )}
             >
-              <Image
-                src={img.url}
-                alt={img.alt || `${vehicleTitle} photo ${i + 1}`}
-                fill
-                className="object-cover"
-                sizes="80px"
-              />
+              {failedIndexes.has(i) ? (
+                <GalleryPlaceholder compact />
+              ) : (
+                <Image
+                  src={img.url}
+                  alt={img.alt || `${vehicleTitle} photo ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="80px"
+                  onError={() => markFailed(i)}
+                />
+              )}
             </button>
           ))}
         </div>
@@ -132,13 +177,18 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
             className="relative w-full max-w-5xl max-h-[85vh] aspect-16/10 mx-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <Image
-              src={images[activeIndex].url}
-              alt={images[activeIndex].alt || vehicleTitle}
-              fill
-              className="object-contain"
-              sizes="100vw"
-            />
+            {activeFailed ? (
+              <GalleryPlaceholder label={vehicleTitle} />
+            ) : (
+              <Image
+                src={images[activeIndex].url}
+                alt={images[activeIndex].alt || vehicleTitle}
+                fill
+                className="object-contain"
+                sizes="100vw"
+                onError={() => markFailed(activeIndex)}
+              />
+            )}
           </div>
 
           <button

@@ -9,6 +9,8 @@
  *  - Body uses verbose labels like "4 Door Sedan" / "Sport Utility"
  */
 
+import { normalizeVehicleImageUrl } from "@/lib/images/vehicle-image-url";
+
 export interface AutofundsVehicle {
   stockNumber: string;
   vin: string;
@@ -271,8 +273,8 @@ export function parseAutofundsCsvDetailed(csvText: string): ParseResult {
     const images = photoUrlsRaw
       ? photoUrlsRaw
           .split("|")
-          .map((u) => u.trim())
-          .filter(Boolean)
+          .map((u) => normalizeVehicleImageUrl(u))
+          .filter((u): u is string => Boolean(u))
           .map((url, i) => ({
             url,
             alt: `${yearRaw} ${make} ${model}`,
