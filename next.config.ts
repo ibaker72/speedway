@@ -16,5 +16,23 @@ const nextConfig: NextConfig = {
       { protocol: "http",  hostname: "**.autofunds.net" },
     ],
   },
+  async redirects() {
+    return [
+      // The team page was removed at the dealership's request.
+      { source: "/team", destination: "/about", permanent: true },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        // The production deployment is also reachable on *.vercel.app (and
+        // previews always are). Keep those hosts out of search results so only
+        // www.speedwaymotorsllc.com is indexed.
+        source: "/:path*",
+        has: [{ type: "host", value: "(?<host>.+\\.vercel\\.app)" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+    ];
+  },
 };
 export default nextConfig;

@@ -1,63 +1,36 @@
+import { JsonLdScript } from "@/components/seo/JsonLdScript";
+import { absoluteUrl } from "@/lib/seo/site";
+import { vehicleName, vehiclePath } from "@/lib/seo/schema";
 import type { Vehicle } from "@/lib/types/vehicle";
 
 interface InventoryListJsonLdProps {
   vehicles: Vehicle[];
-  total: number;
+  name: string;
+  /** Site-relative path of the listing page. */
+  path: string;
 }
 
 /**
- * ItemList schema for the inventory page.
- * Each item is typed as a Car offer so Google can surface individual vehicles
- * in automotive rich results.
+ * ItemList summary for an inventory listing page: points to each vehicle's
+ * detail page, where the full Car markup lives.
  */
-export function InventoryListJsonLd({ vehicles, total }: InventoryListJsonLdProps) {
-  const BASE_URL = "https://www.speedwaymotorsllc.com";
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "Used Cars for Sale at Speedway Motors — Paterson, NJ",
-    description: `Browse ${total}+ quality pre-owned vehicles at Speedway Motors. Sedans, SUVs, trucks, and vans with flexible financing for all credit levels.`,
-    url: `${BASE_URL}/inventory`,
-    numberOfItems: total,
-    itemListElement: vehicles.slice(0, 10).map((v, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      item: {
-        "@type": "Car",
-        "@id": `${BASE_URL}/inventory/${v.slug}`,
-        url: `${BASE_URL}/inventory/${v.slug}`,
-        name: `${v.year} ${v.make} ${v.model}${v.trim ? " " + v.trim : ""}`.trim(),
-        vehicleModelDate: String(v.year),
-        brand: { "@type": "Brand", name: v.make },
-        model: v.model,
-        bodyType: v.bodyType,
-        mileageFromOdometer: {
-          "@type": "QuantitativeValue",
-          value: v.mileage,
-          unitCode: "SMI",
-        },
-        offers: {
-          "@type": "Offer",
-          price: v.price,
-          priceCurrency: "USD",
-          availability: "https://schema.org/InStock",
-          url: `${BASE_URL}/inventory/${v.slug}`,
-          seller: {
-            "@type": "AutoDealer",
-            name: "Speedway Motors LLC",
-          },
-        },
-        ...(v.images?.[0]?.url && { image: v.images[0].url }),
-        ...(v.vin && { vehicleIdentificationNumber: v.vin }),
-      },
-    })),
-  };
-
+export function InventoryListJsonLd({ vehicles, name, path }: InventoryListJsonLdProps) {
+  if (!vehicles.length) return null;
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    <JsonLdScript
+      data={{
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name,
+        url: absoluteUrl(path),
+        numberOfItems: vehicles.length,
+        itemListElement: vehicles.map((vehicle, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          url: absoluteUrl(vehiclePath(vehicle)),
+          name: vehicleName(vehicle),
+        })),
+      }}
     />
   );
 }

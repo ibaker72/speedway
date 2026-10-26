@@ -27,6 +27,11 @@ export function formatPrice(price: number): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(price);
 }
 
+/** Listing price for display; non-positive prices are "call for price", never "$0". */
+export function formatVehiclePrice(price: number): string {
+  return Number.isFinite(price) && price > 0 ? formatPrice(price) : "Call for Price";
+}
+
 export function formatMileage(mileage: number): string {
   return new Intl.NumberFormat("en-US").format(mileage) + " mi";
 }

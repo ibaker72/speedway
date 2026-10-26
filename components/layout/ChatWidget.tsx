@@ -19,7 +19,7 @@ const quickActions = [
     icon: Search,
     label: "Browse Inventory",
     href: "/inventory",
-    description: "View 180+ vehicles",
+    description: "Browse vehicles in stock",
   },
   {
     icon: DollarSign,

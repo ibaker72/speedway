@@ -89,7 +89,7 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
           ) : (
             <Image
               src={images[activeIndex].url}
-              alt={images[activeIndex].alt || vehicleTitle}
+              alt={images[activeIndex].alt || `${vehicleTitle} — photo ${activeIndex + 1} of ${images.length}`}
               fill
               className="object-cover"
               priority
@@ -127,7 +127,7 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
               ) : (
                 <Image
                   src={img.url}
-                  alt={img.alt || `${vehicleTitle} photo ${i + 1}`}
+                  alt={img.alt || `${vehicleTitle} — photo ${i + 1} of ${images.length}`}
                   fill
                   className="object-cover"
                   sizes="80px"
@@ -182,7 +182,7 @@ export function VehicleGallery({ images, vehicleTitle, isFeatured }: VehicleGall
             ) : (
               <Image
                 src={images[activeIndex].url}
-                alt={images[activeIndex].alt || vehicleTitle}
+                alt={images[activeIndex].alt || `${vehicleTitle} — photo ${activeIndex + 1} of ${images.length}`}
                 fill
                 className="object-contain"
                 sizes="100vw"

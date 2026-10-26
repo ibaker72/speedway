@@ -6,16 +6,17 @@ import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
 import { testimonials } from "@/lib/data/testimonials";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Customer Reviews | Speedway Motors Paterson NJ",
-  description:
-    "Read real reviews from Speedway Motors customers. Rated 4.8 out of 5 on Google with 120+ reviews. See why thousands trust us in Paterson, NJ.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/reviews",
-  },
-};
+// Review/AggregateRating structured data is intentionally not emitted here:
+// Google does not show self-served review stars for a business on its own
+// site, and the rating figures are maintained by hand in dealer.config.ts.
+export const metadata: Metadata = pageMetadata({
+  title: "Customer Reviews",
+  description: `See what customers say about buying from Speedway Motors in Paterson, NJ — rated ${BUSINESS.stats.googleRating} out of 5 on Google.`,
+  path: "/reviews",
+});
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -34,41 +35,6 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-function ReviewAggregateJsonLd() {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": BUSINESS.name,
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": String(BUSINESS.stats.googleRating),
-      "reviewCount": String(BUSINESS.stats.totalReviews),
-      "bestRating": "5",
-      "worstRating": "1",
-    },
-    "review": testimonials.slice(0, 3).map((t) => ({
-      "@type": "Review",
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": String(t.rating),
-        "bestRating": "5",
-      },
-      "author": {
-        "@type": "Person",
-        "name": t.name,
-      },
-      "reviewBody": t.text,
-      "datePublished": t.date,
-    })),
-  };
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
-}
-
 export default function ReviewsPage() {
   return (
     <>
@@ -78,7 +44,6 @@ export default function ReviewsPage() {
           { name: "Reviews", url: `${BUSINESS.website}/reviews` },
         ]}
       />
-      <ReviewAggregateJsonLd />
       <PageHero
         eyebrow="Customer Reviews"
         title="What Our Customers Say"

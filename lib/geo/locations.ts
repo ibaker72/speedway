@@ -227,7 +227,7 @@ export const geoLocations: GeoLocation[] = [
       "no credit check financing near Hackensack NJ",
     ],
     intro:
-      "Hackensack drivers looking for a wider selection and straightforward financing can reach Speedway Motors in under 20 minutes. We carry 180+ vehicles across every body type and price range.",
+      "Hackensack drivers looking for a wider selection and straightforward financing can reach our Paterson showroom, about 12 miles away. We carry a wide range of body types and price points.",
     faqTopics: ["distance", "financing", "trade-in", "test-drive"],
     featuredMakes: ["Toyota", "Honda", "Chevrolet"],
     coordinates: { lat: 40.8859, lng: -74.0435 },
@@ -335,7 +335,7 @@ export const geoLocations: GeoLocation[] = [
       "used trucks near Bronx New York",
     ],
     intro:
-      "Bronx drivers looking for a larger inventory and competitive financing often cross into New Jersey. Speedway Motors is about 25 miles from the Bronx with 180+ vehicles and flexible credit options.",
+      "Bronx drivers looking for a larger inventory and competitive financing often cross into New Jersey. Speedway Motors is about 25 miles from the Bronx with a broad used inventory and flexible credit options.",
     faqTopics: ["distance", "financing", "trade-in", "test-drive", "documents"],
     featuredMakes: ["Honda", "Toyota", "Chevrolet"],
     coordinates: { lat: 40.8448, lng: -73.8648 },

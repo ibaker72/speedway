@@ -6,8 +6,11 @@ export function getLocationUrl(slug: string): string {
   return `${BUSINESS.website}/locations/${slug}`;
 }
 
+/** Page title; the root layout template appends the brand. */
 export function getGeoPrimaryTitle(location: GeoLocation): string {
-  return `Used Cars Near ${location.city}, ${location.stateAbbr} | ${BUSINESS.name}`;
+  return location.distanceMiles > 0
+    ? `Used Cars Near ${location.city}, ${location.stateAbbr}`
+    : `Used Cars in ${location.city}, ${location.stateAbbr}`;
 }
 
 export function getGeoInventoryHeading(location: GeoLocation): string {

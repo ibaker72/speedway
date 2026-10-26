@@ -257,7 +257,11 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     };
   }
 
-  if (!dataRes.ok) {
+  // PostgREST answers 416 when the requested page starts past the last row
+  // (e.g. a stale "?page=5" link after inventory shrinks). That is an empty
+  // page, not a failure: keep the real total so pagination still renders.
+  const outOfRange = dataRes.status === 416;
+  if (!dataRes.ok && !outOfRange) {
     console.error(`[inventory-source] Supabase query failed: ${dataRes.status} ${await dataRes.text()}`);
     return { vehicles: [], total: 0, page, perPage, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
   }
@@ -266,10 +270,11 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     return { vehicles: [], total: 0, page, perPage, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
   }
 
-  const rows = (await dataRes.json()) as SupabaseVehicleRow[];
+  const rows = outOfRange ? [] : ((await dataRes.json()) as SupabaseVehicleRow[]);
   const allRows = (await allRes.json()) as Pick<SupabaseVehicleRow, "make" | "model" | "body_type" | "body_style" | "price" | "year" | "mileage" | "drivetrain">[];
   const totalHeader = dataRes.headers.get("content-range");
-  const total = totalHeader?.split("/")[1] ? Number(totalHeader.split("/")[1]) : rows.length;
+  const totalPart = totalHeader?.split("/")[1];
+  const total = totalPart && totalPart !== "*" ? Number(totalPart) : rows.length;
 
   const vehicles = rows.map(mapSupabaseVehicle);
   // Build filter options from lightweight rows — avoids full Vehicle mapping overhead
@@ -526,4 +531,67 @@ export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
   // Non-Supabase sources: filter from full list
   const { vehicles } = await getInventory({ perPage: 999 });
   return vehicles.find((v) => v.slug === slug) || null;
+}
+
+export interface MakeSummary {
+  name: string;
+  slug: string;
+  count: number;
+}
+
+export function makeSlug(make: string): string {
+  return make.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+/** In-stock vehicle counts per make, most common first. */
+export async function getMakeSummaries(): Promise<MakeSummary[]> {
+  const source = process.env.INVENTORY_SOURCE || "local";
+  let makes: string[] = [];
+
+  if (source === "supabase") {
+    try {
+      // Inside the try: a malformed URL should degrade to "no counts", not
+      // break the pages that show the live stock figure.
+      const config = getSupabaseRuntimeConfig();
+      if (!config) return [];
+      const res = await fetch(`${config.url}/rest/v1/inventory?select=make&is_sold=eq.false`, {
+        headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
+        next: { revalidate: 300 },
+      });
+      if (!res.ok) {
+        console.error(`[inventory-source] getMakeSummaries failed: ${res.status}`);
+        return [];
+      }
+      makes = ((await res.json()) as { make: string }[]).map((row) => row.make);
+    } catch (err) {
+      console.error(`[inventory-source] getMakeSummaries exception: ${err instanceof Error ? err.message : String(err)}`);
+      return [];
+    }
+  } else {
+    const { vehicles } = await getInventory({ perPage: 999 });
+    makes = vehicles.map((v) => v.make);
+  }
+
+  const counts = new Map<string, MakeSummary>();
+  for (const make of makes) {
+    const name = make?.trim();
+    if (!name) continue;
+    const slug = makeSlug(name);
+    const entry = counts.get(slug) ?? { name, slug, count: 0 };
+    entry.count += 1;
+    counts.set(slug, entry);
+  }
+  return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+/** Live number of in-stock vehicles, or null when inventory is unavailable. */
+export async function getLiveInventoryCount(): Promise<number | null> {
+  const makes = await getMakeSummaries();
+  if (!makes.length) return null;
+  return makes.reduce((sum, make) => sum + make.count, 0);
+}
+
+/** "100+" style display for marketing copy; small counts are shown exactly. */
+export function formatStockCount(count: number): string {
+  return count >= 20 ? `${Math.floor(count / 10) * 10}+` : String(count);
 }

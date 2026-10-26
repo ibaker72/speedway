@@ -1,48 +1,38 @@
 import { NextResponse } from "next/server";
-import { createLead } from "@/lib/leads/store";
-import { notifyLead } from "@/lib/leads/notify";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { EMAIL_REGEX, LEAD_FIELD_LIMITS, cleanEmail, cleanText, guardLeadRequest, readJsonBody } from "@/lib/leads/guard";
+import { leadFailureResponse, leadSuccessResponse, submitLead } from "@/lib/leads/submit";
 
 export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as Record<string, unknown>;
-    const name = String(body.name || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
-    const phone = String(body.phone || "").trim();
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ message: "Invalid request" }, { status: 400 });
 
-    if (!name) {
-      return NextResponse.json({ message: "Name is required" }, { status: 400 });
-    }
-    if (!email || !EMAIL_REGEX.test(email)) {
-      return NextResponse.json({ message: "Valid email is required" }, { status: 400 });
-    }
-    if (!phone) {
-      return NextResponse.json({ message: "Phone is required" }, { status: 400 });
-    }
+  const blocked = guardLeadRequest(request, body, "sell-car");
+  if (blocked) return blocked;
 
-    const payload = {
-      year: body.year || null,
-      make: body.make || null,
-      model: body.model || null,
-      mileage: body.mileage || null,
-      condition: body.condition || null,
-      notes: body.notes || null,
-    };
+  const name = cleanText(body.name, LEAD_FIELD_LIMITS.name);
+  const email = cleanEmail(body.email);
+  const phone = cleanText(body.phone, LEAD_FIELD_LIMITS.phone);
 
-    const lead = await createLead({
-      source: "sell-car",
-      name,
-      email,
-      phone,
-      payload,
-    });
-
-    await notifyLead({ source: "sell-car", name, email, phone, payload });
-
-    return NextResponse.json({ ok: true, leadId: lead.id });
-  } catch (err) {
-    console.error("Sell car form error:", err);
-    return NextResponse.json({ message: "Unable to process your request right now." }, { status: 500 });
+  if (!name) {
+    return NextResponse.json({ message: "Name is required" }, { status: 400 });
   }
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return NextResponse.json({ message: "Valid email is required" }, { status: 400 });
+  }
+  if (!phone) {
+    return NextResponse.json({ message: "Phone is required" }, { status: 400 });
+  }
+
+  const optional = (key: string) => cleanText(body[key], LEAD_FIELD_LIMITS.short) || null;
+  const payload = {
+    year: optional("year"),
+    make: optional("make"),
+    model: optional("model"),
+    mileage: optional("mileage"),
+    condition: optional("condition"),
+    notes: cleanText(body.notes, LEAD_FIELD_LIMITS.message, { multiline: true }) || null,
+  };
+
+  const result = await submitLead({ source: "sell-car", name, email, phone, payload });
+  return result.ok ? leadSuccessResponse(result) : leadFailureResponse();
 }

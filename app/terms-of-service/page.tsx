@@ -1,15 +1,15 @@
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { BUSINESS } from "@/lib/constants";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms of Service",
-  description: "Terms of service for Speedway Motors LLC website usage.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/terms-of-service",
-  },
-};
+  description:
+    "Terms of service for using the Speedway Motors LLC website.",
+  path: "/terms-of-service",
+});
 
 export default function TermsOfServicePage() {
   return (

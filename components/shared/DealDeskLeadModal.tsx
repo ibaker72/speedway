@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { DealDeskRequestType, DealSnapshot } from "@/lib/deal-desk/types";
+import { trackLead } from "@/lib/analytics/track";
 
 interface LeadModalProps {
   requestType: DealDeskRequestType;
@@ -60,6 +61,7 @@ export function DealDeskLeadModal({ requestType, onClose, payload }: LeadModalPr
       });
       if (!response.ok) throw new Error("Unable to submit");
       setSuccess(true);
+      trackLead("deal_desk");
     } catch {
       setError("Unable to submit right now. Please call us.");
     } finally {

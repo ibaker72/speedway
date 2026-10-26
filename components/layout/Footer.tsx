@@ -6,9 +6,10 @@ import { locations } from "@/lib/data/locations";
 import { geoLocations } from "@/lib/geo/locations";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 
-const quickLinks = [
+const quickLinksAll = [
   { label: "Browse Inventory", href: "/inventory" },
   { label: "Get Pre-Approved", href: "/finance" },
+  { label: "Nationwide Shipping", href: "/nationwide-car-shipping", featureFlag: "nationwideShipping" as const },
   { label: "Value Your Trade", href: "/trade" },
   { label: "Sell Your Car", href: "/sell-your-car" },
   { label: "Commercial Vehicles", href: "/commercial" },
@@ -16,9 +17,12 @@ const quickLinks = [
   { label: "Value My Car", href: "/value-my-car" },
 ];
 
+function isEnabled(link: { featureFlag?: keyof typeof dealerConfig.features }) {
+  return !link.featureFlag || dealerConfig.features[link.featureFlag];
+}
+
 const aboutLinksAll = [
   { label: "About Us", href: "/about" },
-  { label: "Our Team", href: "/team" },
   { label: "Customer Reviews", href: "/reviews" },
   { label: "Contact Us", href: "/contact" },
   { label: "FAQ", href: "/faq" },
@@ -35,12 +39,8 @@ const resourceLinks = [
 
 export function Footer() {
   const mainLocation = locations.find((l) => l.type === "showroom")!;
-  const aboutLinks = aboutLinksAll.filter((link) => {
-    if ("featureFlag" in link && link.featureFlag) {
-      return dealerConfig.features[link.featureFlag];
-    }
-    return true;
-  });
+  const quickLinks = quickLinksAll.filter(isEnabled);
+  const aboutLinks = aboutLinksAll.filter(isEnabled);
 
   return (
     <footer className="bg-[#0A0A0A] text-zinc-400 pb-20 lg:pb-0">

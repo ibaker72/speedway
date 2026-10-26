@@ -5,16 +5,16 @@ import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { AlertsForm } from "./AlertsForm";
 import { BUSINESS } from "@/lib/constants";
 import { Bell, TrendingDown, Sparkles, Shield } from "lucide-react";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Inventory Alerts",
   description:
-    "Sign up for Speedway Motors inventory alerts. Be the first to know about new arrivals, price drops, and exclusive deals.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/alerts",
-  },
-};
+    "Sign up for Speedway Motors inventory alerts and hear about new arrivals and price drops on used cars in Paterson, NJ.",
+  path: "/alerts",
+  noindex: true,
+});
 
 const benefits = [
   {

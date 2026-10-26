@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
-import { BUSINESS } from "@/lib/constants";
+import { trackLead } from "@/lib/analytics/track";
 
 const POPUP_SUPPRESS_KEY = "speedway-email-magnet-hidden-until";
 const SESSION_SUPPRESS_KEY = "speedway-email-magnet-session-dismissed";
@@ -51,22 +51,16 @@ export function EmailMagnetSection() {
     } catch {}
     if (hiddenUntil > Date.now() || hiddenInSession) return;
 
-    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+    // Auto-open only on desktop exit intent. A modal that covers content
+    // shortly after landing (especially on mobile) hurts usability and runs
+    // against Google's intrusive-interstitial guidance.
+    const isDesktop = window.matchMedia("(min-width: 1024px) and (pointer: fine)").matches;
+    if (!isDesktop) return;
 
     const openModal = () => {
       if (hasTriggered) return;
       setHasTriggered(true);
       setIsOpen(true);
-    };
-
-    const timer = window.setTimeout(openModal, 7000);
-
-    const onScroll = () => {
-      if (hasTriggered) return;
-      const scrolledPast = window.scrollY > Math.max(window.innerHeight * 0.65, 420);
-      if (scrolledPast) {
-        openModal();
-      }
     };
 
     const onMouseLeave = (event: MouseEvent) => {
@@ -76,14 +70,9 @@ export function EmailMagnetSection() {
       }
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    if (isDesktop) {
-      document.addEventListener("mouseleave", onMouseLeave);
-    }
+    document.addEventListener("mouseleave", onMouseLeave);
 
     return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("scroll", onScroll);
       document.removeEventListener("mouseleave", onMouseLeave);
     };
   }, [hasTriggered]);
@@ -157,6 +146,7 @@ export function EmailMagnetSection() {
       }
 
       setStatus("success");
+      trackLead("inventory_alert");
       suppressFor7Days();
       window.setTimeout(() => setIsOpen(false), 1200);
     } catch (error) {
@@ -205,7 +195,7 @@ export function EmailMagnetSection() {
           Get Price Drops & New Arrivals Before Anyone Else
         </h2>
         <p id="inventory-alert-description" className="mt-3 max-w-[50ch] text-sm leading-relaxed text-zinc-300 sm:text-[0.96rem]">
-          Join 2,000+ NJ car shoppers who get early access to new inventory, exclusive price drops, and financing specials. Delivered weekly — unsubscribe anytime.
+          Leave your email and our team will reach out about new arrivals, price drops, and financing specials. Unsubscribe anytime.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-3">
@@ -234,9 +224,6 @@ export function EmailMagnetSection() {
             {status === "loading" ? "Saving..." : status === "success" ? "You're on the list" : "Join the Insider List"}
           </button>
 
-          <p className="text-xs text-zinc-500 flex items-center justify-center gap-1.5">
-            <span>🚗</span> 847 price alerts sent this month
-          </p>
           {errorMessage ? (
             <p id="newsletter-error" className="text-sm text-red-300" role="alert">
               {errorMessage}

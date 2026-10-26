@@ -61,6 +61,14 @@ export function parseInventoryFilters(params: InventorySearchParams): InventoryF
   };
 }
 
+/** True when the URL narrows, sorts, or searches the listing (anything beyond ?page=). */
+export function hasInventoryRefinements(params: InventorySearchParams): boolean {
+  return Object.entries(params).some(([key, value]) => {
+    if (key === "page" || value === undefined) return false;
+    return Array.isArray(value) ? value.some((entry) => entry !== "") : value !== "";
+  });
+}
+
 export function buildInventoryQuery(params: InventorySearchParams): URLSearchParams {
   const query = new URLSearchParams();
 

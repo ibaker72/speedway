@@ -4,7 +4,7 @@ import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { Button } from "@/components/ui/button";
-import { formatMileage, formatPrice } from "@/lib/data/vehicles-full";
+import { formatMileage, formatVehiclePrice } from "@/lib/data/vehicles-full";
 import type { Vehicle } from "@/lib/types/vehicle";
 
 export function NearbyInventory({ title, city, vehicles }: { title: string; city: string; vehicles: Vehicle[] }) {
@@ -27,7 +27,7 @@ export function NearbyInventory({ title, city, vehicles }: { title: string; city
             </div>
             <div className="p-4 space-y-2">
               <h3 className="font-semibold text-white">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
-              <p className="text-accent-light font-bold text-lg">{formatPrice(vehicle.price)}</p>
+              <p className="text-accent-light font-bold text-lg">{formatVehiclePrice(vehicle.price)}</p>
               <div className="flex flex-wrap gap-2 text-[11px] text-zinc-400">
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/4 px-2 py-1"><Gauge className="h-3 w-3" />{formatMileage(vehicle.mileage)}</span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/4 px-2 py-1"><Fuel className="h-3 w-3" />{vehicle.fuelType || "Gasoline"}</span>

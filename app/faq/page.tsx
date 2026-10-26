@@ -5,16 +5,17 @@ import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowRight } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
+import { FAQPageJsonLd } from "@/components/seo/JsonLd";
+import { GENERAL_FAQS, toFaqItems } from "@/lib/data/faqs";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Frequently Asked Questions",
+export const metadata: Metadata = pageMetadata({
+  title: "Used Car Buying FAQ",
   description:
-    "Answers to common questions about buying a used car, financing, trade-ins, and more at Speedway Motors in Paterson, NJ.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/faq",
-  },
-};
+    "Answers to common questions about buying a used car, financing, trade-ins, and buying from out of state at Speedway Motors in Paterson, NJ.",
+  path: "/faq",
+});
 
 export default function FAQPage() {
   return (
@@ -25,7 +26,8 @@ export default function FAQPage() {
           { name: "FAQ", url: `${BUSINESS.website}/faq` },
         ]}
       />
-      <FAQSection />
+      <FAQPageJsonLd faqs={toFaqItems(GENERAL_FAQS)} />
+      <FAQSection headingAs="h1" />
       <SectionWrapper background="dark" className="py-12 md:py-16">
         <div className="max-w-xl mx-auto mb-8">
           <InlineLeadCTA variant="finance" />

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackLead } from "@/lib/analytics/track";
 
 interface FormErrors {
   [key: string]: string | undefined;
@@ -56,6 +57,7 @@ export function ContactForm() {
         throw new Error(data.message || "Request failed");
       }
       setSubmitted(true);
+      trackLead("contact");
     } catch {
       setError("Something went wrong. Please try again or call us directly.");
     } finally {

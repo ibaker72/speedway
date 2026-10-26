@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { trackLead } from "@/lib/analytics/track";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -34,6 +35,7 @@ export function BuyingGuideForm() {
       });
       if (!res.ok) throw new Error();
       setStatus("success");
+      trackLead("inventory_alert");
     } catch {
       setErrorMsg("Something went wrong. Please try again.");
       setStatus("error");

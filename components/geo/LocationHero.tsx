@@ -7,8 +7,12 @@ export function LocationHero({ location }: { location: GeoLocation }) {
   return (
     <PageHero
       eyebrow={`Serving ${location.displayName}`}
-      title={`Used Cars Near ${location.city}, ${location.stateAbbr}`}
-      subtitle={`Browse quality used cars, flexible financing, and trade-in support just ${location.distanceMiles} miles from ${location.city}.`}
+      title={`Used Cars ${location.distanceMiles > 0 ? "Near" : "in"} ${location.city}, ${location.stateAbbr}`}
+      subtitle={
+        location.distanceMiles > 0
+          ? `Browse quality used cars, flexible financing, and trade-in support at our Paterson showroom, about ${location.distanceMiles} miles from ${location.city}.`
+          : `Browse quality used cars, flexible financing, and trade-in support at our showroom in ${location.city}.`
+      }
     >
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Button href="/inventory" size="lg">
@@ -18,7 +22,7 @@ export function LocationHero({ location }: { location: GeoLocation }) {
       </div>
       <div className="mt-5 inline-flex items-center gap-2 text-xs text-zinc-300 border border-white/10 rounded-full px-4 py-2 bg-white/3">
         <CheckCircle2 className="h-3.5 w-3.5 text-accent-light" />
-        Trusted local dealership with transparent process and real inventory
+        One showroom in Paterson, NJ — real, in-stock inventory online
       </div>
     </PageHero>
   );

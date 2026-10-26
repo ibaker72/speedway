@@ -2,8 +2,9 @@ import { Shield, Users, Car, Award } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { BUSINESS } from "@/lib/constants";
+import { formatStockCount, getLiveInventoryCount } from "@/lib/data/inventory-source";
 
-const differentiators = [
+const baseDifferentiators = [
   {
     icon: Award, // Keeping your original icon
     title: "Driven by Integrity",
@@ -19,14 +20,19 @@ const differentiators = [
     title: `${BUSINESS.stats.customersServed} Customers Served`,
     description: "Thousands of happy customers across Passaic County and beyond trust Speedway Motors.",
   },
-  {
-    icon: Car,
-    title: `${BUSINESS.stats.vehiclesInStock}+ Vehicles in Stock`,
-    description: "One of the largest pre-owned selections in northern New Jersey, refreshed weekly.",
-  },
 ];
 
-export function WhyBuySection() {
+export async function WhyBuySection() {
+  const liveCount = await getLiveInventoryCount();
+  const differentiators = [
+    ...baseDifferentiators,
+    {
+      icon: Car,
+      title: liveCount ? `${formatStockCount(liveCount)} Vehicles in Stock` : "Inventory Updated Daily",
+      description: "Sedans, SUVs, trucks, and vans across many makes and price points, with new arrivals added regularly.",
+    },
+  ];
+
   return (
     <SectionWrapper background="elevated">
       <AnimateIn variant="up">

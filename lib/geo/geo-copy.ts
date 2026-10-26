@@ -1,4 +1,18 @@
 import type { GeoLocation } from "@/lib/geo/locations";
+import { dealerConfig } from "@/dealer.config";
+
+const mainLocation = dealerConfig.locations[0];
+const DEALER_ADDRESS = `${mainLocation.address}, ${mainLocation.city}, ${mainLocation.state} ${mainLocation.zip}`;
+
+/** Google Maps directions from the city center to the dealership. */
+export function buildDirectionsUrl(location: GeoLocation): string {
+  const params = new URLSearchParams({
+    api: "1",
+    origin: `${location.city}, ${location.stateAbbr}`,
+    destination: DEALER_ADDRESS,
+  });
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
 
 const introClosers = [
   "You can start online and finish paperwork at the showroom when you are ready.",
@@ -12,14 +26,20 @@ export function buildLocationIntro(location: GeoLocation): string {
 }
 
 export function buildLocationMetaDescription(location: GeoLocation): string {
-  return `Shop used cars near ${location.displayName} at Speedway Motors LLC in Paterson, NJ. Browse inventory, compare financing options, and value your trade-in before you visit.`;
+  return location.distanceMiles > 0
+    ? `Shopping for a used car near ${location.displayName}? Speedway Motors in Paterson, NJ is about ${location.distanceMiles} miles away. Browse inventory, compare financing options, and value your trade-in before you visit.`
+    : `Shop used cars in ${location.displayName} at Speedway Motors. Browse inventory, compare financing options, and value your trade-in before you visit our showroom.`;
 }
 
 export function buildFaqs(location: GeoLocation): Array<{ question: string; answer: string }> {
   const topicMap: Record<GeoLocation["faqTopics"][number], { question: string; answer: string }> = {
     distance: {
-      question: `How far is Speedway Motors LLC from ${location.displayName}?`,
-      answer: `Speedway Motors LLC is located at 302-304 22nd Ave, Paterson, NJ 07513. From ${location.city}, many customers can reach us in about ${Math.max(10, location.distanceMiles * 3)}–${Math.max(14, location.distanceMiles * 4)} minutes depending on traffic and route.`,
+      question: location.distanceMiles > 0
+        ? `How far is Speedway Motors LLC from ${location.displayName}?`
+        : `Where is Speedway Motors LLC in ${location.city}?`,
+      answer: location.distanceMiles > 0
+        ? `Speedway Motors LLC is located at ${DEALER_ADDRESS}, roughly ${location.distanceMiles} miles from ${location.city}. Drive time depends on your starting point, route, and traffic, so check live directions before you head over.`
+        : `Speedway Motors LLC is located at ${DEALER_ADDRESS}. Check live directions for the best route from your part of ${location.city}.`,
     },
     financing: {
       question: `Can I finance a used car near ${location.displayName}?`,

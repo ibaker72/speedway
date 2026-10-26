@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
@@ -5,14 +6,12 @@ import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
 import { ValueMyCarForm } from "./ValueMyCarForm";
 
-export const metadata: Metadata = {
-  title: "What's My Car Worth? | Free Instant Vehicle Value Estimate",
+export const metadata: Metadata = pageMetadata({
+  title: "What's My Car Worth? Free Vehicle Value Estimate",
   description:
-    "Find out what your car is worth in 60 seconds. Free, no-obligation market estimate from Speedway Motors in Paterson, NJ. Trade in or sell your vehicle today.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/value-my-car",
-  },
-};
+    "Request a free, no-obligation value estimate for your car from Speedway Motors in Paterson, NJ, then trade it in or sell it to us.",
+  path: "/value-my-car",
+});
 
 export default function ValueMyCarPage() {
   return (

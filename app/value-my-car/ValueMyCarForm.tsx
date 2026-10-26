@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { trackLead } from "@/lib/analytics/track";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const currentYear = new Date().getFullYear();
@@ -76,6 +77,7 @@ export function ValueMyCarForm() {
       const est = generateEstimate(year, mileage, condition);
       setResult({ ...est, year, make, model });
       setStatus("success");
+      trackLead("inventory_alert");
     } catch {
       setStatus("error");
     }

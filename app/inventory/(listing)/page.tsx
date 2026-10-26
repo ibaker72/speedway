@@ -8,38 +8,67 @@ import { InventoryViewToggle } from "@/components/shared/InventoryViewToggle";
 import { MobileInventoryFilters } from "@/components/inventory/MobileInventoryFilters";
 import { InventoryFiltersSidebar } from "@/components/inventory/InventoryFiltersSidebar";
 import { InventoryGrid } from "@/components/inventory/InventoryGrid";
-import { getInventory } from "@/lib/data/inventory-source";
+import { getInventory, getMakeSummaries } from "@/lib/data/inventory-source";
 import { formatPrice } from "@/lib/data/vehicles-full";
-import { parseInventoryFilters } from "@/lib/inventory/filter-params";
+import { hasInventoryRefinements, parseInventoryFilters } from "@/lib/inventory/filter-params";
+import { MIN_VEHICLES_FOR_MAKE_PAGE, makePagePath } from "@/lib/inventory/make-pages";
+import { pageMetadata } from "@/lib/seo/metadata";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Used Cars, SUVs & Trucks for Sale in Paterson, NJ | Speedway Motors",
-  description:
-    "Browse 180+ quality used cars, SUVs, trucks, and vans at Speedway Motors in Paterson, NJ. Competitive prices, flexible financing for all credit levels, and Carfax reports on every vehicle.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/inventory",
-  },
-};
-
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+const LISTING_TITLE = "Used Cars, SUVs & Trucks for Sale in Paterson, NJ";
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const filters = parseInventoryFilters(params);
+  const { total, totalPages } = await getInventory(filters);
+  const page = filters.page || 1;
+  const description =
+    "Browse quality used cars, SUVs, trucks, and vans at Speedway Motors in Paterson, NJ, with photos, mileage, and pricing online and financing options for all credit levels.";
+
+  // Filtered, sorted, and searched views reorder or subset the same vehicles.
+  // They stay crawlable (so vehicle links are followed) but out of the index;
+  // brand pages under /inventory/make/* are the indexable alternative.
+  if (hasInventoryRefinements(params)) {
+    return pageMetadata({ title: `Search Results — ${LISTING_TITLE}`, description, path: "/inventory", noindex: true });
+  }
+
+  if (page > 1) {
+    return pageMetadata({
+      title: `${LISTING_TITLE} — Page ${page}`,
+      description,
+      path: `/inventory?page=${page}`,
+      // A page number past the end (stale link after inventory shrinks) is
+      // empty. (total === 0 can also mean inventory is briefly unavailable, so
+      // it never triggers noindex on its own.)
+      noindex: total > 0 && page > totalPages,
+    });
+  }
+
+  return pageMetadata({ title: LISTING_TITLE, description, path: "/inventory" });
 }
 
 export default async function InventoryPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const filters = parseInventoryFilters(params);
 
-  const {
-    vehicles,
-    total,
-    page,
-    totalPages,
-    filters: filterOptions,
-  } = await getInventory(filters);
+  const [
+    {
+      vehicles,
+      total,
+      page,
+      totalPages,
+      filters: filterOptions,
+    },
+    makes,
+  ] = await Promise.all([getInventory(filters), getMakeSummaries()]);
+  const makeLinks = makes.filter((make) => make.count >= MIN_VEHICLES_FOR_MAKE_PAGE);
   const start = total === 0 ? 0 : (page - 1) * 24 + 1;
   const end = Math.min(page * 24, total);
 
@@ -68,7 +97,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
     <>
       <PageHero
         eyebrow="Browse Our Selection"
-        title="Our Inventory"
+        title="Used Vehicles for Sale"
         subtitle={`${total} quality pre-owned vehicles ready for you.`}
         compact
       >
@@ -93,7 +122,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
       </PageHero>
 
       <InventoryAlertBar filters={{ make: filters.make, type: filters.bodyType, priceMin: filters.minPrice ? String(filters.minPrice) : undefined, priceMax: filters.maxPrice ? String(filters.maxPrice) : undefined }} />
-      <InventoryListJsonLd vehicles={vehicles} total={total} />
+      <InventoryListJsonLd vehicles={vehicles} name="Used vehicles for sale at Speedway Motors" path={page > 1 ? `/inventory?page=${page}` : "/inventory"} />
 
       <div className="bg-[#0a0a0a] min-h-screen">
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -188,6 +217,25 @@ export default async function InventoryPage({ searchParams }: PageProps) {
               )}
             </div>
           </div>
+
+          {makeLinks.length > 0 && (
+            <nav aria-labelledby="browse-by-make" className="mt-14 border-t border-white/6 pt-8">
+              <h2 id="browse-by-make" className="text-lg font-semibold text-white mb-4">Browse by Make</h2>
+              <ul className="flex flex-wrap gap-2">
+                {makeLinks.map((make) => (
+                  <li key={make.slug}>
+                    <Link
+                      href={makePagePath(make.slug)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/3 px-3.5 py-1.5 text-sm text-zinc-300 hover:border-white/20 hover:text-white transition-colors"
+                    >
+                      Used {make.name}
+                      <span className="text-xs text-zinc-500">({make.count})</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
           <RecentlyViewed />
         </div>

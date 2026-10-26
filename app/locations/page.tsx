@@ -6,16 +6,15 @@ import { AnimateIn } from "@/components/shared/AnimateIn";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
 import { geoLocations } from "@/lib/geo/locations";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Areas We Serve | Used Cars Near North Jersey & Lower Hudson Valley",
+export const metadata: Metadata = pageMetadata({
+  title: "Areas We Serve Near Paterson, NJ",
   description:
-    "Explore Speedway Motors service areas near Paterson, NJ including Newark, Jersey City, Hoboken, Yonkers, Clifton, and more.",
-  alternates: {
-    canonical: `${BUSINESS.website}/locations`,
-  },
-};
+    "Speedway Motors is located in Paterson, NJ and serves drivers across North Jersey and nearby New York, including Newark, Jersey City, Clifton, Yonkers, and more.",
+  path: "/locations",
+});
 
 export default function LocationsPage() {
   return (
@@ -44,7 +43,9 @@ export default function LocationsPage() {
                   </div>
                   <div>
                     <h2 className="font-semibold text-white group-hover:text-accent-light transition-colors">{location.displayName}</h2>
-                    <p className="text-xs text-zinc-500">{location.distanceMiles} miles from Speedway Motors</p>
+                    <p className="text-xs text-zinc-500">
+                      {location.distanceMiles > 0 ? `About ${location.distanceMiles} miles from Speedway Motors` : "Home of Speedway Motors"}
+                    </p>
                   </div>
                 </div>
                 <p className="text-sm text-zinc-400 flex-1">{location.intro}</p>

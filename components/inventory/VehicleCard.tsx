@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Fuel, Gauge, Settings2 } from "lucide-react";
 import { VehicleImage } from "@/components/shared/VehicleImage";
-import { formatMileage, formatPrice, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
+import { formatMileage, formatPrice, estimateMonthlyPayment, formatVehiclePrice } from "@/lib/data/vehicles-full";
 import { getVehicleTrustBadges } from "@/lib/inventory/trust-badges";
 import type { Vehicle } from "@/lib/types/vehicle";
 
@@ -24,7 +24,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
       <div className="aspect-16/10 relative overflow-hidden">
         <VehicleImage
           src={vehicle.thumbnailUrl || vehicle.images[0]?.url}
-          alt={`Used ${vehicle.year} ${vehicle.make} ${vehicle.model} for sale in Paterson NJ — Speedway Motors`}
+          alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ""}`}
           make={vehicle.make}
           model={vehicle.model}
           className="w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
@@ -47,10 +47,10 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
 
         <div className="mt-3 flex items-start justify-between gap-2">
           <div>
-            <span className="text-xl font-bold text-accent-light">{formatPrice(vehicle.price)}</span>
-            <span className="block text-xs text-zinc-500 mt-0.5">Est. ${estMonthly}/mo</span>
+            <span className="text-xl font-bold text-accent-light">{formatVehiclePrice(vehicle.price)}</span>
+            {vehicle.price > 0 && <span className="block text-xs text-zinc-500 mt-0.5">Est. ${estMonthly}/mo</span>}
           </div>
-          {vehicle.msrp && vehicle.price < vehicle.msrp && (
+          {vehicle.msrp && vehicle.price > 0 && vehicle.price < vehicle.msrp && (
             <span className="text-[11px] text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1">
               Save {formatPrice(vehicle.msrp - vehicle.price)}
             </span>

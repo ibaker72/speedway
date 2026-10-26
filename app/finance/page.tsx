@@ -5,16 +5,15 @@ import { AnimateIn } from "@/components/shared/AnimateIn";
 import { FinanceApplicationForm } from "@/components/forms/FinanceApplicationForm";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Auto Financing in Paterson, NJ | All Credit Welcome",
   description:
-    "Get pre-approved for auto financing at Speedway Motors in Paterson, NJ. Bad credit, no credit, first-time buyers — all welcome. Same-day decisions from trusted NJ lenders.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/finance",
-  },
-};
+    "Apply online for used car financing at Speedway Motors in Paterson, NJ. Buyers with bad credit, no credit, or first-time buyers are welcome to apply.",
+  path: "/finance",
+});
 
 const highlights = [
   {

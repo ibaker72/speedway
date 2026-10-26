@@ -20,20 +20,22 @@ function formatPayload(payload: Record<string, unknown>): string {
     .join("\n");
 }
 
-export async function notifyLead(input: NotifyLeadInput): Promise<void> {
+/** Emails the sales team about a new lead. Resolves true only when the email was accepted. */
+export async function notifyLead(input: NotifyLeadInput): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   const toEmail = process.env.LEAD_NOTIFICATION_EMAIL;
   const fromEmail = process.env.LEAD_FROM_EMAIL || "leads@speedwaymotorsllc.com";
 
   if (!apiKey || !toEmail) {
     console.warn("Lead notification skipped: RESEND_API_KEY or LEAD_NOTIFICATION_EMAIL not configured");
-    return;
+    return false;
   }
 
   const resend = new Resend(apiKey);
 
   const sourceLabel = input.source.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const subject = `New ${sourceLabel} Lead${input.name ? ` — ${input.name}` : ""}`;
+  const subjectName = input.name ? input.name.replace(/[\r\n]+/g, " ").slice(0, 100) : "";
+  const subject = `New ${sourceLabel} Lead${subjectName ? ` — ${subjectName}` : ""}`;
 
   const lines: string[] = [
     `New lead from: ${sourceLabel}`,
@@ -57,17 +59,35 @@ export async function notifyLead(input: NotifyLeadInput): Promise<void> {
       lines.push("");
     }
 
+    if (input.source === "shipping") {
+      const p = input.payload;
+      const vehicle = (p.vehicle ?? null) as Record<string, unknown> | null;
+      if (p.vehicleOfInterest) lines.push(`Vehicle: ${p.vehicleOfInterest}`);
+      if (vehicle?.stockNumber) lines.push(`Stock #: ${vehicle.stockNumber}`);
+      if (vehicle?.url) lines.push(`Listing: ${vehicle.url}`);
+      if (p.deliveryZip || p.deliveryState) lines.push(`Deliver to: ${[p.deliveryZip, p.deliveryState].filter(Boolean).join(", ")}`);
+      if (p.message) lines.push("", `Message: ${p.message}`);
+      lines.push("");
+    }
+
     lines.push(formatPayload(input.payload));
   }
 
   try {
-    await resend.emails.send({
+    // The Resend SDK reports API failures in `error` instead of throwing.
+    const { error } = await resend.emails.send({
       from: fromEmail,
       to: toEmail,
       subject,
       text: lines.join("\n"),
     });
+    if (error) {
+      console.error(`Failed to send lead notification email: ${error.name ?? "error"} ${error.message ?? ""}`.trim());
+      return false;
+    }
+    return true;
   } catch (err) {
-    console.error("Failed to send lead notification email:", err);
+    console.error("Failed to send lead notification email:", err instanceof Error ? err.message : String(err));
+    return false;
   }
 }
