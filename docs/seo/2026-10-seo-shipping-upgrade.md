@@ -180,10 +180,7 @@ Not run: Lighthouse CI against production (the sandbox cannot reach the producti
 ## J. Deployment checklist
 
 1. **Confirm shipping** with the dealership (item I-1). If not confirmed, set `features.nationwideShipping: false` in `dealer.config.ts` before merging.
-2. **Apply the leads migration** to the production Supabase project (approval required):
-   - Supabase dashboard → SQL editor → run `db/migrations/20261026_leads_table_rls.sql`, or
-   - `supabase link --project-ref ynrzmmbywnrifkhdltvz && supabase db push` (if the CLI migration history is set up), or ask me to apply it through the Supabase connector.
-   - Verify: `select relrowsecurity from pg_class where relname = 'leads';` → `true`.
+2. **Apply the leads migration** to the production Supabase project (approval required). Follow `docs/db/2026-10-27-leads-migration-readiness.md`: backup, pre-check, run `db/migrations/20261026_leads_table_rls.sql` in the SQL editor, post-check, anonymous-access check, smoke test. (The project has no Supabase CLI migration history, so `supabase db push` does not apply.) The migration is independent of this deploy and can go first.
 3. **Verify Vercel env vars** (production): `RESEND_API_KEY`, `LEAD_NOTIFICATION_EMAIL`, `LEAD_FROM_EMAIL`, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL=https://www.speedwaymotorsllc.com`, and only one GA4 path (`NEXT_PUBLIC_GA_ID` *or* GTM forwarding to GA4). The homepage, city pages, and About now pre-render at build time, so **Preview** must also have `INVENTORY_SOURCE`, `NEXT_PUBLIC_SUPABASE_URL`, and a Supabase key (or leave `INVENTORY_SOURCE` unset there to build with fixture data) — with `INVENTORY_SOURCE=supabase` and no URL/key, the build stops on purpose.
 4. **Run checks locally:** `npm ci && npm run typecheck && npm run lint && npm test && npm run build`.
 5. **Open a PR** from `ccr-9785576c-jn8rs8`; review the Vercel preview (previews are `noindex`).
