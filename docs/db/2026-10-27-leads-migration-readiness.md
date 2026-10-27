@@ -2,13 +2,22 @@
 
 Date: 2026-10-27 · Project: Supabase `ynrzmmbywnrifkhdltvz` (Pro plan, Postgres 17.6) · Migration: `db/migrations/20261026_leads_table_rls.sql`
 
-**Recommendation: GO for the hardened migration**, after the three pre-flight items below. The earlier (unhardened) version of the file is superseded. Nothing in this audit changed production; all live checks were read-only queries.
+**Recommendation: GO for the hardened migration once the owner confirms the backup (check 1) and the Production email variables (check 2) below.** Everything that could be verified from this session passes. The earlier (unhardened) version of the file is superseded. Nothing in this audit changed production; all live checks were read-only queries. Migration B stays separate.
+
+## Pre-authorization checks (2026-10-27)
+
+| # | Check | Status | Evidence / what's needed |
+|---|---|---|---|
+| 1 | Recent recoverable backup | **Not confirmed — owner action required** | No connected tool can list Supabase backups (the Management API backups endpoint needs an account token this session doesn't have). Indirect evidence is healthy: WAL archiving on, last segment archived minutes before the check, 2,554 archived since 2026-05-30 with 0 failures; org is on Pro (daily backups, 7-day retention). **Owner:** Dashboard → project `ynrzmmbywnrifkhdltvz` → Database → Backups → confirm a completed backup within the last 24 h (and note whether PITR is enabled). Optionally take the manual `pg_dump` below. |
+| 2 | `RESEND_API_KEY`, `LEAD_NOTIFICATION_EMAIL` in Vercel Production | **Not verified — owner action required** | The Vercel connection returns 403 for listing environment variables; project and deployment details don't include them; no Vercel CLI here. **Owner:** Vercel → `speedway-cqob` → Settings → Environment Variables → filter **Production** → confirm both names exist (values need not be shown), and that `LEAD_FROM_EMAIL` (if set) uses a domain verified in Resend. Then Resend → Domains → `speedwaymotorsllc.com` shows Verified. |
+| 3 | Compatibility guard validates types and constraints | **Done** | Guard now checks relation kind, every column's exact type and nullability, `id` UUID default, primary key exactly `(id)`, extra required columns, unique/check/foreign-key/exclusion constraints, triggers, rules, and pre-existing policies; reports all problems in one error and rolls back. |
+| 4 | Migration tests re-run | **Pass** | `tests/leads-migration.test.ts`: 24 tests (fresh apply, idempotent re-run, compatibility with `20260404_leads.sql`, other tables' grants untouched, role access matrix, rollback, 15 drift cases each aborting with no partial changes, view rejection, multi-problem report, compatible extra column accepted, every branch lead route writing through the real app code). Mutation check: removing the type and trigger checks makes exactly the 5 related tests fail. Full suite 132/132; typecheck, lint, build pass. |
+| 5 | Production deployment and branch compatible | **Pass** | Production `dpl_GGJ7bHqZyrz4TmrCkMCkSKZQ68op` still serves `main` @ `225d6e0`. Its 6 lead routes, run unmodified against the migrated schema: all 200, rows typed correctly. Negative control without the table: all 500 (today's state). Branch `ccr-9785576c-jn8rs8`: all 7 lead routes write correctly (test above); Vercel built preview deployments for `e288c7e` and `25ee9c3` successfully. Live pre-check re-run: `public.leads` still absent. |
 
 ## Pre-flight (must be done before running)
 
-1. Confirm or take a backup (see "Backup").
-2. Confirm `RESEND_API_KEY` and `LEAD_NOTIFICATION_EMAIL` are set for **Production** in Vercel (Settings → Environment Variables). The site currently running in production (`main` @ `225d6e0`) will start saving leads as soon as the table exists, and nothing in the app displays the `leads` table — email is the only way staff will see them. If the variables are missing, either add them first or check the table daily until they are.
-3. Run the pre-check query below and confirm it returns `NULL`.
+1. Owner confirms checks 1 and 2 above.
+2. Run the pre-check query below and confirm it returns `NULL`.
 
 ## Findings
 
@@ -26,7 +35,7 @@ Date: 2026-10-27 · Project: Supabase `ynrzmmbywnrifkhdltvz` (Pro plan, Postgres
 | 10 | Locking / downtime | Creates new objects only; no locks on existing tables. Runs in milliseconds. One transaction: any failure rolls back everything (verified). |
 | 11 | Security advisor | Only 2 pre-existing warnings (`set_updated_at`, `inventory_search_update` have a mutable `search_path`). Nothing lead-related. |
 
-Local verification (PGlite with Supabase roles and the production default-privilege ACL recreated): hardened file applied twice without error; compatible on top of `20260404_leads.sql`; aborts with no partial changes if an incompatible `leads` table exists; rollback statement restores the prior state; `service_role` insert in the app's exact row shape succeeds.
+Local verification is automated in `tests/leads-migration.test.ts` (PGlite with Supabase's API roles and the production default-privilege ACL recreated; the app's real insert code runs through a PostgREST-style shim in `tests/helpers/supabase-pglite.ts`).
 
 ## Exact SQL
 
@@ -42,7 +51,7 @@ SELECT to_regclass('public.leads') AS leads_table;
 
 - `BEGIN … COMMIT` — all-or-nothing.
 - `CREATE TABLE IF NOT EXISTS public.leads (...)` — the table the app writes to; identical to `20260404_leads.sql`.
-- `DO $$ … $$` — aborts and rolls back if a pre-existing `leads` table lacks any required column.
+- `DO $$ … $$` compatibility guard — if a `leads` relation already exists, aborts and rolls back unless it is an ordinary table whose columns match exactly (types, nullability, `id` default `gen_random_uuid()`), primary key is `(id)`, any extra columns are optional, and it has no unique/check/foreign-key/exclusion constraints, triggers, rules, or policies. On a fresh table it passes.
 - 4 × `CREATE INDEX IF NOT EXISTS` — source, status, created_at DESC, email (plus the primary key on `id`).
 - `ALTER TABLE … ENABLE ROW LEVEL SECURITY` — with no policies, the Data API denies `anon`/`authenticated` all row access.
 - `REVOKE ALL … FROM PUBLIC, anon, authenticated` — removes Supabase's automatic grants (incl. `TRUNCATE`); hides the table from anonymous GraphQL introspection.
