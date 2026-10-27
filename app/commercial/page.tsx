@@ -6,20 +6,25 @@ import { VehicleImage } from "@/components/shared/VehicleImage";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { Button } from "@/components/ui/button";
 import { getInventory } from "@/lib/data/inventory-source";
-import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { formatMileage, formatVehiclePrice } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Commercial Vehicles for Sale in Paterson, NJ",
-  description:
-    "Commercial trucks, vans, and work vehicles at Speedway Motors in Paterson, NJ. Fleet pricing, commercial financing, and a wide selection of work-ready vehicles.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/commercial",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { total } = await getInventory({ isCommercial: true, perPage: 1 });
+  return pageMetadata({
+    title: "Commercial Vehicles for Sale in Paterson, NJ",
+    description:
+      "Commercial trucks, vans, and work vehicles at Speedway Motors in Paterson, NJ, with financing options for business buyers.",
+    path: "/commercial",
+    // An empty listing is a soft 404; keep it out of the index until vehicles
+    // are flagged as commercial in the inventory feed.
+    noindex: total === 0,
+  });
+}
 
 export default async function CommercialPage() {
   const { vehicles, total } = await getInventory({
@@ -100,7 +105,7 @@ export default async function CommercialPage() {
                         )}
                       </div>
                       <div className="text-lg font-bold text-accent-light shrink-0">
-                        {formatPrice(vehicle.price)}
+                        {formatVehiclePrice(vehicle.price)}
                       </div>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-zinc-500 mb-4 flex-wrap">

@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
@@ -13,14 +14,12 @@ import {
 } from "lucide-react";
 import { BuyingGuideForm } from "./BuyingGuideForm";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Free Used Car Buying Guide & Checklist",
   description:
-    "Download our free used car buying checklist. Learn what to inspect, how to negotiate, and how to get the best financing — from the experts at Speedway Motors in Paterson, NJ.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/guides/car-buying-guide",
-  },
-};
+    "Get our free used car buying checklist: what to inspect, questions to ask, and how to prepare for financing — from Speedway Motors in Paterson, NJ.",
+  path: "/guides/car-buying-guide",
+});
 
 const benefits = [
   { icon: ClipboardCheck, title: "15-Point Inspection Checklist", description: "Know exactly what to look for before you buy." },

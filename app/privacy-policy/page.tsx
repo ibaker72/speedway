@@ -1,15 +1,15 @@
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { BUSINESS } from "@/lib/constants";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
-  description: "Privacy policy for Speedway Motors LLC website visitors and customers.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/privacy-policy",
-  },
-};
+  description:
+    "How Speedway Motors LLC collects, uses, and protects information from website visitors and customers.",
+  path: "/privacy-policy",
+});
 
 export default function PrivacyPolicyPage() {
   return (
@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-xl font-bold text-white mb-3">Information We Collect</h2>
               <p className="mb-3">We may collect personal information that you voluntarily provide when you:</p>
               <ul className="list-disc pl-6 space-y-1.5 text-zinc-400">
-                <li>Fill out contact, financing, or trade-in forms on our website</li>
+                <li>Fill out contact, financing, trade-in, or vehicle shipping inquiry forms on our website</li>
                 <li>Call or email our dealership</li>
                 <li>Subscribe to our inventory alerts or newsletter</li>
                 <li>Visit our dealership in person</li>

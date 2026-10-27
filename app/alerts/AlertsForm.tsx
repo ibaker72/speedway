@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { Mail } from "lucide-react";
+import { trackLead } from "@/lib/analytics/track";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -31,6 +32,7 @@ export function AlertsForm() {
       const data = (await res.json()) as { message?: string };
       if (!res.ok) throw new Error(data.message || "Something went wrong.");
       setStatus("success");
+      trackLead("inventory_alert");
     } catch (err) {
       setStatus("error");
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong.");

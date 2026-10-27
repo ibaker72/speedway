@@ -6,7 +6,7 @@ import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
+import { formatMileage, estimateMonthlyPayment, formatVehiclePrice } from "@/lib/data/vehicles-full";
 
 export async function FeaturedInventory() {
   const { vehicles: all } = await getInventory({ perPage: 6 });
@@ -36,7 +36,7 @@ export async function FeaturedInventory() {
                 <div className="relative aspect-16/10 overflow-hidden rounded-t-xl">
                   <VehicleImage
                     src={v.images[0]?.url}
-                    alt={`Used ${v.year} ${v.make} ${v.model} for sale in Paterson NJ — Speedway Motors`}
+                    alt={`${v.year} ${v.make} ${v.model}${v.trim ? ` ${v.trim}` : ""}`}
                     make={v.make}
                     model={v.model}
                     className="w-full h-full group-hover:scale-105 transition-transform duration-500"
@@ -68,7 +68,7 @@ export async function FeaturedInventory() {
                   {v.trim && <p className="text-sm text-zinc-500 mt-0.5">{v.trim}</p>}
 
                   <div className="mt-2">
-                    <span className="text-xl font-bold text-accent-light">{formatPrice(v.price)}</span>
+                    <span className="text-xl font-bold text-accent-light">{formatVehiclePrice(v.price)}</span>
                     <span className="block text-xs text-zinc-500 mt-0.5">Est. ${estMonthly}/mo</span>
                   </div>
 

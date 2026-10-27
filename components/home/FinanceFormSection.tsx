@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckCircle, CreditCard, Clock, Shield, FileText, Users } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
+import { trackLead } from "@/lib/analytics/track";
 
 const benefits = [
   { icon: CreditCard, text: "All credit levels welcome — good, fair, or rebuilding" },
@@ -77,6 +78,7 @@ export function FinanceFormSection() {
         throw new Error(data.message || "Request failed");
       }
       setSubmitted(true);
+      trackLead("finance");
     } catch {
       setError("Something went wrong. Please try again or call us directly.");
     } finally {

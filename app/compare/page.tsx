@@ -6,18 +6,18 @@ import { getInventory } from "@/lib/data/inventory-source";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { formatPrice, formatMileage, estimateMonthlyPayment } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Compare Vehicles",
   description:
-    "Compare vehicles side-by-side at Speedway Motors. Find the best car for your needs by comparing specs, prices, and features.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/compare",
-  },
-};
+    "Compare vehicles from the Speedway Motors inventory side by side — price, mileage, and key specs.",
+  path: "/compare",
+  noindex: true,
+});
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

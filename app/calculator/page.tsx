@@ -3,16 +3,15 @@ import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import { BUSINESS } from "@/lib/constants";
 import { CalculatorForm } from "./CalculatorForm";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Auto Loan Payment Calculator | Speedway Motors",
+export const metadata: Metadata = pageMetadata({
+  title: "Auto Loan Payment Calculator",
   description:
-    "Estimate your monthly car payment with our free auto loan calculator. Adjust price, down payment, loan term, and interest rate at Speedway Motors in Paterson, NJ.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/calculator",
-  },
-};
+    "Estimate a monthly car payment by adjusting price, down payment, loan term, and interest rate. Estimates only; actual terms depend on lender approval.",
+  path: "/calculator",
+});
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

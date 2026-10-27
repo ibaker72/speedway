@@ -29,6 +29,8 @@ interface ButtonAsLink extends ButtonBaseProps {
   href: string;
   target?: string;
   rel?: string;
+  /** CTA identifier picked up by components/analytics/SiteTracking. */
+  "data-track-cta"?: string;
 }
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
@@ -97,9 +99,9 @@ export function Button({
   );
 
   if ("href" in props && props.href) {
-    const { href, target, rel } = props;
+    const { href, target, rel, "data-track-cta": trackCta } = props;
     return (
-      <Link href={href} target={target} rel={rel} className={classes}>
+      <Link href={href} target={target} rel={rel} className={classes} data-track-cta={trackCta}>
         {children}
       </Link>
     );

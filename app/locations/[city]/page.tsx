@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
-import { LocalBusinessJsonLd } from "@/components/seo/LocalBusinessJsonLd";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { LocationCtaStrip } from "@/components/geo/LocationCtaStrip";
 import { LocationFaq } from "@/components/geo/LocationFaq";
@@ -12,11 +11,20 @@ import { LocationTrustSection } from "@/components/geo/LocationTrustSection";
 import { NearbyInventory } from "@/components/geo/NearbyInventory";
 import { BUSINESS } from "@/lib/constants";
 import { getInventory } from "@/lib/data/inventory-source";
-import { buildFaqs, buildLocationIntro, buildLocationMetaDescription } from "@/lib/geo/geo-copy";
+import { FAQPageJsonLd } from "@/components/seo/JsonLd";
+import { buildDirectionsUrl, buildFaqs, buildLocationIntro, buildLocationMetaDescription } from "@/lib/geo/geo-copy";
 import { getGeoInventoryHeading, getGeoPrimaryTitle, getLocationUrl, pickNearbyInventory, pickNearbyLocations } from "@/lib/geo/geo-helpers";
+import { pageMetadata } from "@/lib/seo/metadata";
 import { geoLocationBySlug, geoLocations } from "@/lib/geo/locations";
+import { dealerConfig } from "@/dealer.config";
 
-export const dynamic = "force-dynamic";
+const mainLocation = dealerConfig.locations[0];
+
+// Pre-rendered for every configured city and refreshed hourly (the nearby
+// inventory block is the only part that changes).
+export const revalidate = 3600;
+// Only the configured cities exist; anything else is a real 404.
+export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{ city: string }>;
@@ -34,43 +42,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Location Not Found" };
   }
 
-  const title = getGeoPrimaryTitle(location);
-  const description = buildLocationMetaDescription(location);
-  const canonical = getLocationUrl(location.slug);
-
-  return {
-    title,
-    description,
-    keywords: location.targetKeywords,
-    alternates: {
-      canonical,
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-      type: "website",
-    },
-  };
+  return pageMetadata({
+    title: getGeoPrimaryTitle(location),
+    description: buildLocationMetaDescription(location),
+    path: `/locations/${location.slug}`,
+  });
 }
-
-function LocationFaqJsonLd({ faqs }: { faqs: Array<{ question: string; answer: string }> }) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
-  };
-
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;
-}
-
 
 export default async function LocationPage({ params }: PageProps) {
   const { city } = await params;
@@ -94,8 +71,7 @@ export default async function LocationPage({ params }: PageProps) {
           { name: location.displayName, url: getLocationUrl(location.slug) },
         ]}
       />
-      <LocationFaqJsonLd faqs={faqs} />
-      <LocalBusinessJsonLd location={location} />
+      <FAQPageJsonLd faqs={faqs} />
 
       <LocationHero location={location} />
       <LocationIntro intro={buildLocationIntro(location)} location={location} />
@@ -108,10 +84,19 @@ export default async function LocationPage({ params }: PageProps) {
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card-glass p-6">
             <h2 className="text-xl font-semibold text-white mb-3">Dealership contact details</h2>
-            <p className="text-sm text-zinc-400">Speedway Motors LLC</p>
-            <p className="text-sm text-zinc-400">302-304 22nd Ave, Paterson, NJ 07513</p>
-            <p className="text-sm text-zinc-300 mt-3">Call: <a href={BUSINESS.phoneHref} className="text-accent-light hover:text-white">{BUSINESS.phone}</a></p>
+            <p className="text-sm text-zinc-400">{BUSINESS.name}</p>
+            <p className="text-sm text-zinc-400">{mainLocation.address}, {mainLocation.city}, {mainLocation.state} {mainLocation.zip}</p>
+            <p className="text-sm text-zinc-300 mt-3">Call: <a href={BUSINESS.phoneHref} data-track-location="location_page" className="text-accent-light hover:text-white">{BUSINESS.phone}</a></p>
             <p className="text-sm text-zinc-300">Email: <a href={`mailto:${BUSINESS.email}`} className="text-accent-light hover:text-white">{BUSINESS.email}</a></p>
+            <a
+              href={buildDirectionsUrl(location)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center text-sm font-semibold text-accent-light hover:text-white transition-colors"
+            >
+              Get directions from {location.city}
+              <span className="sr-only"> (opens Google Maps in a new tab)</span>
+            </a>
           </div>
 
           <div className="card-glass p-6">

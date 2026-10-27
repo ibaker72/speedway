@@ -2,6 +2,7 @@
 
 import { FormEvent, useState, useEffect } from "react";
 import { Bell } from "lucide-react";
+import { trackLead } from "@/lib/analytics/track";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SESSION_KEY = "speedway-inventory-alert-submitted";
@@ -44,6 +45,7 @@ export function InventoryAlertBar({ filters }: InventoryAlertBarProps) {
       });
       if (!res.ok) throw new Error();
       setStatus("success");
+      trackLead("inventory_alert");
       try {
         sessionStorage.setItem(SESSION_KEY, "1");
       } catch {}

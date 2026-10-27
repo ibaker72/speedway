@@ -1,12 +1,13 @@
 "use client";
 
 import { BadgeCheck, FileCheck2, ShieldCheck, Star, Wrench } from "lucide-react";
+import { dealerConfig } from "@/dealer.config";
 
 const trustSignals = [
   { label: "AAA Approved", icon: BadgeCheck },
   { label: "NAPA Service", icon: Wrench },
   { label: "CARFAX Reports", icon: FileCheck2, href: "https://www.carfax.com" },
-  { label: "Google 5-Star", icon: Star },
+  { label: `${dealerConfig.stats.googleRating}★ on Google`, icon: Star },
   { label: "NJ Trusted Dealer", icon: ShieldCheck },
 ];
 

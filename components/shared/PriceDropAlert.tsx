@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { BellRing } from "lucide-react";
+import { trackLead } from "@/lib/analytics/track";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,6 +37,7 @@ export function PriceDropAlert({ slug, title, price }: PriceDropAlertProps) {
       });
       if (!res.ok) throw new Error();
       setStatus("success");
+      trackLead("inventory_alert");
     } catch {
       setStatus("error");
     }

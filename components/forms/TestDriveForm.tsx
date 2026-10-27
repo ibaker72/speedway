@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { trackLead } from "@/lib/analytics/track";
 
 interface TestDriveFormProps {
   vehicleId: string;
@@ -36,6 +37,7 @@ export function TestDriveForm({ vehicleId, vehicleTitle }: TestDriveFormProps) {
       });
       if (!res.ok) throw new Error("Request failed");
       setStatus("success");
+      trackLead("test_drive");
     } catch {
       setStatus("idle");
     }

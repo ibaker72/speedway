@@ -1,68 +1,27 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
+import { GENERAL_FAQS, type FaqSegment } from "@/lib/data/faqs";
 
-interface FAQ {
-  question: string;
-  answer: ReactNode;
+function renderAnswer(answer: FaqSegment[]): ReactNode {
+  return answer.map((segment, i) =>
+    typeof segment === "string" ? (
+      <Fragment key={i}>{segment}</Fragment>
+    ) : (
+      <Link
+        key={i}
+        href={segment.href}
+        className="text-accent-light hover:text-white transition-colors underline decoration-accent/30"
+      >
+        {segment.label}
+      </Link>
+    )
+  );
 }
-
-const faqs: FAQ[] = [
-  {
-    question: "What financing options does Speedway Motors offer?",
-    answer: (
-      <>
-        We work with most major banks and lending institutions in NJ to offer affordable financing. We also provide{" "}
-        <Link href="/finance" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
-          sub-prime financing
-        </Link>{" "}
-        — bad credit, no credit, or first-time buyers are all welcome.
-      </>
-    ),
-  },
-  {
-    question: "What brands does Speedway Motors carry?",
-    answer:
-      "We carry 20+ brands including Acura, Audi, BMW, Chevrolet, Dodge, Ford, Honda, Hyundai, INFINITI, Jeep, Land Rover, Mercedes-Benz, Nissan, Ram, Subaru, Toyota, Volkswagen, and Volvo.",
-  },
-  {
-    question: "Where is Speedway Motors located?",
-    answer: (
-      <>
-        Our main showroom is at{" "}
-        <Link href="/contact" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
-          302-304 22nd Ave, Paterson, NJ 07513
-        </Link>
-        . We serve all of Passaic County and surrounding areas throughout New Jersey.
-      </>
-    ),
-  },
-  {
-    question: "Do you offer vehicle warranties?",
-    answer:
-      "Yes. Many of our vehicles are eligible for extended service contracts and warranties. Our team will walk you through available coverage options.",
-  },
-  {
-    question: "Can I sell or trade in my car at Speedway Motors?",
-    answer: (
-      <>
-        Absolutely. We offer competitive trade-in values and also purchase vehicles directly — no trade required.{" "}
-        <Link href="/trade" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
-          Submit your trade-in details
-        </Link>{" "}
-        or{" "}
-        <Link href="/sell-your-car" className="text-accent-light hover:text-white transition-colors underline decoration-accent/30">
-          sell your car directly
-        </Link>{" "}
-        for a quick offer.
-      </>
-    ),
-  },
-];
 
 function FAQItem({
   question,
@@ -122,7 +81,7 @@ function FAQItem({
   );
 }
 
-export function FAQSection() {
+export function FAQSection({ headingAs = "h2" }: { headingAs?: "h1" | "h2" }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
@@ -131,14 +90,15 @@ export function FAQSection() {
         eyebrow="FAQ"
         title="Frequently Asked Questions"
         subtitle="Answers to common questions about buying from Speedway Motors."
+        as={headingAs}
       />
       <div className="max-w-3xl mx-auto rounded-2xl border border-white/8 bg-surface-1 p-4 sm:p-6">
         <div className="px-2 sm:px-4">
-          {faqs.map((faq, i) => (
+          {GENERAL_FAQS.map((faq, i) => (
             <FAQItem
               key={i}
               question={faq.question}
-              answer={faq.answer}
+              answer={renderAnswer(faq.answer)}
               isOpen={openIndex === i}
               onToggle={() => setOpenIndex(openIndex === i ? null : i)}
               id={String(i)}

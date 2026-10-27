@@ -5,16 +5,15 @@ import { AnimateIn } from "@/components/shared/AnimateIn";
 import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
 import { Button } from "@/components/ui/button";
 import { BUSINESS } from "@/lib/constants";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Warranty & Service",
+export const metadata: Metadata = pageMetadata({
+  title: "Warranty & Service Contracts",
   description:
-    "Explore warranty options, service contracts, and maintenance packages available at Speedway Motors LLC in Paterson, NJ.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/warranty",
-  },
-};
+    "Learn about warranty options, service contracts, and maintenance packages available on vehicles from Speedway Motors in Paterson, NJ.",
+  path: "/warranty",
+});
 
 const warranties = [
   {

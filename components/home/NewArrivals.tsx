@@ -5,7 +5,7 @@ import { VehicleImage } from "@/components/shared/VehicleImage";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { formatMileage, formatVehiclePrice } from "@/lib/data/vehicles-full";
 
 export async function NewArrivals() {
   const { vehicles: all } = await getInventory({ perPage: 20, sortBy: "date-added" });
@@ -32,7 +32,7 @@ export async function NewArrivals() {
               <div className="relative aspect-16/10 overflow-hidden rounded-t-xl">
                 <VehicleImage
                   src={v.images[0]?.url}
-                  alt={`Used ${v.year} ${v.make} ${v.model} for sale in Paterson NJ — Speedway Motors`}
+                  alt={`${v.year} ${v.make} ${v.model}${v.trim ? ` ${v.trim}` : ""}`}
                   make={v.make}
                   model={v.model}
                   className="w-full h-full group-hover:scale-105 transition-transform duration-500"
@@ -48,7 +48,7 @@ export async function NewArrivals() {
                   {v.year} {v.make} {v.model}
                 </h3>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-base font-bold text-accent-light">{formatPrice(v.price)}</span>
+                  <span className="text-base font-bold text-accent-light">{formatVehiclePrice(v.price)}</span>
                   <span className="text-xs text-zinc-500">{formatMileage(v.mileage)}</span>
                 </div>
               </div>

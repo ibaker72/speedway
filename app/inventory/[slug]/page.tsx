@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ExternalLink,
   ShieldCheck,
-  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VehicleImage } from "@/components/shared/VehicleImage";
@@ -24,7 +23,12 @@ import { RecentlyViewedTracker } from "@/components/shared/RecentlyViewedTracker
 import { PriceDropAlert } from "@/components/shared/PriceDropAlert";
 import { BuildMyDealModule } from "@/components/shared/BuildMyDealModule";
 import { MakeLogo } from "@/lib/make-logos";
-import { getVehicleBySlug, getInventory } from "@/lib/data/inventory-source";
+import { VehicleShippingCta } from "@/components/inventory/VehicleShippingCta";
+import { dealerConfig } from "@/dealer.config";
+import { getVehicleBySlug, getInventory, getMakeSummaries, makeSlug } from "@/lib/data/inventory-source";
+import { MIN_VEHICLES_FOR_MAKE_PAGE, makePagePath } from "@/lib/inventory/make-pages";
+import { pageMetadata } from "@/lib/seo/metadata";
+import { hasPublishedPrice, vehicleName, vehiclePath } from "@/lib/seo/schema";
 import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
 import { BUSINESS } from "@/lib/constants";
 import type { Metadata } from "next";
@@ -38,29 +42,20 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const vehicle = await getVehicleBySlug(slug);
-  if (!vehicle) return { title: "Vehicle Not Found" };
-  const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ""}`.trim();
-  if (vehicle.isSold) {
-    return {
-      title: `${vehicleName} — Sold`,
-      robots: { index: false, follow: true },
-      description: `This ${vehicleName} has been sold. Browse similar vehicles at Speedway Motors in Paterson, NJ.`,
-    };
+  if (!vehicle) {
+    return { title: "Vehicle No Longer Available", robots: { index: false, follow: true } };
   }
-  return {
-    title: `${vehicleName} — ${formatPrice(vehicle.price)}`,
-    description: `Buy this ${vehicle.year} ${vehicle.make} ${vehicle.model} with ${formatMileage(vehicle.mileage)} for ${formatPrice(vehicle.price)} at Speedway Motors in Paterson, NJ. Financing available.`,
-    openGraph: {
-      title: `${vehicleName} — ${formatPrice(vehicle.price)}`,
-      description: `${vehicle.year} ${vehicle.make} ${vehicle.model} with ${formatMileage(vehicle.mileage)} at Speedway Motors.`,
-      images: vehicle.images[0]?.url
-        ? [{ url: vehicle.images[0].url, alt: vehicleName }]
-        : [{ url: "https://www.speedwaymotorsllc.com/og-image.jpg", alt: "Speedway Motors LLC" }],
-    },
-    alternates: {
-      canonical: `https://www.speedwaymotorsllc.com/inventory/${vehicle.slug}`,
-    },
-  };
+  const name = vehicleName(vehicle);
+  const priceText = hasPublishedPrice(vehicle) ? `priced at ${formatPrice(vehicle.price)}` : "call for price";
+  const shippingText = dealerConfig.features.nationwideShipping ? " Ask about nationwide shipping." : "";
+  return pageMetadata({
+    title: `${name} for Sale`,
+    description: `Used ${name} with ${formatMileage(vehicle.mileage)}, ${priceText}, at Speedway Motors in Paterson, NJ. Financing available.${shippingText}`,
+    path: vehiclePath(vehicle),
+    images: vehicle.images[0]?.url ? [{ url: vehicle.images[0].url, alt: name }] : undefined,
+    // Sold vehicles are normally filtered out (404) before reaching here.
+    noindex: vehicle.isSold,
+  });
 }
 
 export const dynamicParams = true;
@@ -80,35 +75,22 @@ function getCarGurusUrl(vin: string) {
   return `https://www.cargurus.com/Cars/link/${vin}`;
 }
 
-function getViewCount(vehicleId: string): number {
-  let hash = 0;
-  for (let i = 0; i < vehicleId.length; i++) {
-    hash = ((hash << 5) - hash) + vehicleId.charCodeAt(i);
-    hash |= 0;
-  }
-  return 5 + (Math.abs(hash) % 11);
-}
-
 export default async function VehicleDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const vehicle = await getVehicleBySlug(slug);
   if (!vehicle) notFound();
 
-  const { vehicles: related } = await getInventory({
-    bodyType: vehicle.bodyType,
-    perPage: 4,
-  });
+  const [{ vehicles: related }, makes] = await Promise.all([
+    getInventory({ bodyType: vehicle.bodyType, perPage: 4 }),
+    getMakeSummaries(),
+  ]);
   const relatedVehicles = related
     .filter((v) => v.id !== vehicle.id)
     .slice(0, 3);
-
-  const viewCount = getViewCount(vehicle.id);
-
-  // Calculate average price of related for comparison
-  const avgRelatedPrice = relatedVehicles.length > 0
-    ? Math.round(relatedVehicles.reduce((sum, v) => sum + v.price, 0) / relatedVehicles.length)
-    : 0;
-  const savings = avgRelatedPrice > vehicle.price ? avgRelatedPrice - vehicle.price : 0;
+  const makeSummary = makes.find((make) => make.slug === makeSlug(vehicle.make));
+  const makePage = makeSummary && makeSummary.count >= MIN_VEHICLES_FOR_MAKE_PAGE ? makePagePath(makeSummary.slug) : null;
+  const fullName = vehicleName(vehicle);
+  const showPrice = hasPublishedPrice(vehicle);
 
   const specs = [
     { iconName: "Gauge", label: "Mileage", value: formatMileage(vehicle.mileage) },
@@ -128,23 +110,39 @@ export default async function VehicleDetailPage({ params }: PageProps) {
       <VehicleJsonLd vehicle={vehicle} />
       <BreadcrumbJsonLd
         items={[
-          { name: "Home", url: `${BUSINESS.website}/` },
-          { name: "Inventory", url: `${BUSINESS.website}/inventory` },
-          { name: vehicleTitle, url: `${BUSINESS.website}/inventory/${vehicle.slug}` },
+          { name: "Home", url: "/" },
+          { name: "Inventory", url: "/inventory" },
+          ...(makePage ? [{ name: `Used ${vehicle.make}`, url: makePage }] : []),
+          { name: fullName, url: vehiclePath(vehicle) },
         ]}
       />
       <div className="bg-[#0a0a0a] min-h-screen pt-24">
         {/* Breadcrumb */}
         <div className="border-b border-white/6">
-          <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-3">
-            <Link
-              href="/inventory"
-              className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back to Inventory
-            </Link>
-          </div>
+          <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-3">
+            <ol className="flex flex-wrap items-center gap-1.5 text-sm text-zinc-500">
+              <li className="flex items-center gap-1.5">
+                <Link href="/inventory" className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  Inventory
+                </Link>
+              </li>
+              {makePage && (
+                <li className="flex items-center gap-1.5">
+                  <span aria-hidden="true">/</span>
+                  <Link href={makePage} className="hover:text-white transition-colors">
+                    Used {vehicle.make}
+                  </Link>
+                </li>
+              )}
+              <li className="flex items-center gap-1.5 min-w-0">
+                <span aria-hidden="true">/</span>
+                <span aria-current="page" className="text-zinc-400 truncate max-w-[16rem] sm:max-w-md">
+                  {vehicleTitle}
+                </span>
+              </li>
+            </ol>
+          </nav>
         </div>
 
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-6 md:py-10">
@@ -155,7 +153,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
               {vehicle.images.length > 1 ? (
                 <VehicleGallery
                   images={vehicle.images}
-                  vehicleTitle={vehicleTitle}
+                  vehicleTitle={fullName}
                   isFeatured={vehicle.isFeatured}
                 />
               ) : (
@@ -163,7 +161,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                   {(vehicle.thumbnailUrl || vehicle.images[0]?.url) ? (
                     <VehicleImage
                       src={vehicle.thumbnailUrl || vehicle.images[0].url}
-                      alt={`Used ${vehicleTitle} ${vehicle.trim || ""} for sale in Paterson NJ — Speedway Motors`.trim()}
+                      alt={`${fullName} — exterior photo`}
                       make={vehicle.make}
                       model={vehicle.model}
                       priority
@@ -214,22 +212,21 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                 <div className="rounded-2xl border border-white/8 bg-surface-2 p-6 md:p-7">
                   <h1 className="text-2xl font-bold text-white mb-1">
                     {vehicleTitle}
+                    {vehicle.trim && (
+                      <>
+                        {" "}
+                        <span className="block mt-1 text-base font-normal text-zinc-500">{vehicle.trim}</span>
+                      </>
+                    )}
                   </h1>
-                  {vehicle.trim && (
-                    <p className="text-zinc-500 mb-4">{vehicle.trim}</p>
-                  )}
-
-                  {/* Urgency indicator */}
-                  <div className="flex items-center gap-2 mb-5 px-3 py-2 bg-amber-500/10 border border-amber-500/15 rounded-lg">
-                    <Eye className="h-3.5 w-3.5 text-amber-400" />
-                    <span className="text-xs text-amber-400 font-medium">
-                      {viewCount} people viewed this week
-                    </span>
-                  </div>
+                  <p className="text-sm text-zinc-500 mb-5">
+                    {formatMileage(vehicle.mileage)}
+                    {vehicle.stockNumber ? ` · Stock #${vehicle.stockNumber}` : ""}
+                  </p>
 
                   <div className="mb-6">
                     <div className="text-3xl font-bold text-accent-light">
-                      {formatPrice(vehicle.price)}
+                      {showPrice ? formatPrice(vehicle.price) : "Call for Price"}
                     </div>
                     {vehicle.msrp && vehicle.msrp > vehicle.price && (
                       <div className="text-sm text-zinc-600 line-through mt-1">
@@ -238,9 +235,11 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     )}
                   </div>
 
-                  <div className="mb-5">
-                    <PriceDropAlert slug={vehicle.slug} title={vehicleTitle} price={vehicle.price} />
-                  </div>
+                  {showPrice && (
+                    <div className="mb-5">
+                      <PriceDropAlert slug={vehicle.slug} title={vehicleTitle} price={vehicle.price} />
+                    </div>
+                  )}
 
                   <div className="space-y-3 mb-5">
                     <Button
@@ -281,16 +280,20 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       Get Pre-Approved
                     </Button>
                   </div>
-                  <Link
-                    href={`/calculator?price=${vehicle.price}`}
-                    className="flex items-center justify-center gap-2 text-sm text-zinc-400 hover:text-accent-light transition-colors mb-2"
-                  >
-                    <span>💰</span> Try our Payment Calculator
-                  </Link>
+                  {showPrice && (
+                    <Link
+                      href={`/calculator?price=${vehicle.price}`}
+                      className="flex items-center justify-center gap-2 text-sm text-zinc-400 hover:text-accent-light transition-colors mb-2"
+                    >
+                      <span aria-hidden="true">💰</span> Try our Payment Calculator
+                    </Link>
+                  )}
                   <p className="text-xs text-zinc-600 text-center">
                     Call {BUSINESS.phone} for availability
                   </p>
                 </div>
+
+                {dealerConfig.features.nationwideShipping && <VehicleShippingCta slug={vehicle.slug} />}
 
                 <BuildMyDealModule
                   vehicle={{
@@ -313,7 +316,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                         icon: Star,
                         text: "Financing available for all credit",
                       },
-                      { icon: Star, text: "4.8\u2605 rated dealership" },
+                      { icon: Star, text: `${BUSINESS.stats.googleRating}\u2605 Google rating` },
                     ].map((item) => {
                       const Icon = item.icon;
                       return (
@@ -357,7 +360,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
 
           {/* Helpful Resources */}
           <div className="mt-12 border-t border-white/6 pt-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Helpful Resources</h3>
+            <h2 className="text-lg font-semibold text-white mb-4">Helpful Resources</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Link href="/calculator" className="flex items-center gap-3 p-4 rounded-xl border border-white/8 bg-surface-1 text-sm text-zinc-300 hover:bg-surface-2 hover:text-white transition-colors">
                 <span>💰</span> Payment Calculator
@@ -374,15 +377,17 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           {/* Related vehicles */}
           {relatedVehicles.length > 0 && (
             <div className="mt-16 md:mt-20">
-              <h2 className="text-2xl font-bold text-white mb-2">
-                You May Also Like
-              </h2>
-              {savings > 0 && (
-                <p className="text-sm text-emerald-400 mb-6">
-                  This {vehicle.make} {vehicle.model} saves you {formatPrice(savings)} vs. similar vehicles
-                </p>
-              )}
-              {savings === 0 && <div className="mb-6" />}
+              <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
+                <h2 className="text-2xl font-bold text-white">
+                  You May Also Like
+                </h2>
+                {makePage && (
+                  <Link href={makePage} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-light hover:text-white transition-colors">
+                    See all used {vehicle.make} vehicles
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {relatedVehicles.map((rv) => (
                   <Link
@@ -393,7 +398,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                     <div className="aspect-16/10 relative overflow-hidden">
                       <VehicleImage
                         src={rv.images[0]?.url}
-                        alt={`Used ${rv.year} ${rv.make} ${rv.model} for sale in Paterson NJ — Speedway Motors`}
+                        alt={vehicleName(rv)}
                         make={rv.make}
                         model={rv.model}
                         className="group-hover:scale-105 transition-transform duration-500"
@@ -406,7 +411,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
                       </h3>
                       <div className="flex items-center justify-between mt-2">
                         <span className="font-bold text-accent-light">
-                          {formatPrice(rv.price)}
+                          {hasPublishedPrice(rv) ? formatPrice(rv.price) : "Call for Price"}
                         </span>
                         <span className="text-xs text-zinc-500">
                           {formatMileage(rv.mileage)}

@@ -1,53 +1,43 @@
 import { NextResponse } from "next/server";
-import { createLead } from "@/lib/leads/store";
-import { notifyLead } from "@/lib/leads/notify";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { EMAIL_REGEX, LEAD_FIELD_LIMITS, cleanEmail, cleanText, guardLeadRequest, readJsonBody } from "@/lib/leads/guard";
+import { leadFailureResponse, leadSuccessResponse, submitLead } from "@/lib/leads/submit";
 
 export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as Record<string, unknown>;
-    const firstName = String(body.firstName || "").trim();
-    const lastName = String(body.lastName || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
-    const phone = String(body.phone || "").trim();
+  const body = await readJsonBody(request);
+  if (!body) return NextResponse.json({ message: "Invalid request" }, { status: 400 });
 
-    if (!firstName || !lastName) {
-      return NextResponse.json({ message: "Name is required" }, { status: 400 });
-    }
-    if (!email || !EMAIL_REGEX.test(email)) {
-      return NextResponse.json({ message: "Valid email is required" }, { status: 400 });
-    }
-    if (!phone) {
-      return NextResponse.json({ message: "Phone is required" }, { status: 400 });
-    }
+  const blocked = guardLeadRequest(request, body, "finance");
+  if (blocked) return blocked;
 
-    const name = `${firstName} ${lastName}`;
-    const payload = {
-      firstName,
-      lastName,
-      employer: body.employer || null,
-      jobTitle: body.jobTitle || null,
-      monthlyIncome: body.monthlyIncome || null,
-      residenceStatus: body.residenceStatus || null,
-      vehicleType: body.vehicleType || null,
-      downPayment: body.downPayment || null,
-      monthlyBudget: body.monthlyBudget || null,
-    };
+  const firstName = cleanText(body.firstName, LEAD_FIELD_LIMITS.name);
+  const lastName = cleanText(body.lastName, LEAD_FIELD_LIMITS.name);
+  const email = cleanEmail(body.email);
+  const phone = cleanText(body.phone, LEAD_FIELD_LIMITS.phone);
 
-    const lead = await createLead({
-      source: "finance",
-      name,
-      email,
-      phone,
-      payload,
-    });
-
-    await notifyLead({ source: "finance", name, email, phone, payload });
-
-    return NextResponse.json({ ok: true, leadId: lead.id });
-  } catch (err) {
-    console.error("Finance form error:", err);
-    return NextResponse.json({ message: "Unable to process your request right now." }, { status: 500 });
+  if (!firstName || !lastName) {
+    return NextResponse.json({ message: "Name is required" }, { status: 400 });
   }
+  if (!email || !EMAIL_REGEX.test(email)) {
+    return NextResponse.json({ message: "Valid email is required" }, { status: 400 });
+  }
+  if (!phone) {
+    return NextResponse.json({ message: "Phone is required" }, { status: 400 });
+  }
+
+  const optional = (key: string) => cleanText(body[key], LEAD_FIELD_LIMITS.short) || null;
+  const name = `${firstName} ${lastName}`;
+  const payload = {
+    firstName,
+    lastName,
+    employer: optional("employer"),
+    jobTitle: optional("jobTitle"),
+    monthlyIncome: optional("monthlyIncome"),
+    residenceStatus: optional("residenceStatus"),
+    vehicleType: optional("vehicleType"),
+    downPayment: optional("downPayment"),
+    monthlyBudget: optional("monthlyBudget"),
+  };
+
+  const result = await submitLead({ source: "finance", name, email, phone, payload });
+  return result.ok ? leadSuccessResponse(result) : leadFailureResponse();
 }

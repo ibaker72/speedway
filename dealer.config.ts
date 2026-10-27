@@ -11,12 +11,14 @@ export const dealerConfig = {
   established: 2005,
   tagline: "Quality Used Cars in Paterson, NJ",
   description:
-    "Speedway Motors LLC is a trusted used car dealership in Paterson, New Jersey, offering 180+ quality pre-owned vehicles, flexible financing for all credit levels, and competitive trade-in values. Serving Passaic County and surrounding communities since 2005.",
+    "Speedway Motors LLC is a used car dealership in Paterson, New Jersey, offering quality pre-owned cars, SUVs, trucks, and vans, flexible financing for all credit levels, and competitive trade-in values. Serving Passaic County and surrounding communities since 2005.",
 
-  // Stats
+  // Stats — marketing figures shown on the site. The in-stock count is read
+  // live from inventory (getLiveInventoryCount), never hardcoded.
+  // googleRating / totalReviews must be kept in sync with the Google Business
+  // Profile by hand and are never emitted as structured data.
   stats: {
     yearsInBusiness: new Date().getFullYear() - 2005,
-    vehiclesInStock: 180,
     googleRating: 4.8,
     totalReviews: 120,
     customersServed: "5,000+",
@@ -56,5 +58,10 @@ export const dealerConfig = {
     dealDesk: true,
     valueMycar: true,
     geoPages: true,
+    // Nationwide shipping inquiries: /nationwide-car-shipping, the homepage
+    // promo, and the vehicle-page CTA. Copy is inquiry-based (no prices,
+    // transit times, or coverage promises). Set to false to hide every
+    // shipping surface if the dealership is not currently arranging shipping.
+    nationwideShipping: true,
   },
 } as const;

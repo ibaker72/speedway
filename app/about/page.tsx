@@ -7,6 +7,10 @@ import {
   Car,
   ArrowRight,
   Award,
+  HandCoins,
+  Repeat,
+  Truck,
+  MessageCircle,
 } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
@@ -15,15 +19,20 @@ import { AnimateIn } from "@/components/shared/AnimateIn";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
+import { dealerConfig } from "@/dealer.config";
 import { InlineLeadCTA } from "@/components/shared/InlineLeadCTA";
+import { formatStockCount, getLiveInventoryCount } from "@/lib/data/inventory-source";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "About Speedway Motors | Used Car Dealership in Paterson, NJ",
-  description: `Learn about ${BUSINESS.name}, a trusted used car dealership in Paterson, NJ serving the community since 2005 with quality vehicles, transparent pricing, and flexible financing.`,
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/about",  },
-};
+// Re-render hourly so the in-stock count stays current.
+export const revalidate = 3600;
+
+export const metadata: Metadata = pageMetadata({
+  title: "About Us | Used Car Dealership in Paterson, NJ",
+  description: `Learn about ${BUSINESS.name}, a used car dealership in Paterson, NJ serving the community since ${BUSINESS.established} with quality vehicles, transparent pricing, and flexible financing.`,
+  path: "/about",
+});
 
 const values = [
   {
@@ -46,14 +55,62 @@ const values = [
   },
 ];
 
-const stats = [
-  { value: `${BUSINESS.stats.yearsInBusiness}+`, label: "Years in Business" },
-  { value: `${BUSINESS.stats.vehiclesInStock}+`, label: "Vehicles in Stock" },
-  { value: BUSINESS.stats.customersServed, label: "Happy Customers" },
-  { value: `${BUSINESS.stats.googleRating}★`, label: "Google Rating" },
+const whyChoose = [
+  {
+    icon: MessageCircle,
+    title: "Personalized Service",
+    description:
+      "Talk with our team about your budget, how you drive, and what matters to you. We help you compare options instead of pushing a single car.",
+    href: "/contact",
+    linkLabel: "Contact our team",
+  },
+  {
+    icon: Car,
+    title: "Vehicle Selection",
+    description:
+      "Sedans, SUVs, trucks, and vans across many makes and price points, with mileage and pricing listed online for every vehicle.",
+    href: "/inventory",
+    linkLabel: "Browse inventory",
+  },
+  {
+    icon: HandCoins,
+    title: "Financing Assistance",
+    description:
+      "Apply online and we will review lender options with you. Buyers with all credit histories, including first-time buyers, are welcome to apply.",
+    href: "/finance",
+    linkLabel: "Get pre-approved",
+  },
+  {
+    icon: Repeat,
+    title: "Trade-In Options",
+    description:
+      "Tell us about your current vehicle and apply its value toward your next one — or sell it to us outright with no purchase required.",
+    href: "/trade",
+    linkLabel: "Value your trade",
+  },
+  ...(dealerConfig.features.nationwideShipping
+    ? [
+        {
+          icon: Truck,
+          title: "Nationwide Shipping Inquiries",
+          description:
+            "Live outside North Jersey? Ask our team about vehicle shipping options and we will walk you through purchase, paperwork, and delivery coordination for your location.",
+          href: "/nationwide-car-shipping",
+          linkLabel: "Ask about shipping",
+        },
+      ]
+    : []),
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const liveCount = await getLiveInventoryCount();
+  const stats = [
+    { value: `${BUSINESS.stats.yearsInBusiness}+`, label: "Years in Business" },
+    ...(liveCount ? [{ value: formatStockCount(liveCount), label: "Vehicles in Stock" }] : []),
+    { value: BUSINESS.stats.customersServed, label: "Happy Customers" },
+    { value: `${BUSINESS.stats.googleRating}★`, label: "Google Rating" },
+  ];
+
   return (
     <>
       <BreadcrumbJsonLd items={[{ name: "Home", url: `${BUSINESS.website}/` }, { name: "About", url: `${BUSINESS.website}/about` }]} />
@@ -66,7 +123,7 @@ export default function AboutPage() {
       {/* Stats band */}
       <section className="bg-[#0a0a0a] py-12 md:py-14 border-y border-white/4">
           <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className={`grid grid-cols-2 gap-8 ${stats.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
             {stats.map((stat, i) => (
               <AnimateIn key={stat.label} delay={i * 100} variant="up">
                 <div className="text-center">
@@ -113,7 +170,39 @@ export default function AboutPage() {
         </div>
       </SectionWrapper>
 
-      <SectionWrapper background="dark">
+      {/* Why Choose */}
+      <SectionWrapper background="dark" id="why-choose">
+        <SectionHeading
+          eyebrow="Why Speedway"
+          title="Why Choose Speedway Motors"
+          subtitle="What you can expect when you shop with us."
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+          {whyChoose.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <AnimateIn key={item.title} delay={i * 80} variant="up">
+                <div className="card-glass p-7 h-full flex flex-col">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/15 flex items-center justify-center mb-5">
+                    <Icon className="h-5 w-5 text-accent-light" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-semibold text-white text-lg mb-2">{item.title}</h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed flex-1">{item.description}</p>
+                  <Link
+                    href={item.href}
+                    className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-light hover:text-white transition-colors"
+                  >
+                    {item.linkLabel}
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </div>
+              </AnimateIn>
+            );
+          })}
+        </div>
+      </SectionWrapper>
+
+      <SectionWrapper background="charcoal">
         <div className="max-w-3xl mx-auto">
           <InlineLeadCTA variant="buying-guide" />
         </div>
@@ -161,7 +250,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             {[
               { icon: MapPin, text: "3 Convenient Locations" },
-              { icon: Car, text: `${BUSINESS.stats.vehiclesInStock}+ Vehicles on Lot` },
+              { icon: Car, text: liveCount ? `${formatStockCount(liveCount)} Vehicles on Lot` : "Inventory Updated Daily" },
               { icon: Star, text: `${BUSINESS.stats.googleRating}★ Google Rating` },
             ].map((item, i) => {
               const Icon = item.icon;

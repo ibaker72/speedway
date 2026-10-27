@@ -6,16 +6,15 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS, HOURS } from "@/lib/constants";
 import { locations } from "@/lib/data/locations";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Contact Speedway Motors — Paterson, NJ",
+export const metadata: Metadata = pageMetadata({
+  title: "Contact Us | Paterson, NJ Used Car Dealer",
   description:
-    "Contact Speedway Motors at (862) 264-2777 or visit us at 302-304 22nd Ave, Paterson, NJ 07513. Open Mon-Sat 9:30 AM - 7:00 PM.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/contact",
-  },
-};
+    "Call Speedway Motors at (862) 264-2777 or visit 302-304 22nd Ave, Paterson, NJ 07513. Open Monday–Saturday, 9:30 AM–7:00 PM.",
+  path: "/contact",
+});
 
 const typeLabels: Record<string, string> = {
   showroom: "Main Showroom",

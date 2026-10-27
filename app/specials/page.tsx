@@ -5,19 +5,23 @@ import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { Button } from "@/components/ui/button";
 import { getInventory } from "@/lib/data/inventory-source";
-import { formatPrice, formatMileage } from "@/lib/data/vehicles-full";
+import { formatMileage, formatVehiclePrice } from "@/lib/data/vehicles-full";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Specials & Deals",
-  description:
-    "Browse featured deals, price drops, and seasonal promotions at Speedway Motors in Paterson, NJ.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/specials",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { vehicles } = await getInventory({ perPage: 999 });
+  return pageMetadata({
+    title: "Used Car Specials & Featured Vehicles",
+    description:
+      "Featured vehicles and current specials at Speedway Motors in Paterson, NJ.",
+    path: "/specials",
+    // Without featured vehicles the page is an empty shell; keep it out of the index.
+    noindex: !vehicles.some((vehicle) => vehicle.isFeatured),
+  });
+}
 
 export default async function SpecialsPage() {
   const { vehicles: allVehicles } = await getInventory({ perPage: 999 });
@@ -65,7 +69,7 @@ export default async function SpecialsPage() {
                   </span>
                   <div className="absolute bottom-3 right-3">
                     <span className="text-lg font-bold text-white drop-shadow-lg">
-                      {formatPrice(vehicle.price)}
+                      {formatVehiclePrice(vehicle.price)}
                     </span>
                   </div>
                 </div>

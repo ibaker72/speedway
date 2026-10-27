@@ -7,16 +7,15 @@ import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { TradeInForm } from "@/components/forms/TradeInForm";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Trade In Your Car in Paterson, NJ | Speedway Motors",
+export const metadata: Metadata = pageMetadata({
+  title: "Trade In Your Car in Paterson, NJ",
   description:
-    "Get a competitive trade-in value for your vehicle at Speedway Motors in Paterson, NJ. Instant estimates and apply the value toward any car in our inventory.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/trade",
-  },
-};
+    "Get a trade-in estimate for your vehicle at Speedway Motors in Paterson, NJ and apply its value toward any vehicle in our inventory.",
+  path: "/trade",
+});
 
 const steps = [
   {

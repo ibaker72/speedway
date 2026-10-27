@@ -7,16 +7,15 @@ import { PageHero } from "@/components/shared/PageHero";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { AnimateIn } from "@/components/shared/AnimateIn";
 import { SellCarForm } from "@/components/forms/SellCarForm";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Sell Your Car in Paterson, NJ | Cash Offers | Speedway Motors",
+export const metadata: Metadata = pageMetadata({
+  title: "Sell Your Car in Paterson, NJ",
   description:
-    "Sell your car in Paterson, NJ directly to Speedway Motors — no trade required. Get a competitive cash offer and get paid fast. Quick, transparent process.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/sell-your-car",
-  },
-};
+    "Sell your car to Speedway Motors in Paterson, NJ — no purchase required. Share your vehicle details and our team will follow up with an offer.",
+  path: "/sell-your-car",
+});
 
 const steps = [
   {

@@ -6,16 +6,19 @@ import { AnimateIn } from "@/components/shared/AnimateIn";
 import { BreadcrumbJsonLd } from "@/components/seo/BreadcrumbJsonLd";
 import { BUSINESS } from "@/lib/constants";
 import { blogPosts } from "@/lib/data/blog-posts";
+import { dealerConfig } from "@/dealer.config";
+import { pageMetadata } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Car Buying Tips, Financing Advice & More | Speedway Motors Blog",
+// The blog has no published posts yet; keep the empty index out of search
+// results until it does (it is also excluded from the sitemap).
+export const metadata: Metadata = pageMetadata({
+  title: "Car Buying Tips & Financing Advice",
   description:
-    "Expert car buying tips, financing guides, and vehicle comparisons from Speedway Motors in Paterson, NJ. Make smarter decisions on your next vehicle purchase.",
-  alternates: {
-    canonical: "https://www.speedwaymotorsllc.com/blog",
-  },
-};
+    "Car buying tips, financing guides, and vehicle comparisons from Speedway Motors in Paterson, NJ.",
+  path: "/blog",
+  noindex: !dealerConfig.features.blog || blogPosts.length === 0,
+});
 
 const categoryLabels: Record<string, string> = {
   "buying-tips": "Buying Tips",
