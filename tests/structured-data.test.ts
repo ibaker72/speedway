@@ -69,12 +69,30 @@ describe("vehicle structured data", () => {
   });
 
   it("omits attributes the listing does not have", () => {
-    const data = buildVehicleJsonLd(vehicle({ trim: undefined, engine: "", images: [], description: undefined }));
+    const data = buildVehicleJsonLd(
+      vehicle({ trim: undefined, engine: "", images: [], description: undefined, drivetrain: undefined, transmission: undefined, mileage: 0 })
+    );
     expect(data.name).toBe("2021 Honda Accord");
     expect(data).not.toHaveProperty("vehicleEngine");
     expect(data).not.toHaveProperty("image");
-    expect(data).not.toHaveProperty("description");
     expect(data).not.toHaveProperty("vehicleConfiguration");
+    expect(data).not.toHaveProperty("driveWheelConfiguration");
+    expect(data).not.toHaveProperty("vehicleTransmission");
+    expect(data).not.toHaveProperty("mileageFromOdometer");
+  });
+
+  it("uses Schema.org enumerations and readable labels for specs", () => {
+    const data = buildVehicleJsonLd(vehicle({ drivetrain: "4WD", bodyType: "suv" }));
+    expect(data.driveWheelConfiguration).toBe("https://schema.org/FourWheelDriveConfiguration");
+    expect(data.bodyType).toBe("SUV");
+    expect(data.vehicleTransmission).toBe("Automatic (CVT)");
+    expect(data.sku).toBe("SM100");
+  });
+
+  it("describes vehicles without a feed description using the same overview the page shows", () => {
+    const data = buildVehicleJsonLd(vehicle({ description: undefined }));
+    expect(String(data.description)).toContain("2021 Honda Accord Sport");
+    expect(String(data.description)).not.toMatch(/no description/i);
   });
 });
 
