@@ -245,6 +245,9 @@ export function transmissionFromOptions(features: readonly string[] | null | und
     let match: RegExpExecArray | null;
     if ((match = /^(\d{1,2})-speed a\/t$/i.exec(option))) found.push({ type: "Automatic", speeds: Number(match[1]) });
     else if ((match = /^(\d{1,2})-speed m\/t$/i.exec(option))) found.push({ type: "Manual", speeds: Number(match[1]) });
+    else if ((match = /^(\d{1,2})-speed (manual|automatic) transmission$/i.exec(option))) {
+      found.push({ type: match[2].toLowerCase() === "manual" ? "Manual" : "Automatic", speeds: Number(match[1]) });
+    }
     else if (/^cvt transmission$/i.test(option)) found.push({ type: "CVT", speeds: null });
     else if ((match = /^transmission:\s*(.+)$/i.exec(option))) {
       // Only the part before "-inc:" describes the gearbox itself.
@@ -427,8 +430,26 @@ function titleCaseIfShouting(s: string): string {
 }
 
 /** "Black Interior" → "Black"; placeholders ("N/A", "Other") → null. */
-export function cleanColor(raw: string | null | undefined): string | null {
+/** Autofunds cuts InteriorColor at 20 characters ("Dark Walnut/Very Dar"). */
+export const FEED_INTERIOR_COLOR_LIMIT = 20;
+
+/**
+ * "Black Interior" → "Black"; placeholders ("N/A", "Other") → null.
+ *
+ * With `truncatedAt`, a value exactly that long is treated as cut off by the
+ * feed: when it has a "/" or " w/" separator, the partial last segment is
+ * dropped ("Jet Black w/Jet Blac" → "Jet Black"); repeated segments are
+ * collapsed ("Ebony/Ebony/Ebony/Eb" → "Ebony"). Nothing is added or guessed.
+ */
+export function cleanColor(raw: string | null | undefined, options: { truncatedAt?: number } = {}): string | null {
   let s = cleanSpecText(raw, 80);
+  if (options.truncatedAt && s.length === options.truncatedAt && /\/|\sw\//i.test(s)) {
+    s = s.replace(/(\s+w\/|\/)(?!.*(\s+w\/|\/)).*$/i, "").trim();
+  }
+  if (s.includes("/")) {
+    const parts = s.split("/").map((p) => p.trim()).filter(Boolean);
+    s = [...new Set(parts.map((p) => p.toLowerCase()))].map((key) => parts.find((p) => p.toLowerCase() === key)).join("/");
+  }
   s = s.replace(/\s+(interior|exterior|int\.?|ext\.?)$/i, "").trim();
   if (!s || /^(n\/?a|none|unknown|other|tbd|not specified|see dealer|call|-+|\.|0)$/i.test(s)) return null;
   return titleCaseIfShouting(s);
@@ -475,6 +496,16 @@ export function normalizeStockNumber(raw: string | null | undefined): string | n
 
 function boundedInt(raw: number | null | undefined, min: number, max: number): number | null {
   return typeof raw === "number" && Number.isInteger(raw) && raw >= min && raw <= max ? raw : null;
+}
+
+/** Seating stated by an Options entry such as "8-passenger seating". */
+export function seatingFromOptions(features: readonly string[] | null | undefined): number | null {
+  const found = new Set<number>();
+  for (const option of unconditionalOptions(features, 40)) {
+    const match = /^(\d{1,2})[\s-]passenger( seating)?$/i.exec(option);
+    if (match) found.add(Number(match[1]));
+  }
+  return found.size === 1 ? boundedInt([...found][0], 1, 15) : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -623,11 +654,11 @@ export function normalizeVehicleSpecs(input: SpecInput): VehicleSpecs {
     engine,
     bodyType,
     exteriorColor: cleanColor(input.exteriorColor),
-    interiorColor: cleanColor(input.interiorColor),
+    interiorColor: cleanColor(input.interiorColor, { truncatedAt: FEED_INTERIOR_COLOR_LIMIT }),
     mileage: normalizeMileage(input.mileage),
     vin: normalizeVin(input.vin, input.year),
     stockNumber: normalizeStockNumber(input.stockNumber),
-    seating: boundedInt(input.seating, 1, 15),
+    seating: boundedInt(input.seating, 1, 15) ?? seatingFromOptions(features),
     sources,
     conflicts,
   };

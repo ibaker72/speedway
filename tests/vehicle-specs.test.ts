@@ -120,6 +120,19 @@ describe("transmission normalization", () => {
     expect(transmissionFromOptions(["6-Speed M/T", "8-Speed A/T"])).toBeNull();
   });
 
+  it("2012 Wrangler: the feed's Automatic contradicts the decoded '6-speed manual transmission' → unavailable", () => {
+    const specs = normalizeVehicleSpecs({ ...base, transmission: "Automatic", features: ["6-speed manual transmission"] });
+    expect(specs.transmission).toBeNull();
+    expect(specs.conflicts[0]).toEqual({
+      field: "transmission",
+      values: [{ source: "feed", value: "Automatic" }, { source: "options", value: "6-Speed Manual" }],
+    });
+  });
+
+  it("reads seating from an '8-passenger seating' option", () => {
+    expect(normalizeVehicleSpecs({ ...base, features: ["8-passenger seating"] }).seating).toBe(8);
+  });
+
   it("2020 Civic Si Coupe: feed says Automatic but trim and options say manual → unavailable", () => {
     const specs = normalizeVehicleSpecs({
       year: 2020,
@@ -239,6 +252,18 @@ describe("engine, body, colors, mileage, identifiers", () => {
     expect(cleanColor("N/A")).toBeNull();
     expect(cleanColor("Other")).toBeNull();
     expect(cleanColor("")).toBeNull();
+  });
+
+  it("drops the cut-off tail of interior colors truncated at the feed's 20-character limit", () => {
+    const opts = { truncatedAt: 20 };
+    expect(cleanColor("Dark Walnut/Very Dar", opts)).toBe("Dark Walnut");
+    expect(cleanColor("Jet Black w/Jet Blac", opts)).toBe("Jet Black");
+    expect(cleanColor("Black w/Red Stitchin", opts)).toBe("Black");
+    expect(cleanColor("Ebony/Ebony/Ebony/Eb", opts)).toBe("Ebony");
+    expect(cleanColor("Gideon/Very Dark Atm", opts)).toBe("Gideon");
+    // Complete values are untouched: shorter, or 20 chars without a separator.
+    expect(cleanColor("Toffee/Cognac/Alloy", opts)).toBe("Toffee/Cognac/Alloy");
+    expect(cleanColor("Agate Black Metallic", opts)).toBe("Agate Black Metallic");
   });
 
   it("treats 0 or implausible mileage as unavailable", () => {

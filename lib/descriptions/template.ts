@@ -187,13 +187,8 @@ function practicalSentence(f: DescriptionFacts): string | null {
   if (f.bodyType === "van" && /\bcargo\b/i.test(f.model)) {
     return "The cargo-van layout suits trades, deliveries, and service work.";
   }
-  if (f.seating && f.seating >= 7 && !f.highlights.includes("third-row seating")) {
-    return `It seats up to ${f.seating}.`;
-  }
-  if (f.seating && f.seating >= 2 && f.seating <= 6 && f.bodyType !== "truck") {
-    return `It seats ${f.seating}.`;
-  }
-  return null;
+  if (!f.seating || f.bodyType === "truck") return null;
+  return f.seating >= 7 ? `It seats up to ${f.seating}.` : f.seating >= 2 ? `It seats ${f.seating}.` : null;
 }
 
 function closingSentence(f: DescriptionFacts, seed: number): string {
