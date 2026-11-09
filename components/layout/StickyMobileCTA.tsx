@@ -5,6 +5,7 @@ import { Phone, Search, MessageCircle } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
 import { useEffect, useState } from "react";
 
+// The bar is h-[3.25rem] plus the safe-area inset; app/layout.tsx reserves the same space.
 export function StickyMobileCTA() {
   const [visible, setVisible] = useState(false);
 
@@ -18,7 +19,7 @@ export function StickyMobileCTA() {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/6 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] transition-transform duration-300 ease-out ${
+      className={`fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/6 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ease-out ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >

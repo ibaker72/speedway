@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyMobileCTA } from "@/components/layout/StickyMobileCTA";
@@ -36,6 +36,14 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+// viewport-fit=cover exposes env(safe-area-inset-*) so the mobile action bar
+// clears the iPhone home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -60,6 +68,8 @@ export default function RootLayout({
         <Header />
         <main id="main-content" className="flex-1">{children}</main>
         <Footer />
+        {/* Reserves room for the fixed mobile action bar so it never covers the end of a page. */}
+        <div aria-hidden="true" className="h-[calc(3.25rem+env(safe-area-inset-bottom))] lg:hidden" data-testid="sticky-cta-spacer" />
         <ChatWidget />
         <StickyMobileCTA />
         <CookieConsent />

@@ -132,16 +132,16 @@ export function BuildMyDealModule({ vehicle }: BuildMyDealModuleProps) {
               <p className="text-sm text-accent-light font-semibold">{money.format(vehicle.price)}</p>
             </div>
           </div>
-          <label className="block text-sm text-zinc-300">Down Payment</label>
-          <input type="range" min={0} max={Math.max(vehicle.price, 1000)} step={250} value={form.downPayment}
+          <label htmlFor={`deal-down-${vehicle.id}`} className="block text-sm text-zinc-300">Down Payment</label>
+          <input type="range" min={0} max={Math.max(vehicle.price, 1000)} step={250} value={form.downPayment} aria-label="Down payment slider"
             onChange={(e) => setForm((prev) => ({ ...prev, downPayment: Number(e.target.value) }))} className="w-full" />
-          <input className="input-dark" value={Math.round(form.downPayment)} onChange={(e) => setForm((prev) => ({ ...prev, downPayment: Number(e.target.value) || 0 }))} />
+          <input id={`deal-down-${vehicle.id}`} inputMode="numeric" className="input-dark" value={Math.round(form.downPayment)} onChange={(e) => setForm((prev) => ({ ...prev, downPayment: Number(e.target.value) || 0 }))} />
 
           <div>
             <p className="text-sm text-zinc-300 mb-2">Term Length</p>
             <div className="grid grid-cols-5 gap-2">
               {DEAL_DESK_CONFIG.termOptions.map((term) => (
-                <button key={term} type="button" onClick={() => setForm((prev) => ({ ...prev, termMonths: term }))} className={`rounded-lg border px-2 py-1.5 text-xs ${form.termMonths === term ? "border-accent text-white bg-accent/20" : "border-white/10 text-zinc-400"}`}>{term}</button>
+                <button key={term} type="button" aria-pressed={form.termMonths === term} aria-label={`${term} months`} onClick={() => setForm((prev) => ({ ...prev, termMonths: term }))} className={`rounded-lg border px-2 py-1.5 text-xs ${form.termMonths === term ? "border-accent text-white bg-accent/20" : "border-white/10 text-zinc-400"}`}>{term}</button>
               ))}
             </div>
           </div>
@@ -149,13 +149,13 @@ export function BuildMyDealModule({ vehicle }: BuildMyDealModuleProps) {
             <p className="text-sm text-zinc-300 mb-2">Estimated Credit Tier</p>
             <div className="grid grid-cols-2 gap-2">
               {(["excellent", "good", "fair", "rebuilding"] as CreditTier[]).map((tier) => (
-                <button key={tier} type="button" onClick={() => setForm((prev) => ({ ...prev, creditTier: tier }))} className={`rounded-lg border px-3 py-2 text-xs capitalize ${form.creditTier === tier ? "border-accent bg-accent/20 text-white" : "border-white/10 text-zinc-400"}`}>{tier}</button>
+                <button key={tier} type="button" aria-pressed={form.creditTier === tier} onClick={() => setForm((prev) => ({ ...prev, creditTier: tier }))} className={`rounded-lg border px-3 py-2 text-xs capitalize ${form.creditTier === tier ? "border-accent bg-accent/20 text-white" : "border-white/10 text-zinc-400"}`}>{tier}</button>
               ))}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <input className="input-dark" placeholder="Trade-in value" value={form.tradeInValue || ""} onChange={(e) => setForm((prev) => ({ ...prev, tradeInValue: Number(e.target.value) || 0 }))} />
-            <input className="input-dark" placeholder="Trade payoff" value={form.tradePayoff || ""} onChange={(e) => setForm((prev) => ({ ...prev, tradePayoff: Number(e.target.value) || 0 }))} />
+            <input className="input-dark" inputMode="numeric" aria-label="Trade-in value" placeholder="Trade-in value" value={form.tradeInValue || ""} onChange={(e) => setForm((prev) => ({ ...prev, tradeInValue: Number(e.target.value) || 0 }))} />
+            <input className="input-dark" inputMode="numeric" aria-label="Trade payoff" placeholder="Trade payoff" value={form.tradePayoff || ""} onChange={(e) => setForm((prev) => ({ ...prev, tradePayoff: Number(e.target.value) || 0 }))} />
           </div>
           <p className="text-xs text-zinc-500">Tax {Math.round(DEAL_DESK_CONFIG.taxAssumptions.taxRate * 10000) / 100}% • Doc fee {money.format(DEAL_DESK_CONFIG.feeAssumptions.docFee)} • Title/Reg {money.format(DEAL_DESK_CONFIG.feeAssumptions.titleAndRegistrationFee)}</p>
         </div>
