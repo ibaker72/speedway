@@ -62,14 +62,18 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
             <Gauge className="h-3 w-3" />
             {formatMileage(vehicle.mileage)}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
-            <Settings2 className="h-3 w-3" />
-            {vehicle.transmission}
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
-            <Fuel className="h-3 w-3" />
-            {vehicle.drivetrain}
-          </span>
+          {vehicle.transmission && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
+              <Settings2 className="h-3 w-3" />
+              {vehicle.transmission}
+            </span>
+          )}
+          {vehicle.drivetrain && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
+              <Fuel className="h-3 w-3" />
+              {vehicle.drivetrain}
+            </span>
+          )}
         </div>
 
         <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent-light group-hover:text-white transition-colors">

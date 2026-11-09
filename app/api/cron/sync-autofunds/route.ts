@@ -117,9 +117,10 @@ export async function GET(request: Request) {
   const summary = await importVehicles(vehicles);
 
   console.log(
-    `[sync-autofunds] done — inserted=${summary.inserted} updated=${summary.updated} ` +
+    `[sync-autofunds] done — inserted=${summary.inserted} updated=${summary.updated} unchanged=${summary.unchanged} ` +
       `(upserted=${summary.upserted}) skipped=${summary.skipped} inactive=${summary.markedInactive} ` +
-      `errors=${summary.errors.length}`
+      `descriptionsGenerated=${summary.descriptionsGenerated} manualPreserved=${summary.manualDescriptionsPreserved} ` +
+      `specConflicts=${summary.vehiclesWithSpecConflicts} schema=${summary.schemaMode} errors=${summary.errors.length}`
   );
 
   return NextResponse.json({
@@ -131,8 +132,14 @@ export async function GET(request: Request) {
       inserted: summary.inserted,
       updated: summary.updated,
       upserted: summary.upserted,
+      unchanged: summary.unchanged,
       skipped: summary.skipped,
       markedInactive: summary.markedInactive,
+      descriptionsGenerated: summary.descriptionsGenerated,
+      manualDescriptionsPreserved: summary.manualDescriptionsPreserved,
+      vehiclesWithSpecConflicts: summary.vehiclesWithSpecConflicts,
+      schemaMode: summary.schemaMode,
+      ...(summary.inactivationSkipped ? { inactivationSkipped: summary.inactivationSkipped } : {}),
     },
     diagnostics: {
       csvRowCount: diagnostics.csvRowCount,

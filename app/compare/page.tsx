@@ -132,7 +132,7 @@ export default async function ComparePage({ searchParams }: PageProps) {
                                 : "text-white font-medium"
                             }`}
                           >
-                            {row.get(v)}
+                            {row.get(v) || "—"}
                           </td>
                         ))}
                       </tr>

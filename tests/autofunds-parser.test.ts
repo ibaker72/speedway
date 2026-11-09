@@ -77,3 +77,41 @@ describe("parseAutofundsCsv photo handling", () => {
     expect(v.images).toEqual([]);
   });
 });
+
+describe("parseAutofundsCsv spec cells", () => {
+  const SPEC_HEADER = "VIN,Year,Make,Model,Trim,DriveTrain,FuelType,Body,Transmission,Comments,Options";
+  const row = (cells: string[]) => [SPEC_HEADER, cells.map((c) => `"${c}"`).join(",")].join("\n");
+
+  it("leaves a blank DriveTrain undefined instead of defaulting to FWD", () => {
+    const [v] = parseAutofundsCsv(row(["1C4HJWDG3CL174156", "2012", "Jeep", "Wrangler Unlimited", "4WD 4dr Sport", "", "Gasoline Fuel", "Sport Utility", "Automatic", "", "Four Wheel Drive"]));
+    expect(v.drivetrain).toBeUndefined();
+    expect(v.feed?.Trim).toBe("4WD 4dr Sport");
+  });
+
+  it("normalizes verbose drivetrain spellings that used to fall through to FWD", () => {
+    for (const [raw, expected] of [
+      ["4x4/4-wheel drive", "4WD"],
+      ["Four-Wheel Drive", "4WD"],
+      ["All-Wheel Drive", "AWD"],
+      ["Rear Wheel Drive", "RWD"],
+      ["2WD", undefined],
+    ] as const) {
+      const [v] = parseAutofundsCsv(row(["VIN00000000000001", "2020", "Make", "Model", "", raw, "", "", "", "", ""]));
+      expect(v.drivetrain).toBe(expected);
+    }
+  });
+
+  it("parses hybrids as hybrid, not electric, and keeps unknown body text undefined", () => {
+    const [v] = parseAutofundsCsv(row(["VIN00000000000001", "2020", "Honda", "CR-V Hybrid", "EX-L", "AWD", "Gas/Electric Hybrid", "Tandem axle", "Automatic", "", ""]));
+    expect(v.fuelType).toBe("Hybrid");
+    expect(v.bodyType).toBeUndefined();
+  });
+
+  it("imports the Comments column as the description, keeping the raw cell", () => {
+    const comments = "Line one, with a comma.\nLine two.";
+    const [v] = parseAutofundsCsv(row(["VIN00000000000001", "2020", "Make", "Model", "", "", "", "", "", comments, ""]));
+    expect(v.description).toBe(comments);
+    expect(v.feed?.Comments).toBe(comments);
+    expect(v.feed).not.toHaveProperty("Options");
+  });
+});

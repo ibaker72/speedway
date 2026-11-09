@@ -1,15 +1,38 @@
 import { revalidatePath } from "next/cache";
+import { buildDescriptionFacts } from "@/lib/descriptions/facts";
+import { dealerDescriptionContext } from "@/lib/descriptions/dealer";
+import { contentHash } from "@/lib/descriptions/hash";
+import { planDescription, type StoredDescriptionState } from "@/lib/descriptions/plan";
 import type { AutofundsVehicle } from "@/lib/feed/autofunds-parser";
+import { specInputFromFeed } from "@/lib/inventory/spec-input";
+import { cleanSpecText, normalizeVehicleSpecs, type VehicleSpecs } from "@/lib/inventory/specs";
+import {
+  RestError,
+  chunk,
+  fetchAllRows,
+  inList,
+  inventoryRestConfig,
+  restHeaders,
+  type RestConfig,
+} from "@/lib/server/inventory-rest";
 
 const SOURCE = "autofunds";
 
-interface ImportSummary {
+export interface ImportSummary {
   totalRows: number;
   upserted: number;
   inserted: number;
   updated: number;
+  /** Rows already identical to the feed — not rewritten (only last_seen_at is touched). */
+  unchanged: number;
   skipped: number;
   markedInactive: number;
+  descriptionsGenerated: number;
+  manualDescriptionsPreserved: number;
+  vehiclesWithSpecConflicts: number;
+  /** "legacy" when the 20261109 migration hasn't been applied yet. */
+  schemaMode: "full" | "legacy";
+  inactivationSkipped?: string;
   errors: string[];
 }
 
@@ -63,128 +86,149 @@ export function resolveSlug(
   return slug;
 }
 
-function toRow(v: AutofundsVehicle, slug: string): Record<string, unknown> {
-  const now = new Date().toISOString();
+interface ExistingRow extends Partial<StoredDescriptionState> {
+  id: string;
+  vin: string | null;
+  slug: string | null;
+  source?: string | null;
+  is_sold?: boolean | null;
+  sync_hash?: string | null;
+  description_generated_at?: string | null;
+}
+
+const LEGACY_SELECT = "id,vin,slug,source,is_sold";
+const FULL_SELECT = [
+  LEGACY_SELECT,
+  "sync_hash",
+  "description",
+  "description_source",
+  "description_hash",
+  "description_input_hash",
+  "description_generator",
+  "generated_description",
+  "description_generated_at",
+  "legacy_feed_description:raw_data->>description",
+].join(",");
+
+/**
+ * Loads every inventory row (sold rows included — their slugs are taken).
+ * Falls back to the pre-migration column set when the new columns don't
+ * exist yet, so deploying the code before the migration can't break the
+ * nightly sync.
+ */
+async function loadExisting(config: RestConfig): Promise<{ rows: ExistingRow[]; mode: "full" | "legacy" }> {
+  try {
+    const rows = await fetchAllRows<ExistingRow>(config, "inventory", new URLSearchParams({ select: FULL_SELECT }));
+    return { rows, mode: "full" };
+  } catch (err) {
+    if (!(err instanceof RestError) || err.status !== 400) throw err;
+    console.warn(
+      "[importVehicles] description/spec columns not found — run db/migrations/20261109_inventory_descriptions_and_specs.sql. Using legacy write mode."
+    );
+    const rows = await fetchAllRows<ExistingRow>(config, "inventory", new URLSearchParams({ select: LEGACY_SELECT }));
+    return { rows, mode: "legacy" };
+  }
+}
+
+interface PlannedRow {
+  vin: string;
+  isNew: boolean;
+  changed: boolean;
+  /** Columns written on insert and update. */
+  content: Record<string, unknown>;
+}
+
+/** Columns derived from the feed (no timestamps), shared by both schema modes. */
+function baseColumns(v: AutofundsVehicle, slug: string, specs: VehicleSpecs): Record<string, unknown> {
   return {
     slug,
     source: SOURCE,
     status: "active",
-    last_seen_at: now,
+    is_sold: false,
     stock_number: v.stockNumber,
     vin: v.vin,
     year: v.year,
-    make: v.make,
-    model: v.model,
-    trim: v.trim ?? null,
-    body_type: v.bodyType ?? "sedan",
+    make: cleanSpecText(v.make),
+    model: cleanSpecText(v.model),
+    trim: cleanSpecText(v.trim) || null,
+    // Unknown specs are stored as NULL — never a guessed default.
+    body_type: specs.bodyType,
     condition: v.condition,
     price: v.price,
     msrp: null,
     internet_price: v.internetPrice ?? null,
     mileage: v.mileage,
-    exterior_color: v.exteriorColor ?? "",
-    interior_color: v.interiorColor ?? "",
-    transmission: v.transmission ?? "Automatic",
-    drivetrain: v.drivetrain ?? "FWD",
-    engine: v.engine ?? "",
-    fuel_type: v.fuelType ?? "Gasoline",
+    exterior_color: specs.exteriorColor,
+    interior_color: specs.interiorColor,
+    transmission: specs.transmission?.type ?? null,
+    drivetrain: specs.drivetrain,
+    engine: specs.engine?.label ?? null,
+    fuel_type: specs.fuel?.type ?? null,
     images: v.images,
     thumbnail_url: v.images[0]?.url ?? null,
-    description: v.description ?? null,
     features: v.features,
-    is_commercial: false,
-    is_featured: false,
-    is_new_arrival: false,
-    is_sold: false,
-    date_added: now,
-    date_modified: now,
     estimated_payment: v.estimatedPayment ?? null,
-    raw_data: v,
   };
 }
 
-/**
- * Fetches (vin, slug) for every inventory row so slugs can be kept stable
- * for known VINs and deduplicated against the whole table (sold rows
- * included) for new VINs.
- */
-async function fetchExistingVinSlugs(
-  url: string,
-  key: string
-): Promise<{ vinToSlug: Map<string, string>; allSlugs: Set<string> } | null> {
-  const vinToSlug = new Map<string, string>();
-  const allSlugs = new Set<string>();
-  const PAGE = 1000;
-  for (let offset = 0; ; offset += PAGE) {
-    const res = await fetch(
-      `${url}/rest/v1/inventory?select=vin,slug&limit=${PAGE}&offset=${offset}`,
-      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
-    );
-    if (!res.ok) {
-      console.error(
-        `[importVehicles] existing vin/slug lookup failed: ${res.status} ${await res.text()}`
-      );
-      return null;
-    }
-    const rows = (await res.json()) as { vin: string | null; slug: string | null }[];
-    for (const r of rows) {
-      if (r.slug) allSlugs.add(r.slug);
-      if (r.vin && r.slug) vinToSlug.set(r.vin, r.slug);
-    }
-    if (rows.length < PAGE) break;
+function safeRevalidate(): void {
+  try {
+    revalidatePath("/inventory", "page");
+    revalidatePath("/inventory/[slug]", "page");
+    revalidatePath("/", "page");
+    revalidatePath("/locations/[city]", "page");
+  } catch (err) {
+    // Scripts run outside Next.js have no revalidation context.
+    console.warn(`[importVehicles] revalidation skipped: ${err instanceof Error ? err.message : String(err)}`);
   }
-  return { vinToSlug, allSlugs };
 }
 
-export async function importVehicles(
-  vehicles: AutofundsVehicle[],
-  dryRun = false
-): Promise<ImportSummary> {
+/**
+ * Upserts the Autofunds feed into `inventory`.
+ *
+ * Idempotent: a row whose content hash (`sync_hash`) is unchanged is not
+ * rewritten — the only write is a bulk `last_seen_at` touch. `date_added` and
+ * the merchandising flags (is_featured, is_new_arrival, is_commercial) are
+ * set on insert only, so staff curation and "newest" sorting survive syncs.
+ */
+export async function importVehicles(vehicles: AutofundsVehicle[], dryRun = false): Promise<ImportSummary> {
   const summary: ImportSummary = {
     totalRows: vehicles.length,
     upserted: 0,
     inserted: 0,
     updated: 0,
+    unchanged: 0,
     skipped: 0,
     markedInactive: 0,
+    descriptionsGenerated: 0,
+    manualDescriptionsPreserved: 0,
+    vehiclesWithSpecConflicts: 0,
+    schemaMode: "full",
     errors: [],
   };
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error("Supabase environment variables are not configured");
-  }
+  // A dry run parses and plans without touching (or needing) the database.
+  const config = dryRun ? null : inventoryRestConfig();
+  const { rows: existingRows, mode } = config
+    ? await loadExisting(config)
+    : { rows: [] as ExistingRow[], mode: "full" as const };
+  summary.schemaMode = mode;
 
-  const hdrs = {
-    apikey: key,
-    Authorization: `Bearer ${key}`,
-    "Content-Type": "application/json",
-    Prefer: "return=representation,resolution=merge-duplicates",
-  };
-
-  // Existing vin→slug mapping drives both slug stability and the
-  // inserted/updated split. If the lookup fails we still import (per-row
-  // fallback below limits the blast radius of any slug conflict).
-  let vinToSlug = new Map<string, string>();
-  let takenSlugs = new Set<string>();
-  if (!dryRun) {
-    const existing = await fetchExistingVinSlugs(url, key);
-    if (existing) {
-      vinToSlug = existing.vinToSlug;
-      takenSlugs = existing.allSlugs;
-      console.log(
-        `[importVehicles] loaded ${vinToSlug.size} existing VINs / ${takenSlugs.size} slugs from DB`
-      );
-    } else {
-      console.warn(
-        "[importVehicles] proceeding without existing slug data — slug conflicts will fall back to per-row upserts"
-      );
+  const byVin = new Map<string, ExistingRow>();
+  const vinToSlug = new Map<string, string>();
+  const takenSlugs = new Set<string>();
+  for (const row of existingRows) {
+    if (row.slug) takenSlugs.add(row.slug);
+    if (row.vin) {
+      byVin.set(row.vin, row);
+      if (row.slug) vinToSlug.set(row.vin, row.slug);
     }
   }
+  console.log(`[importVehicles] loaded ${byVin.size} existing VINs / ${takenSlugs.size} slugs (schema: ${mode})`);
 
-  const rows: Record<string, unknown>[] = [];
-  const upsertedVins: string[] = [];
+  const dealer = dealerDescriptionContext();
+  const planned: PlannedRow[] = [];
+  const feedVins = new Set<string>();
 
   for (const v of vehicles) {
     if (!v.vin) {
@@ -192,106 +236,161 @@ export async function importVehicles(
       summary.skipped++;
       continue;
     }
-    rows.push(toRow(v, resolveSlug(v, vinToSlug, takenSlugs)));
-    upsertedVins.push(v.vin);
+    if (feedVins.has(v.vin)) {
+      summary.skipped++;
+      summary.errors.push(`Duplicate VIN in feed: ${v.vin}`);
+      continue;
+    }
+    feedVins.add(v.vin);
+
+    const existing = byVin.get(v.vin) ?? null;
+    const slug = resolveSlug(v, vinToSlug, takenSlugs);
+    const specs = normalizeVehicleSpecs(specInputFromFeed(v));
+    if (specs.conflicts.length) summary.vehiclesWithSpecConflicts++;
+    const content = baseColumns(v, slug, specs);
+
+    if (mode === "full") {
+      const facts = buildDescriptionFacts(
+        { vin: v.vin, year: v.year, make: v.make, model: v.model, trim: v.trim, features: v.features },
+        specs,
+        dealer
+      );
+      const plan = planDescription({ existing: existing as StoredDescriptionState | null, feedDescription: v.description ?? null, facts });
+      if (plan.description_source === "manual") summary.manualDescriptionsPreserved++;
+      if (plan.regenerated) summary.descriptionsGenerated++;
+      Object.assign(content, {
+        specs,
+        description: plan.description,
+        description_source: plan.description_source,
+        description_hash: plan.description_hash,
+        feed_description: plan.feed_description,
+        generated_description: plan.generated_description,
+        description_input_hash: plan.description_input_hash,
+        description_generator: plan.description_generator,
+      });
+      // The hash covers everything the sync owns except timestamps and raw_data.
+      const syncHash = contentHash(content);
+      const changed = !existing || Boolean(existing.is_sold) || existing.sync_hash !== syncHash;
+      Object.assign(content, {
+        sync_hash: syncHash,
+        description_generated_at: plan.regenerated ? new Date().toISOString() : existing?.description_generated_at ?? null,
+        raw_data: v,
+      });
+      planned.push({ vin: v.vin, isNew: !existing, changed, content });
+    } else {
+      // Legacy schema: same behavior as before this release for descriptions
+      // (feed comments, verbatim) — but with corrected specs and without
+      // resetting date_added.
+      Object.assign(content, { description: v.description ?? null, raw_data: v });
+      planned.push({ vin: v.vin, isNew: !existing, changed: true, content });
+    }
   }
 
-  console.log(`[importVehicles] parsed=${vehicles.length} valid=${rows.length} skipped=${summary.skipped}`);
+  const changedRows = planned.filter((p) => p.changed);
+  summary.unchanged = planned.length - changedRows.length;
+  console.log(
+    `[importVehicles] parsed=${vehicles.length} planned=${planned.length} changed=${changedRows.length} unchanged=${summary.unchanged} skipped=${summary.skipped}`
+  );
 
-  if (dryRun) {
+  if (!config) {
     console.log("[importVehicles] dry-run mode — skipping DB writes");
-    summary.upserted = rows.length;
+    summary.upserted = changedRows.length;
     return summary;
   }
 
-  const existingVins = new Set(
-    upsertedVins.filter((vin) => vinToSlug.has(vin))
-  );
-  console.log(
-    `[importVehicles] existing VINs found in DB: ${existingVins.size} / ${upsertedVins.length}`
-  );
+  const now = new Date().toISOString();
+  const insertRows: Record<string, unknown>[] = changedRows
+    .filter((p) => p.isNew)
+    .map((p) => ({
+      ...p.content,
+      last_seen_at: now,
+      date_modified: now,
+      date_added: now,
+      is_commercial: false,
+      is_featured: false,
+      is_new_arrival: false,
+    }));
+  const updateRows: Record<string, unknown>[] = changedRows.filter((p) => !p.isNew).map((p) => ({ ...p.content, last_seen_at: now, date_modified: now }));
 
-  const upsertBatch = async (batch: Record<string, unknown>[]): Promise<{ vin?: string }[] | null> => {
-    const res = await fetch(`${url}/rest/v1/inventory?on_conflict=vin`, {
+  const upsert = async (batch: Record<string, unknown>[]): Promise<boolean> => {
+    const res = await fetch(`${config.url}/rest/v1/inventory?on_conflict=vin`, {
       method: "POST",
-      headers: hdrs,
+      headers: restHeaders(config, "return=minimal,resolution=merge-duplicates"),
       body: JSON.stringify(batch),
     });
     if (!res.ok) {
       console.error(`[importVehicles] upsert error: ${res.status} ${await res.text()}`);
-      return null;
+      return false;
     }
-    return (await res.json()) as { vin?: string }[];
+    return true;
   };
 
-  const recordUpserted = (upserted: { vin?: string }[]) => {
-    summary.upserted += upserted.length;
-    for (const row of upserted) {
-      if (row.vin && existingVins.has(row.vin)) summary.updated++;
-      else summary.inserted++;
+  // PostgREST bulk writes need identical keys per batch, so inserts (which
+  // carry date_added and default flags) and updates are sent separately.
+  for (const [rows, kind] of [
+    [insertRows, "inserted"],
+    [updateRows, "updated"],
+  ] as const) {
+    for (const batch of chunk(rows, 100)) {
+      if (await upsert(batch)) {
+        summary[kind] += batch.length;
+        continue;
+      }
+      // A single bad row (e.g. a unique-constraint conflict) must not sink
+      // the whole batch — retry rows one at a time and skip only the bad ones.
+      console.warn(`[importVehicles] batch upsert failed — retrying ${batch.length} rows individually`);
+      for (const row of batch) {
+        if (await upsert([row])) {
+          summary[kind]++;
+        } else {
+          summary.errors.push(`Row upsert failed for VIN ${String(row.vin)}`);
+          summary.skipped++;
+        }
+      }
     }
-  };
+  }
+  summary.upserted = summary.inserted + summary.updated;
 
-  const BATCH = 100;
-  for (let i = 0; i < rows.length; i += BATCH) {
-    const batch = rows.slice(i, i + BATCH);
-    const upserted = await upsertBatch(batch);
+  // Unchanged rows: record that the feed still lists them, nothing else.
+  const unchangedVins = planned.filter((p) => !p.changed).map((p) => p.vin);
+  for (const vins of chunk(unchangedVins, 100)) {
+    const res = await fetch(`${config.url}/rest/v1/inventory?vin=in.${encodeURIComponent(inList(vins))}`, {
+      method: "PATCH",
+      headers: restHeaders(config, "return=minimal"),
+      body: JSON.stringify({ last_seen_at: now }),
+    });
+    if (!res.ok) summary.errors.push(`last_seen_at update failed: ${res.status}`);
+  }
 
-    if (upserted) {
-      recordUpserted(upserted);
-      console.log(
-        `[importVehicles] batch ${i}–${i + batch.length}: upserted ${upserted.length}`
+  // Vehicles from this source that are no longer in the feed → inactive.
+  const active = existingRows.filter((r) => r.vin && (r.source ?? SOURCE) === SOURCE && !r.is_sold);
+  const missing = active.map((r) => r.vin as string).filter((vin) => !feedVins.has(vin));
+  const limit = Math.max(10, Math.floor(active.length * 0.5));
+  if (missing.length > limit && process.env.SYNC_ALLOW_MASS_INACTIVATION !== "true") {
+    // A truncated or partial CSV must not mark most of the lot as sold.
+    summary.inactivationSkipped = `${missing.length} of ${active.length} active vehicles are missing from the feed (limit ${limit}); set SYNC_ALLOW_MASS_INACTIVATION=true to allow.`;
+    summary.errors.push(`Inactivation skipped: ${summary.inactivationSkipped}`);
+    console.error(`[importVehicles] ${summary.inactivationSkipped}`);
+  } else {
+    for (const vins of chunk(missing, 100)) {
+      const res = await fetch(
+        `${config.url}/rest/v1/inventory?source=eq.${SOURCE}&is_sold=eq.false&vin=in.${encodeURIComponent(inList(vins))}`,
+        {
+          method: "PATCH",
+          headers: restHeaders(config, "return=representation"),
+          body: JSON.stringify({ is_sold: true, status: "inactive", date_modified: now }),
+        }
       );
-      continue;
-    }
-
-    // A single bad row (e.g. a unique-constraint conflict) must not sink
-    // the whole batch — retry rows one at a time and skip only the bad ones.
-    console.warn(
-      `[importVehicles] batch upsert failed at offset ${i} — retrying rows individually`
-    );
-    for (const row of batch) {
-      const single = await upsertBatch([row]);
-      if (single) {
-        recordUpserted(single);
+      if (res.ok) {
+        summary.markedInactive += ((await res.json()) as unknown[]).length;
       } else {
-        const msg = `Row upsert failed for VIN ${String(row.vin)}`;
-        console.error(`[importVehicles] ${msg}`);
-        summary.errors.push(msg);
-        summary.skipped++;
+        summary.errors.push(`Inactivation failed: ${res.status}`);
+        console.error(`[importVehicles] inactivate error: ${await res.text()}`);
       }
     }
+    if (summary.markedInactive) console.log(`[importVehicles] marked ${summary.markedInactive} vehicles inactive`);
   }
 
-  // Mark vehicles from this source that weren't in the payload as inactive
-  if (upsertedVins.length > 0) {
-    const vinList = upsertedVins.map((v) => `"${v}"`).join(",");
-    const inactivateRes = await fetch(
-      `${url}/rest/v1/inventory?source=eq.${SOURCE}&is_sold=eq.false&vin=not.in.(${vinList})`,
-      {
-        method: "PATCH",
-        headers: { ...hdrs, Prefer: "return=representation" },
-        body: JSON.stringify({
-          is_sold: true,
-          status: "inactive",
-          date_modified: new Date().toISOString(),
-        }),
-      }
-    );
-
-    if (inactivateRes.ok) {
-      const inactivated = (await inactivateRes.json()) as unknown[];
-      summary.markedInactive = inactivated.length;
-      console.log(`[importVehicles] marked ${inactivated.length} vehicles inactive`);
-    } else {
-      const text = await inactivateRes.text();
-      console.error(`[importVehicles] inactivate error: ${text}`);
-    }
-  }
-
-  revalidatePath("/inventory", "page");
-  revalidatePath("/inventory/[slug]", "page");
-  revalidatePath("/", "page");
-
+  if (summary.upserted > 0 || summary.markedInactive > 0) safeRevalidate();
   return summary;
 }

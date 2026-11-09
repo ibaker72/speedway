@@ -113,14 +113,18 @@ export default async function CommercialPage() {
                         <Gauge className="h-3.5 w-3.5" />
                         {formatMileage(vehicle.mileage)}
                       </span>
-                      <span className="flex items-center gap-1.5">
-                        <Settings2 className="h-3.5 w-3.5" />
-                        {vehicle.transmission}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Fuel className="h-3.5 w-3.5" />
-                        {vehicle.drivetrain}
-                      </span>
+                      {vehicle.transmission && (
+                        <span className="flex items-center gap-1.5">
+                          <Settings2 className="h-3.5 w-3.5" />
+                          {vehicle.transmission}
+                        </span>
+                      )}
+                      {vehicle.drivetrain && (
+                        <span className="flex items-center gap-1.5">
+                          <Fuel className="h-3.5 w-3.5" />
+                          {vehicle.drivetrain}
+                        </span>
+                      )}
                     </div>
                     <span className="inline-flex items-center gap-2 text-sm font-semibold text-accent-light group-hover:text-white transition-colors">
                       View Details

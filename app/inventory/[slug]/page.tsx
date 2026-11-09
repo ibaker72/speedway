@@ -101,7 +101,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
     { iconName: "Palette", label: "Interior", value: vehicle.interiorColor },
     { iconName: "Settings2", label: "Engine", value: vehicle.engine },
     { iconName: "Calendar", label: "Year", value: String(vehicle.year) },
-  ];
+  ].filter((spec): spec is { iconName: string; label: string; value: string } => Boolean(spec.value));
 
   const vehicleTitle = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
 

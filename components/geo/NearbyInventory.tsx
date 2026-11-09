@@ -30,8 +30,8 @@ export function NearbyInventory({ title, city, vehicles }: { title: string; city
               <p className="text-accent-light font-bold text-lg">{formatVehiclePrice(vehicle.price)}</p>
               <div className="flex flex-wrap gap-2 text-[11px] text-zinc-400">
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/4 px-2 py-1"><Gauge className="h-3 w-3" />{formatMileage(vehicle.mileage)}</span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/4 px-2 py-1"><Fuel className="h-3 w-3" />{vehicle.fuelType || "Gasoline"}</span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/4 px-2 py-1"><Cog className="h-3 w-3" />{vehicle.drivetrain || "FWD"}</span>
+                {vehicle.fuelType && <span className="inline-flex items-center gap-1 rounded-full bg-white/4 px-2 py-1"><Fuel className="h-3 w-3" />{vehicle.fuelType}</span>}
+                {vehicle.drivetrain && <span className="inline-flex items-center gap-1 rounded-full bg-white/4 px-2 py-1"><Cog className="h-3 w-3" />{vehicle.drivetrain}</span>}
               </div>
             </div>
           </Link>
