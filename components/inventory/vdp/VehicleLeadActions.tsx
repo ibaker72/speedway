@@ -82,9 +82,9 @@ export function VehicleLeadActions({
 
       <div id={PANEL_ID} role="region" aria-labelledby={mode ? `${PANEL_ID}-title` : undefined} hidden={!mode}>
         {mode && (
-          <div className="mt-3 rounded-xl border border-white/10 bg-surface-1 p-4 sm:p-5">
+          <div className="mt-3 scroll-mt-24 rounded-xl border border-white/10 bg-surface-1 p-4 sm:p-5">
             <div className="mb-3 flex items-start justify-between gap-3">
-              <h2 id={`${PANEL_ID}-title`} ref={headingRef} tabIndex={-1} className="text-base font-bold text-white outline-none">
+              <h2 id={`${PANEL_ID}-title`} ref={headingRef} tabIndex={-1} className="scroll-mt-28 text-base font-bold text-white outline-none">
                 {PANEL_TITLES[mode]}
               </h2>
               <button

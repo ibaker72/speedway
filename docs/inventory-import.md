@@ -186,6 +186,29 @@ The parser (`lib/feed/autofunds-parser.ts`) maps these exact Autofunds CSV heade
 
 If Autofunds changes headers, update the `COL` map in `lib/feed/autofunds-parser.ts`.
 
+Spec cells (`DriveTrain`, `Transmission`, `FuelType`, `Body`,
+`EngineDescription`, colors) are not copied verbatim: they are normalized by
+`lib/inventory/specs.ts`, corroborated against the trim text and the Options
+list, and stored as NULL when blank or contradictory — never defaulted. The
+raw cells are kept in `raw_data.feed`, and the full normalized result
+(including any conflicts) in the `specs` column. `Comments` feeds the
+description provenance system — see `docs/inventory/vehicle-descriptions.md`.
+
+## Sync behavior (since 2026-11)
+
+- **Idempotent:** each row's content hash is stored in `sync_hash`; unchanged
+  rows are not rewritten (only one bulk `last_seen_at` update per run), so
+  `date_modified` and sitemap `lastmod` reflect real changes.
+- **Insert-only fields:** `date_added`, `is_featured`, `is_new_arrival`,
+  `is_commercial` are set when a VIN is first imported and never reset.
+- **Truncated-feed guard:** if more than half of the active lot (and more
+  than 10 vehicles) is missing from one feed, nothing is marked sold and the
+  run reports `inactivationSkipped`. Set `SYNC_ALLOW_MASS_INACTIVATION=true`
+  for a genuine bulk sell-off.
+- **Schema fallback:** if `20261109_inventory_descriptions_and_specs.sql`
+  hasn't been applied, the sync runs in `legacy` mode (old columns only) and
+  says so in its response.
+
 ## Image URL handling
 
 All vehicle image URLs pass through `normalizeVehicleImageUrl()` in

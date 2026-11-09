@@ -33,7 +33,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: [DEFAULT_OG_IMAGE.url],
   },
-  robots: { index: true, follow: true },
+  // No site-wide robots default: public pages set it via pageMetadata(), and a
+  // layout-level "index, follow" contradicted the noindex Next.js injects on
+  // 404s (e.g. sold vehicles), leaving two conflicting robots tags.
 };
 
 // viewport-fit=cover exposes env(safe-area-inset-*) so the mobile action bar

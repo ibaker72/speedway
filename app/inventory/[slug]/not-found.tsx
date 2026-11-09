@@ -21,7 +21,7 @@ export default async function VehicleNotFound() {
   const makeLinks = makes.filter((m) => m.count >= MIN_VEHICLES_FOR_MAKE_PAGE).slice(0, 6);
 
   return (
-    <div className="bg-[#0a0a0a] min-h-[70vh] px-5 pt-24 pb-16">
+    <div className="bg-[#0a0a0a] min-h-[70vh] px-5 pt-12 pb-16">
       <div className="mx-auto max-w-3xl text-center">
         <h1 className="text-3xl font-bold text-white mb-3">This vehicle is no longer available</h1>
         <p className="text-zinc-400 mb-8 leading-relaxed">

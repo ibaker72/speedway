@@ -110,7 +110,7 @@ export default async function VehicleDetailPage({ params }: PageProps) {
           { name: vehicleName(vehicle), url: vehiclePath(vehicle) },
         ]}
       />
-      <div className="bg-[#0a0a0a] min-h-screen pt-16 lg:pt-24">
+      <div className="bg-[#0a0a0a] min-h-screen">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-10 lg:pb-16">
           {/* 1. Breadcrumb */}
           <nav aria-label="Breadcrumb" className="pt-3 lg:pt-5" data-section="breadcrumb">
