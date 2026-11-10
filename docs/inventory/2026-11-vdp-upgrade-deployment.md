@@ -66,7 +66,48 @@ production data was written during development (only read-only `SELECT`s).
   Fixing the source data in Autofunds (e.g. setting manual transmissions
   correctly) clears them on the next sync.
 
+## Production state (2026-11-10)
+
+- Recovery points (private schema `backup_20261110`, not exposed by the Data
+  API; no anon/authenticated grants):
+  - `backup_20261110.inventory` — taken before the 2026-11-10 07:00 UTC sync;
+    differs from the next one only in the four timestamps that sync stamps.
+  - `backup_20261110.inventory_pre_migration` — exact copy (checksum-verified,
+    312 rows) taken immediately before the migrations below.
+- Applied: `20261109_inventory_descriptions_and_specs.sql` and
+  `20261109b_inventory_restore_date_added.sql` (310 rows; active vehicles
+  now span 44 distinct dates instead of one sync timestamp).
+- Production drift: the live `inventory_search_update()` trigger also sets
+  `updated_at` and `date_modified` to `now()` on every UPDATE. The sync
+  therefore writes nothing at all for unchanged rows.
+- **Deploy the new code before the next 07:00 UTC sync**: the old importer
+  resets `date_added` on every run.
+
 ## Rollback
 
-Revert the branch deploy. The migration's columns can stay (nothing else
-reads them); the old importer ignores them.
+**Application:** Vercel → Deployments → promote the previous production
+deployment (instant rollback). The old code runs fine with the new columns
+(it ignores them) but will reset `date_added` again on its next sync.
+
+**Data:** restore every original column from the exact snapshot (rows
+inserted after the snapshot are kept; the new columns are left as they are):
+
+```sql
+DO $$
+DECLARE cols text;
+BEGIN
+  SELECT string_agg(format('%I = b.%I', column_name, column_name), ', ')
+    INTO cols
+    FROM information_schema.columns
+   WHERE table_schema = 'backup_20261110'
+     AND table_name = 'inventory_pre_migration'
+     AND column_name <> 'id';
+  EXECUTE format(
+    'UPDATE public.inventory i SET %s FROM backup_20261110.inventory_pre_migration b WHERE b.id = i.id',
+    cols);
+END $$;
+```
+
+(The production trigger stamps `updated_at`/`date_modified` with the restore
+time.) The snapshot schema can be dropped once the release is verified:
+`DROP SCHEMA backup_20261110 CASCADE;` — only with explicit approval.

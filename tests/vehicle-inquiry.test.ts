@@ -155,6 +155,23 @@ describe("shipping quote leads", () => {
   });
 });
 
+describe("lead error logging", () => {
+  it("never writes customer details from a storage error to the logs", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    createLeadMock.mockRejectedValue(
+      new Error(
+        'Failed to create lead: Supabase insert error 400: {"code":"23502","details":"Failing row contains (abc, vehicle-inquiry, Jordan Rivera, jordan@example.com, (555) 123-4567)","message":"null value in column \\"status\\" of relation \\"leads\\" violates not-null constraint"}'
+      )
+    );
+    await POST(request(valid));
+    const logged = spy.mock.calls.map((c) => c.join(" ")).join("\n");
+    expect(logged).toContain("status 400");
+    expect(logged).toContain("code 23502");
+    expect(logged).not.toMatch(/Jordan|jordan@example\.com|555/);
+    spy.mockRestore();
+  });
+});
+
 describe("vehicle inquiry validation helpers", () => {
   it("normalizes untrusted input", () => {
     const inquiry = normalizeVehicleInquiry({ inquiryType: "question", name: "  Ann \u0007 ", email: " ANN@EX.COM ", vehicleSlug: "ABC-123", consent: "on" });

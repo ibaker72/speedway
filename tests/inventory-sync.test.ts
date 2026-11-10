@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { PGlite } from "@electric-sql/pglite";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
@@ -286,6 +288,22 @@ describe("description/spec migration", () => {
     await db.exec(`INSERT INTO public.inventory (slug, stock_number, vin, year, make, model, body_type, price, mileage)
                    VALUES ('s', '1', 'V1', 2020, 'A', 'B', 'sedan', 1, 1)`);
     await expect(db.exec("UPDATE public.inventory SET description_source = 'robot'")).rejects.toThrow(/description_source_check/);
+  });
+
+  it("the runbook's rollback SQL restores every original column from the snapshot", async () => {
+    await setup(INVENTORY_MIGRATIONS.slice(0, -1));
+    await importVehicles(feed(JEEP, VAN));
+    await db.exec(`CREATE SCHEMA backup_20261110; CREATE TABLE backup_20261110.inventory_pre_migration AS TABLE public.inventory;`);
+    const before = await row("1C4HJWDG3CL174156");
+    await db.exec(readMigration("20261109_inventory_descriptions_and_specs.sql"));
+    await importVehicles(feed({ ...JEEP, InternetSpecial: "1", Mileage: "1" }));
+    expect(Number((await row("1C4HJWDG3CL174156")).price)).toBe(1);
+
+    const runbook = readFileSync(path.resolve(__dirname, "../docs/inventory/2026-11-vdp-upgrade-deployment.md"), "utf8");
+    const restoreSql = /```sql\n(DO \$\$[\s\S]*?END \$\$;)\n```/.exec(runbook)![1];
+    await db.exec(restoreSql);
+    const after = await row("1C4HJWDG3CL174156");
+    for (const col of Object.keys(before)) expect(after[col], col).toEqual(before[col]);
   });
 
   it("date_added repair restores the original value from created_at and is idempotent", async () => {
