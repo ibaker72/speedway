@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { cleanColor, parseBodyType, parseDrivetrain, parseFuel, parseTransmission } from "@/lib/inventory/specs";
 
 const REQUIRED_FIELDS = ["vin", "year", "make", "model", "price"] as const;
 
@@ -61,18 +62,19 @@ function toRow(v: Record<string, unknown>, slugSet: Set<string>) {
     make: String(v.make),
     model: String(v.model),
     trim: v.trim ? String(v.trim) : null,
-    body_type: String(v.body_type || v.bodyType || "sedan"),
+    // Unknown specs are stored as NULL — never a guessed default.
+    body_type: parseBodyType(String(v.body_type || v.bodyType || "")),
     condition: String(v.condition || "used"),
     price: Number(v.price),
     msrp: v.msrp ? Number(v.msrp) : null,
     internet_price: v.internet_price || v.internetPrice ? Number(v.internet_price || v.internetPrice) : null,
     mileage: Number(v.mileage || 0),
-    exterior_color: String(v.exterior_color || v.exteriorColor || ""),
-    interior_color: String(v.interior_color || v.interiorColor || ""),
-    transmission: String(v.transmission || "Automatic"),
-    drivetrain: String(v.drivetrain || "FWD"),
-    engine: String(v.engine || ""),
-    fuel_type: String(v.fuel_type || v.fuelType || "Gasoline"),
+    exterior_color: cleanColor(String(v.exterior_color || v.exteriorColor || "")),
+    interior_color: cleanColor(String(v.interior_color || v.interiorColor || "")),
+    transmission: parseTransmission(String(v.transmission || ""))?.type ?? null,
+    drivetrain: parseDrivetrain(String(v.drivetrain || "")),
+    engine: String(v.engine || "").trim() || null,
+    fuel_type: parseFuel(String(v.fuel_type || v.fuelType || ""))?.type ?? null,
     images: parseImages(v.images || v.photos),
     thumbnail_url: v.thumbnail_url || v.thumbnailUrl ? String(v.thumbnail_url || v.thumbnailUrl) : null,
     description: v.description ? String(v.description) : null,

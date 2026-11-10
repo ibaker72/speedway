@@ -77,14 +77,18 @@ export async function FeaturedInventory() {
                       <Gauge className="h-3 w-3" />
                       {formatMileage(v.mileage)}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
-                      <Fuel className="h-3 w-3" />
-                      {v.engine || v.fuelType || "Gas"}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
-                      <Cog className="h-3 w-3" />
-                      {v.drivetrain || "FWD"}
-                    </span>
+                    {(v.engine || v.fuelType) && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
+                        <Fuel className="h-3 w-3" />
+                        {v.engine || v.fuelType}
+                      </span>
+                    )}
+                    {v.drivetrain && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] text-zinc-400 bg-white/4 border border-white/6 rounded-full px-2.5 py-1">
+                        <Cog className="h-3 w-3" />
+                        {v.drivetrain}
+                      </span>
+                    )}
                   </div>
                 </div>
               </Link>

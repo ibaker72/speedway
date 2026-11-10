@@ -7,9 +7,17 @@
  *  - Price fields may be empty strings (treat as 0 / absent)
  *  - FuelType uses verbose labels like "Gasoline Fuel" instead of "gasoline"
  *  - Body uses verbose labels like "4 Door Sedan" / "Sport Utility"
+ *  - DriveTrain and other spec cells can be blank
+ *
+ * Spec cells are normalized with lib/inventory/specs.ts and are left
+ * undefined when blank or unrecognized — never defaulted (a blank DriveTrain
+ * used to become "FWD"). The untouched cells are kept in `feed` so the
+ * importer can corroborate them against trim text and the Options list, and
+ * so they remain auditable in inventory.raw_data.
  */
 
 import { normalizeVehicleImageUrl } from "@/lib/images/vehicle-image-url";
+import { parseBodyType, parseDrivetrain, parseFuel, type BodyType, type Drivetrain, type FuelType } from "@/lib/inventory/specs";
 
 export interface AutofundsVehicle {
   stockNumber: string;
@@ -22,9 +30,9 @@ export interface AutofundsVehicle {
   price: number;
   internetPrice?: number;
   mileage: number;
-  fuelType?: string;
+  fuelType?: FuelType;
   transmission?: string;
-  bodyType?: string;
+  bodyType?: BodyType;
   doors?: number;
   passengers?: number;
   engine?: string;
@@ -34,9 +42,11 @@ export interface AutofundsVehicle {
   description?: string;
   images: { url: string; alt: string; isPrimary: boolean }[];
   features: string[];
-  drivetrain?: string;
+  drivetrain?: Drivetrain;
   estimatedPayment?: number;
   dateModified?: string;
+  /** Original CSV cells (except PhotoUrls/Options, which are stored parsed). */
+  feed?: Record<string, string>;
 }
 
 export interface ParseDiagnostics {
@@ -87,35 +97,6 @@ const KNOWN_HEADERS = new Set<string>([
 function parsePrice(raw: string): number {
   const n = parseFloat(raw.replace(/[$,]/g, "").trim());
   return isNaN(n) ? 0 : n;
-}
-
-function normalizeBodyType(raw: string): string {
-  const s = raw.toLowerCase();
-  if (s.includes("suv") || s.includes("sport utility") || s.includes("utility")) return "suv";
-  if (s.includes("truck") || s.includes("pickup")) return "truck";
-  if (s.includes("van") || s.includes("minivan")) return "van";
-  if (s.includes("coupe") || s.includes("2 door") || s.includes("2dr")) return "coupe";
-  if (s.includes("convertible") || s.includes("cabriolet")) return "convertible";
-  if (s.includes("wagon") || s.includes("wgn")) return "wagon";
-  if (s.includes("hatch")) return "hatchback";
-  if (s.includes("sedan") || s.includes("4 door") || s.includes("4dr") || s.includes("car")) return "sedan";
-  return "sedan";
-}
-
-function normalizeFuelType(raw: string): string {
-  const s = raw.toLowerCase();
-  if (s.includes("electric")) return "electric";
-  if (s.includes("hybrid")) return "hybrid";
-  if (s.includes("diesel")) return "diesel";
-  return "gasoline";
-}
-
-function normalizeDrivetrain(raw: string): string {
-  const s = raw.toUpperCase().trim();
-  if (s === "AWD" || s === "ALL WHEEL DRIVE") return "AWD";
-  if (s === "4WD" || s === "4X4" || s === "FOUR WHEEL DRIVE") return "4WD";
-  if (s === "RWD" || s === "REAR WHEEL DRIVE") return "RWD";
-  return "FWD";
 }
 
 /**
@@ -290,6 +271,13 @@ export function parseAutofundsCsvDetailed(csvText: string): ParseResult {
           .filter(Boolean)
       : [];
 
+    const feed: Record<string, string> = {};
+    headers.forEach((header, col) => {
+      if (!header || header === "PhotoUrls" || header === "Options") return;
+      const value = get(col);
+      if (value) feed[header] = value.slice(0, 10000);
+    });
+
     const cylindersRaw = get(COL.cylinders);
     const doorsRaw = get(COL.doors);
     const seatingRaw = get(COL.seating);
@@ -306,10 +294,10 @@ export function parseAutofundsCsvDetailed(csvText: string): ParseResult {
       condition: (get(COL.condition) || "used").toLowerCase(),
       price,
       internetPrice,
-      mileage: parseInt(get(COL.mileage), 10) || 0,
-      fuelType: get(COL.fuelType) ? normalizeFuelType(get(COL.fuelType)) : undefined,
+      mileage: parseInt(get(COL.mileage).replace(/[,\s]/g, ""), 10) || 0,
+      fuelType: parseFuel(get(COL.fuelType))?.type,
       transmission: get(COL.transmission) || undefined,
-      bodyType: get(COL.body) ? normalizeBodyType(get(COL.body)) : undefined,
+      bodyType: parseBodyType(get(COL.body)) ?? undefined,
       doors: doorsRaw ? parseInt(doorsRaw, 10) || undefined : undefined,
       passengers: seatingRaw ? parseInt(seatingRaw, 10) || undefined : undefined,
       engine: engineDesc || undefined,
@@ -319,9 +307,10 @@ export function parseAutofundsCsvDetailed(csvText: string): ParseResult {
       description: get(COL.comments) || undefined,
       images,
       features,
-      drivetrain: get(COL.drivetrain) ? normalizeDrivetrain(get(COL.drivetrain)) : undefined,
+      drivetrain: parseDrivetrain(get(COL.drivetrain)) ?? undefined,
       estimatedPayment: paymentRaw ? parsePrice(paymentRaw) || undefined : undefined,
       dateModified: get(COL.lastModified) || undefined,
+      feed,
     });
   }
 

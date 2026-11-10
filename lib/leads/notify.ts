@@ -59,11 +59,26 @@ export async function notifyLead(input: NotifyLeadInput): Promise<boolean> {
       lines.push("");
     }
 
+    if (input.source === "vehicle-inquiry") {
+      const p = input.payload;
+      const vehicle = (p.vehicle ?? null) as Record<string, unknown> | null;
+      if (p.inquiryLabel) lines.push(`Request: ${p.inquiryLabel}`);
+      if (p.vehicleOfInterest) lines.push(`Vehicle: ${p.vehicleOfInterest}`);
+      if (vehicle?.stockNumber) lines.push(`Stock #: ${vehicle.stockNumber}`);
+      if (vehicle?.vin) lines.push(`VIN: ${vehicle.vin}`);
+      if (vehicle?.url) lines.push(`Listing: ${vehicle.url}`);
+      if (vehicle?.note) lines.push(`Note: ${vehicle.note}`);
+      if (p.preferredContact) lines.push(`Preferred contact: ${p.preferredContact}`);
+      if (p.message) lines.push("", `Message: ${p.message}`);
+      lines.push("");
+    }
+
     if (input.source === "shipping") {
       const p = input.payload;
       const vehicle = (p.vehicle ?? null) as Record<string, unknown> | null;
       if (p.vehicleOfInterest) lines.push(`Vehicle: ${p.vehicleOfInterest}`);
       if (vehicle?.stockNumber) lines.push(`Stock #: ${vehicle.stockNumber}`);
+      if (vehicle?.vin) lines.push(`VIN: ${vehicle.vin}`);
       if (vehicle?.url) lines.push(`Listing: ${vehicle.url}`);
       if (p.deliveryZip || p.deliveryState) lines.push(`Deliver to: ${[p.deliveryZip, p.deliveryState].filter(Boolean).join(", ")}`);
       if (p.message) lines.push("", `Message: ${p.message}`);

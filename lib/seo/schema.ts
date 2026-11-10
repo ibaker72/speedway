@@ -1,5 +1,8 @@
 import { dealerConfig } from "@/dealer.config";
 import { HOURS } from "@/lib/constants";
+import { dealerDescriptionContext } from "@/lib/descriptions/dealer";
+import { bodyTypeLabel, type Drivetrain } from "@/lib/inventory/specs";
+import { vehicleHeadline, vehicleOverview, vehicleSpecs } from "@/lib/inventory/vehicle-display";
 import { ORGANIZATION_ID, SITE_URL, absoluteUrl } from "@/lib/seo/site";
 import type { Vehicle } from "@/lib/types/vehicle";
 
@@ -166,44 +169,66 @@ export function hasPublishedPrice(vehicle: Pick<Vehicle, "price">): boolean {
   return Number.isFinite(vehicle.price) && vehicle.price > 0;
 }
 
+/** Schema.org DriveWheelConfigurationValue members. */
+const DRIVE_WHEEL_CONFIGURATION: Record<Drivetrain, string> = {
+  FWD: "https://schema.org/FrontWheelDriveConfiguration",
+  RWD: "https://schema.org/RearWheelDriveConfiguration",
+  AWD: "https://schema.org/AllWheelDriveConfiguration",
+  "4WD": "https://schema.org/FourWheelDriveConfiguration",
+};
+
 /**
  * Car markup for a vehicle detail page. Only attributes rendered on the page
- * are included. Note: Google retired its dedicated vehicle-listing rich result
- * in 2025, so this markup describes the listing for search and AI systems but
- * is not expected to produce a special search feature on its own.
+ * are included, taken from the same normalized specs the page displays, so
+ * an unknown or contradictory spec is omitted here too. `description` is the
+ * overview text shown on the page.
+ *
+ * Google retired its Vehicle Listing rich result in 2025 (announced June
+ * 2025; removed from Search Console reporting in the November 2025 update),
+ * so this markup describes the listing for search and AI systems but is not
+ * expected to produce a special search feature on its own.
  */
 export function buildVehicleJsonLd(vehicle: Vehicle) {
   const url = absoluteUrl(vehiclePath(vehicle));
+  const specs = vehicleSpecs(vehicle);
+  const { trim } = vehicleHeadline(vehicle);
   const images = vehicle.images.map((image) => image.url).filter(Boolean).slice(0, 10);
+  const overview = vehicleOverview(vehicle, specs, dealerDescriptionContext());
 
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Car",
     "@id": `${url}#vehicle`,
     url,
-    name: vehicleName(vehicle),
+    name: vehicleName({ ...vehicle, trim }),
     brand: { "@type": "Brand", name: vehicle.make },
-    model: vehicle.model,
+    model: vehicle.model.replace(/\s+/g, " ").trim(),
     vehicleModelDate: String(vehicle.year),
     itemCondition: "https://schema.org/UsedCondition",
-    mileageFromOdometer: {
-      "@type": "QuantitativeValue",
-      value: vehicle.mileage,
-      unitCode: "SMI",
-    },
   };
 
-  if (vehicle.vin) jsonLd.vehicleIdentificationNumber = vehicle.vin;
-  if (vehicle.trim) jsonLd.vehicleConfiguration = vehicle.trim;
-  if (vehicle.bodyType) jsonLd.bodyType = vehicle.bodyType;
-  if (vehicle.exteriorColor) jsonLd.color = vehicle.exteriorColor;
-  if (vehicle.interiorColor) jsonLd.vehicleInteriorColor = vehicle.interiorColor;
-  if (vehicle.transmission) jsonLd.vehicleTransmission = vehicle.transmission;
-  if (vehicle.drivetrain) jsonLd.driveWheelConfiguration = vehicle.drivetrain;
-  if (vehicle.fuelType) jsonLd.fuelType = vehicle.fuelType;
-  if (vehicle.engine) jsonLd.vehicleEngine = { "@type": "EngineSpecification", name: vehicle.engine };
+  if (specs.mileage) {
+    jsonLd.mileageFromOdometer = { "@type": "QuantitativeValue", value: specs.mileage, unitCode: "SMI" };
+  }
+  if (specs.vin) jsonLd.vehicleIdentificationNumber = specs.vin;
+  if (specs.stockNumber) jsonLd.sku = specs.stockNumber;
+  if (trim) jsonLd.vehicleConfiguration = trim;
+  if (specs.bodyType) jsonLd.bodyType = bodyTypeLabel(specs.bodyType);
+  if (specs.exteriorColor) jsonLd.color = specs.exteriorColor;
+  if (specs.interiorColor) jsonLd.vehicleInteriorColor = specs.interiorColor;
+  if (specs.transmission) jsonLd.vehicleTransmission = specs.transmission.label;
+  if (specs.drivetrain) jsonLd.driveWheelConfiguration = DRIVE_WHEEL_CONFIGURATION[specs.drivetrain];
+  if (specs.fuel) jsonLd.fuelType = specs.fuel.label;
+  if (specs.seating) jsonLd.seatingCapacity = specs.seating;
+  if (specs.engine) {
+    jsonLd.vehicleEngine = {
+      "@type": "EngineSpecification",
+      name: specs.engine.label,
+      ...(specs.fuel ? { fuelType: specs.fuel.label } : {}),
+    };
+  }
   if (images.length) jsonLd.image = images;
-  if (vehicle.description) jsonLd.description = vehicle.description;
+  if (overview.paragraphs.length) jsonLd.description = overview.paragraphs.join("\n\n");
 
   if (hasPublishedPrice(vehicle)) {
     jsonLd.offers = {
@@ -212,6 +237,7 @@ export function buildVehicleJsonLd(vehicle: Vehicle) {
       price: vehicle.price,
       priceCurrency: "USD",
       itemCondition: "https://schema.org/UsedCondition",
+      // Only in-stock listings render; sold or removed vehicles return 404.
       availability: vehicle.isSold ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
       seller: { "@type": "AutoDealer", "@id": ORGANIZATION_ID, name: dealerConfig.name },
     };

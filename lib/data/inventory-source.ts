@@ -1,5 +1,16 @@
 import type { Vehicle, VehicleImage, InventoryFilters, InventoryResponse } from "@/lib/types/vehicle";
 import { normalizeVehicleImageUrl } from "@/lib/images/vehicle-image-url";
+import { dealerNoteFrom } from "@/lib/descriptions/assess";
+import { specInputFromRow } from "@/lib/inventory/spec-input";
+import {
+  SPECS_VERSION,
+  normalizeVehicleSpecs,
+  parseBodyType,
+  parseDrivetrain,
+  parseFuel,
+  parseTransmission,
+  type VehicleSpecs,
+} from "@/lib/inventory/specs";
 
 interface SupabaseVehicleRow {
   id: string;
@@ -35,6 +46,11 @@ interface SupabaseVehicleRow {
   date_added: string;
   date_modified: string | null;
   estimated_payment: number | null;
+  raw_data?: unknown;
+  // Added by 20261109_inventory_descriptions_and_specs.sql; absent before it runs.
+  specs?: VehicleSpecs | null;
+  feed_description?: string | null;
+  description_source?: string | null;
 }
 
 interface SupabaseRuntimeConfig {
@@ -96,11 +112,27 @@ async function fetchFromAggregator(): Promise<Vehicle[]> { throw new Error("Aggr
 
 function normalizeVehicles(raw: Record<string, unknown>[]): Vehicle[] {
   return raw.map((item: Record<string, unknown>) => ({
-    id: String(item.id || item.stock_number || ""), slug: generateSlug(item), stockNumber: String(item.stock_number || item.stockNumber || ""), vin: String(item.vin || ""), year: Number(item.year), make: String(item.make || ""), model: String(item.model || ""), trim: item.trim ? String(item.trim) : undefined, bodyType: mapBodyType(String(item.body_type || item.bodyType || "")), condition: "used" as const, price: Number(item.price || item.internet_price || 0), msrp: item.msrp ? Number(item.msrp) : undefined, internetPrice: item.internet_price ? Number(item.internet_price) : undefined, mileage: Number(item.mileage || item.odometer || 0), exteriorColor: String(item.exterior_color || item.exteriorColor || ""), interiorColor: String(item.interior_color || item.interiorColor || ""), transmission: mapTransmission(String(item.transmission || "")), drivetrain: mapDrivetrain(String(item.drivetrain || item.drive_type || "")), engine: String(item.engine || ""), fuelType: mapFuelType(String(item.fuel_type || item.fuelType || "")), images: mapImages(item.images || item.photos || []), thumbnailUrl: normalizeVehicleImageUrl(item.thumbnail) ?? undefined, description: item.description ? String(item.description) : undefined, features: Array.isArray(item.features) ? item.features.map(String) : [], isCommercial: Boolean(item.is_commercial || item.isCommercial), isFeatured: Boolean(item.is_featured || item.isFeatured), isNewArrival: Boolean(item.is_new_arrival), isSold: Boolean(item.is_sold || item.sold), dateAdded: String(item.date_added || item.created_at || new Date().toISOString()),
+    id: String(item.id || item.stock_number || ""), slug: generateSlug(item), stockNumber: String(item.stock_number || item.stockNumber || ""), vin: String(item.vin || ""), year: Number(item.year), make: String(item.make || ""), model: String(item.model || ""), trim: item.trim ? String(item.trim) : undefined, bodyType: parseBodyType(String(item.body_type || item.bodyType || "")) ?? undefined, condition: "used" as const, price: Number(item.price || item.internet_price || 0), msrp: item.msrp ? Number(item.msrp) : undefined, internetPrice: item.internet_price ? Number(item.internet_price) : undefined, mileage: Number(item.mileage || item.odometer || 0), exteriorColor: String(item.exterior_color || item.exteriorColor || "") || undefined, interiorColor: String(item.interior_color || item.interiorColor || "") || undefined, transmission: parseTransmission(String(item.transmission || ""))?.type, drivetrain: parseDrivetrain(String(item.drivetrain || item.drive_type || "")) ?? undefined, engine: String(item.engine || "") || undefined, fuelType: parseFuel(String(item.fuel_type || item.fuelType || ""))?.type, images: mapImages(item.images || item.photos || []), thumbnailUrl: normalizeVehicleImageUrl(item.thumbnail) ?? undefined, description: item.description ? String(item.description) : undefined, features: Array.isArray(item.features) ? item.features.map(String) : [], isCommercial: Boolean(item.is_commercial || item.isCommercial), isFeatured: Boolean(item.is_featured || item.isFeatured), isNewArrival: Boolean(item.is_new_arrival), isSold: Boolean(item.is_sold || item.sold), dateAdded: String(item.date_added || item.created_at || new Date().toISOString()),
   }));
 }
 
+function storedSpecs(row: SupabaseVehicleRow): VehicleSpecs {
+  // Rows written by the current sync/backfill carry normalized specs. Older
+  // rows are normalized here, from raw_data rather than the columns, which
+  // hold the old importer's invented defaults (see spec-input.ts).
+  if (row.specs && typeof row.specs === "object" && row.specs.version === SPECS_VERSION) return row.specs;
+  return normalizeVehicleSpecs(specInputFromRow(row));
+}
+
+function descriptionSourceOf(value: unknown): Vehicle["descriptionSource"] {
+  return value === "manual" || value === "feed" || value === "generated" ? value : undefined;
+}
+
 function mapSupabaseVehicle(row: SupabaseVehicleRow): Vehicle {
+  const specs = storedSpecs(row);
+  const raw = row.raw_data && typeof row.raw_data === "object" ? (row.raw_data as Record<string, unknown>) : null;
+  const descriptionSource = descriptionSourceOf(row.description_source);
+  const feedDescription = row.feed_description ?? (typeof raw?.description === "string" ? raw.description : null);
   return {
     id: String(row.id),
     slug: row.slug,
@@ -110,21 +142,25 @@ function mapSupabaseVehicle(row: SupabaseVehicleRow): Vehicle {
     make: row.make,
     model: row.model,
     trim: row.trim || undefined,
-    bodyType: mapBodyType(row.body_style ?? row.body_type ?? ""),
+    bodyType: specs.bodyType ?? undefined,
     condition: row.condition,
     price: row.price,
     msrp: row.msrp ?? undefined,
     internetPrice: row.internet_price ?? undefined,
     mileage: row.mileage,
-    exteriorColor: row.exterior_color,
-    interiorColor: row.interior_color,
-    transmission: mapTransmission(row.transmission),
-    drivetrain: mapDrivetrain(row.drivetrain),
-    engine: row.engine,
-    fuelType: mapFuelType(row.fuel_type),
+    exteriorColor: specs.exteriorColor ?? undefined,
+    interiorColor: specs.interiorColor ?? undefined,
+    transmission: specs.transmission?.type,
+    drivetrain: specs.drivetrain ?? undefined,
+    engine: specs.engine?.label,
+    fuelType: specs.fuel?.type,
+    specs,
+    passengers: specs.seating ?? undefined,
     images: ensureImages(mapImages(row.images), row.thumbnail_url),
     thumbnailUrl: normalizeVehicleImageUrl(row.thumbnail_url) ?? undefined,
     description: row.description || undefined,
+    descriptionSource,
+    dealerNote: dealerNoteFrom(feedDescription, descriptionSource, row.vin) ?? undefined,
     features: Array.isArray(row.features) ? row.features : [],
     highlights: row.highlights ?? undefined,
     isCommercial: row.is_commercial,
@@ -145,7 +181,7 @@ function buildFilterOptions(vehicles: Pick<Vehicle, "make" | "model" | "bodyType
   for (const v of vehicles) {
     makes.set(v.make, (makes.get(v.make) || 0) + 1);
     models.set(v.model, (models.get(v.model) || 0) + 1);
-    bodyTypes.set(v.bodyType, (bodyTypes.get(v.bodyType) || 0) + 1);
+    if (v.bodyType) bodyTypes.set(v.bodyType, (bodyTypes.get(v.bodyType) || 0) + 1);
     if (v.year < minYear) minYear = v.year;
     if (v.year > maxYear) maxYear = v.year;
   }
@@ -282,7 +318,7 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     allRows.map((r) => ({
       make: r.make,
       model: r.model,
-      bodyType: mapBodyType(r.body_style ?? r.body_type ?? ""),
+      bodyType: parseBodyType(r.body_style ?? r.body_type ?? "") ?? undefined,
       price: r.price,
       year: r.year,
     }) as Pick<Vehicle, "make" | "model" | "bodyType" | "price" | "year">)
@@ -300,44 +336,6 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
 
 function generateSlug(item: Record<string, unknown>): string {
   return [item.year, item.make, item.model, item.trim].filter(Boolean).join("-").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
-}
-
-function mapBodyType(raw: string): Vehicle["bodyType"] {
-  const l = raw.toLowerCase();
-  if (l.includes("sedan") || l.includes("car")) return "sedan";
-  if (l.includes("suv") || l.includes("crossover") || l.includes("sport utility")) return "suv";
-  if (l.includes("truck") || l.includes("pickup")) return "truck";
-  if (l.includes("van") || l.includes("minivan")) return "van";
-  if (l.includes("coupe")) return "coupe";
-  if (l.includes("wagon")) return "wagon";
-  if (l.includes("convertible")) return "convertible";
-  if (l.includes("hatchback")) return "hatchback";
-  if (l.includes("commercial")) return "commercial";
-  return "sedan";
-}
-
-function mapTransmission(raw: string): Vehicle["transmission"] {
-  const l = raw.toLowerCase();
-  if (l.includes("manual") || l.includes("stick")) return "Manual";
-  if (l.includes("cvt")) return "CVT";
-  return "Automatic";
-}
-
-function mapDrivetrain(raw: string): Vehicle["drivetrain"] {
-  const l = raw.toLowerCase();
-  if (l.includes("awd") || l.includes("all wheel")) return "AWD";
-  if (l.includes("4wd") || l.includes("4x4")) return "4WD";
-  if (l.includes("rwd") || l.includes("rear wheel")) return "RWD";
-  return "FWD";
-}
-
-function mapFuelType(raw: string): Vehicle["fuelType"] {
-  const l = raw.toLowerCase();
-  if (l.includes("diesel")) return "Diesel";
-  if (l.includes("hybrid")) return "Hybrid";
-  if (l.includes("electric") || l.includes("ev")) return "Electric";
-  if (l.includes("flex")) return "Flex Fuel";
-  return "Gasoline";
 }
 
 function mapImages(raw: unknown): VehicleImage[] {

@@ -71,11 +71,11 @@ describe("inventory listing indexing rules", () => {
 });
 
 describe("dynamic vehicle metadata", () => {
-  it("uses the '<year> <make> <model> <trim> for Sale' title format from inventory data", async () => {
+  it("uses the '<year> <make> <model> <trim> for Sale' title format (plus price) from inventory data", async () => {
     const meta = await vehicleMetadata({ params: Promise.resolve({ slug: "2022-toyota-camry-se" }) });
-    expect(meta.title).toBe("2022 Toyota Camry SE for Sale");
+    expect(meta.title).toBe("2022 Toyota Camry SE for Sale – $24,995");
     expect(meta.alternates?.canonical).toBe("https://www.speedwaymotorsllc.com/inventory/2022-toyota-camry-se");
-    expect(meta.description).toContain("28,450 mi");
+    expect(meta.description).toContain("28,450 miles");
     expect(meta.description).toContain("$24,995");
     expect(meta.description).toContain("Paterson, NJ");
     expect(meta.robots).toEqual({ index: true, follow: true });

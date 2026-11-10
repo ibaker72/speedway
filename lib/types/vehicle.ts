@@ -1,3 +1,10 @@
+import type { BodyType, Drivetrain, FuelType, TransmissionType, VehicleSpecs } from "@/lib/inventory/specs";
+
+/**
+ * A listing as the site renders it. Spec fields are optional: unknown or
+ * contradictory feed data is omitted rather than defaulted (see
+ * lib/inventory/specs.ts). `specs` carries the full normalized detail.
+ */
 export interface Vehicle {
   id: string;
   slug: string;
@@ -7,24 +14,29 @@ export interface Vehicle {
   make: string;
   model: string;
   trim?: string;
-  bodyType: "sedan" | "suv" | "truck" | "van" | "coupe" | "wagon" | "convertible" | "hatchback" | "commercial";
+  bodyType?: BodyType;
   condition: "used" | "certified";
   price: number;
   msrp?: number;
   internetPrice?: number;
   mileage: number;
-  exteriorColor: string;
-  interiorColor: string;
-  transmission: "Automatic" | "Manual" | "CVT";
-  drivetrain: "FWD" | "RWD" | "AWD" | "4WD";
-  engine: string;
-  fuelType: "Gasoline" | "Diesel" | "Hybrid" | "Electric" | "Flex Fuel";
+  exteriorColor?: string;
+  interiorColor?: string;
+  transmission?: TransmissionType;
+  drivetrain?: Drivetrain;
+  /** Formatted engine label, e.g. "3.6L V6". */
+  engine?: string;
+  fuelType?: FuelType;
+  specs?: VehicleSpecs;
   cylinders?: number;
   doors?: number;
   passengers?: number;
   images: VehicleImage[];
   thumbnailUrl?: string;
   description?: string;
+  descriptionSource?: "manual" | "feed" | "generated";
+  /** Short dealer comment shown alongside a description from another source. */
+  dealerNote?: string;
   features: string[];
   highlights?: string[];
   isCommercial: boolean;

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { StickyMobileCTA } from "@/components/layout/StickyMobileCTA";
@@ -33,7 +33,17 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: [DEFAULT_OG_IMAGE.url],
   },
-  robots: { index: true, follow: true },
+  // No site-wide robots default: public pages set it via pageMetadata(), and a
+  // layout-level "index, follow" contradicted the noindex Next.js injects on
+  // 404s (e.g. sold vehicles), leaving two conflicting robots tags.
+};
+
+// viewport-fit=cover exposes env(safe-area-inset-*) so the mobile action bar
+// clears the iPhone home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -60,6 +70,8 @@ export default function RootLayout({
         <Header />
         <main id="main-content" className="flex-1">{children}</main>
         <Footer />
+        {/* Reserves room for the fixed mobile action bar so it never covers the end of a page. */}
+        <div aria-hidden="true" className="h-[calc(3.25rem+env(safe-area-inset-bottom))] lg:hidden" data-testid="sticky-cta-spacer" />
         <ChatWidget />
         <StickyMobileCTA />
         <CookieConsent />

@@ -33,7 +33,14 @@ const FIELD_ORDER: ShippingInquiryField[] = [
 const labelClass = "block text-sm font-medium text-zinc-300 mb-1.5";
 const errorClass = "text-xs text-red-400 mt-1.5";
 
-export function ShippingInquiryForm({ vehicle }: { vehicle?: ShippingFormVehicle | null }) {
+export function ShippingInquiryForm({
+  vehicle,
+  compact = false,
+}: {
+  vehicle?: ShippingFormVehicle | null;
+  /** Inline variant for vehicle detail pages: no card chrome or large heading. */
+  compact?: boolean;
+}) {
   const [errors, setErrors] = useState<ShippingInquiryErrors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [formError, setFormError] = useState("");
@@ -95,7 +102,7 @@ export function ShippingInquiryForm({ vehicle }: { vehicle?: ShippingFormVehicle
 
   if (status === "success") {
     return (
-      <div className="rounded-2xl bg-surface-2 border border-white/8 p-8 text-center py-14" role="status">
+      <div className={compact ? "rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5 text-center" : "rounded-2xl bg-surface-2 border border-white/8 p-8 text-center py-14"} role="status">
         <div className="w-16 h-16 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 animate-check-scale">
           <CheckCircle className="h-8 w-8 text-emerald-400" aria-hidden="true" />
         </div>
@@ -130,10 +137,10 @@ export function ShippingInquiryForm({ vehicle }: { vehicle?: ShippingFormVehicle
       onSubmit={handleSubmit}
       noValidate
       aria-labelledby="shipping-form-title"
-      className="rounded-2xl bg-surface-2 border border-white/8 p-6 sm:p-8 space-y-5"
+      className={compact ? "space-y-4" : "rounded-2xl bg-surface-2 border border-white/8 p-6 sm:p-8 space-y-5"}
     >
       <div>
-        <h3 id="shipping-form-title" className="text-xl font-bold text-white mb-1">
+        <h3 id="shipping-form-title" className={compact ? "sr-only" : "text-xl font-bold text-white mb-1"}>
           Request a Shipping Estimate
         </h3>
         <p className="text-sm text-zinc-500">
@@ -148,7 +155,7 @@ export function ShippingInquiryForm({ vehicle }: { vehicle?: ShippingFormVehicle
         <input id="shipping-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={compact ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
         <div>
           <label htmlFor="shipping-name" className={labelClass}>
             Full name <span aria-hidden="true">*</span>
