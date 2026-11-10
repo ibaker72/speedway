@@ -19,11 +19,16 @@ export interface FeatureHighlight {
 
 interface FeatureRule extends FeatureHighlight {
   pattern: RegExp;
+  /** Skip this highlight when a stronger one (by key) was already picked. */
+  excludedBy?: string;
 }
 
 // Ordered by how much shoppers care; descriptions use the first few matches.
 const RULES: FeatureRule[] = [
-  { key: "third-row", phrase: "third-row seating", label: "Third-Row Seating", pattern: /\b(3rd|third)[\s-]row\b/i },
+  // Seats only: decoded lists also mention "3rd Row Windows", "3rd Row Airbags",
+  // third-row USB ports and head restraints, which don't prove a third row of seats
+  // (a Wrangler has "Fixed 3rd Row Windows").
+  { key: "third-row", phrase: "third-row seating", label: "Third-Row Seating", pattern: /\b(3rd|third)[\s-]row (bench )?seats?\b|\bseats?,? third[\s-]row\b/i },
   { key: "navigation", phrase: "navigation", label: "Navigation", pattern: /\bnavigation\b|\bnav system\b/i },
   { key: "carplay", phrase: "Apple CarPlay", label: "Apple CarPlay", pattern: /\bapple carplay\b/i },
   { key: "android-auto", phrase: "Android Auto", label: "Android Auto", pattern: /\bandroid auto\b/i },
@@ -38,7 +43,10 @@ const RULES: FeatureRule[] = [
   { key: "remote-start", phrase: "remote start", label: "Remote Start", pattern: /\bremote (engine )?start\b/i },
   { key: "adaptive-cruise", phrase: "adaptive cruise control", label: "Adaptive Cruise Control", pattern: /\badaptive cruise\b/i },
   { key: "blind-spot", phrase: "blind-spot monitoring", label: "Blind-Spot Monitoring", pattern: /\bblind[\s-]spot\b/i },
-  { key: "lane-assist", phrase: "lane-keeping assist", label: "Lane-Keeping Assist", pattern: /\blane (keep|keeping|departure|centering)\b/i },
+  // A departure *warning* is not an assist system; "Lane Keeping Assist System (LKAS)
+  // Lane Departure Warning" names the system, then the feature (a warning).
+  { key: "lane-assist", phrase: "lane-keeping assist", label: "Lane-Keeping Assist", pattern: /\blane[\s-]keep(ing)? assist\b(?! system)|\blane (centering|tracing) assist\b/i },
+  { key: "lane-warning", phrase: "lane-departure warning", label: "Lane-Departure Warning", pattern: /\blane[\s-]departure (warning|alert)\b/i, excludedBy: "lane-assist" },
   { key: "heated-wheel", phrase: "a heated steering wheel", label: "Heated Steering Wheel", pattern: /\bheated steering wheel\b/i },
   { key: "premium-audio", phrase: "a premium audio system", label: "Premium Audio", pattern: /\b(bose|harman kardon|bang & olufsen|b&o|burmester|jbl|mark levinson|meridian|premium (audio|sound))\b/i },
   { key: "power-liftgate", phrase: "a power liftgate", label: "Power Liftgate", pattern: /\bpower (lift ?gate|tailgate|rear liftgate)\b/i },
@@ -56,7 +64,14 @@ const RULES: FeatureRule[] = [
 ];
 
 const CONDITIONAL =
-  /\b(if equipped|requires?|required|only|available|not available|deleted when|optional|standard on|reference the|delete|prep|pre-wire|provisions?)\b/i;
+  /\b(if equipped|requires?|required|only|available|not available|not included|deleted when|optional|standard on|reference the|delete|prep|pre-wire|provisions?|ordered)\b/i;
+
+/**
+ * Lines that list what a key fob can operate ("FOB Controls -inc: ...
+ * Sunroof/Convertible Roof and Remote Start") describe the fob, not the
+ * car's equipment, so they never count as evidence of a feature.
+ */
+const NOT_EVIDENCE = /^fob controls\b/i;
 
 /**
  * Highlights present in the vehicle's own Options list, in priority order and
@@ -67,10 +82,11 @@ export function selectFeatureHighlights(features: readonly string[] | null | und
   if (!features?.length) return [];
   const options = features
     .map((f) => (typeof f === "string" ? f.replace(/\s+/g, " ").trim() : ""))
-    .filter((f) => f && f.length <= 120 && !CONDITIONAL.test(f));
+    .filter((f) => f && f.length <= 120 && !CONDITIONAL.test(f) && !NOT_EVIDENCE.test(f));
   const picked: FeatureHighlight[] = [];
   for (const rule of RULES) {
     if (picked.length >= max) break;
+    if (rule.excludedBy && picked.some((p) => p.key === rule.excludedBy)) continue;
     if (options.some((o) => rule.pattern.test(o))) {
       picked.push({ key: rule.key, phrase: rule.phrase, label: rule.label });
     }

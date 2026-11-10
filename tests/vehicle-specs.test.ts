@@ -323,3 +323,55 @@ describe("stored-row adapter", () => {
     expect(input.drivetrain).toBe("AWD");
   });
 });
+
+describe("feature highlights from real decoded Options strings", () => {
+  // Imported lazily so this block reads like the production audit it encodes.
+  const pick = async (options: string[]) => (await import("@/lib/inventory/features")).selectFeatureHighlights(options).map((h) => h.key);
+
+  it("third-row seating requires seats, not windows, airbags, USB ports or head restraints", async () => {
+    expect(
+      await pick([
+        "Power Rear Windows and Fixed 3rd Row Windows",
+        "Curtain 1st, 2nd And 3rd Row Airbags",
+        "USB ports, 2 in front (type-A and type-C), 2 in second row (type-A and type-C) and 1 in third row (type-A)",
+        "Head restraints, second and third row outboard, 2-way manual-folding",
+      ])
+    ).not.toContain("third-row");
+    expect(await pick(["3rd Row Seat"])).toContain("third-row");
+    expect(await pick(["Seats, third row 60/40 split-bench, power-folding"])).toContain("third-row");
+    expect(await pick(["Fixed 50-50 Bench Leatherette 3rd Row Seat Front, Manual Fold Into Floor"])).toContain("third-row");
+  });
+
+  it("key fob capability lists are not evidence of a sunroof or remote start", async () => {
+    const keys = await pick(["FOB Controls -inc: Cargo Access, Windows, Sunroof/Convertible Roof and Remote Start"]);
+    expect(keys).not.toContain("sunroof");
+    expect(keys).not.toContain("remote-start");
+  });
+
+  it("ignores 'not included when ... is ordered' notes", async () => {
+    expect(
+      await pick(["Cruise control, electronic with set and resume speed (Not included when (Y66) Adaptive Cruise Control is ordered.)"])
+    ).not.toContain("adaptive-cruise");
+  });
+
+  it("distinguishes lane-departure warning from lane-keeping assist", async () => {
+    expect(await pick(["Lane Departure Warning"])).toEqual(["lane-warning"]);
+    expect(await pick(["Lane Keeping Assist System (LKAS) Lane Departure Warning"])).toEqual(["lane-warning"]);
+    expect(await pick(["Lane-Keeping System Lane Departure Warning"])).toEqual(["lane-warning"]);
+    expect(await pick(["Lane Keeping Assist System (LKAS) Lane Keeping Assist", "Lane Departure Warning"])).toEqual(["lane-assist"]);
+    expect(await pick(["Lane Keep Assist with Lane Departure Warning"])).toEqual(["lane-assist"]);
+  });
+});
+
+describe("body style from trim text", () => {
+  it("2023 Accord Hybrid: trim 'Sport-L Sedan' contradicts a stored 'suv' → unavailable, not 'SUV'", () => {
+    const specs = normalizeVehicleSpecs({ ...base, model: "Accord Hybrid", trim: "Sport-L Sedan", body: "suv" });
+    expect(specs.bodyType).toBeNull();
+    expect(specs.conflicts).toContainEqual({ field: "bodyType", values: [{ source: "feed", value: "suv" }, { source: "trim", value: "sedan" }] });
+  });
+
+  it("agreeing trim and feed keep the body style", () => {
+    expect(normalizeVehicleSpecs({ ...base, model: "3 Series", trim: "330i xDrive Sedan", body: "sedan" }).bodyType).toBe("sedan");
+    expect(normalizeVehicleSpecs({ ...base, model: "Civic", trim: "Sport Sedan", body: "" }).bodyType).toBe("sedan");
+  });
+});

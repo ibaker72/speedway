@@ -131,7 +131,7 @@ export function displayTrim(trim: string | null | undefined): string {
  * this vehicle. VIN-decoded Options lists are full of these.
  */
 const CONDITIONAL_OPTION =
-  /\b(if equipped|requires?|required|only|available|not available|deleted when|optional|standard on|reference the|models? feature|when ordered|includes? .* models)\b/i;
+  /\b(if equipped|requires?|required|only|available|not available|not included|deleted when|optional|standard on|reference the|models? feature|ordered|includes? .* models)\b/i;
 
 function unconditionalOptions(features: readonly string[] | null | undefined, maxLength: number): string[] {
   if (!features) return [];
@@ -640,11 +640,27 @@ export function normalizeVehicleSpecs(input: SpecInput): VehicleSpecs {
     sources.fuel = fuelPick.source;
   }
 
-  // Body: a body style named in the model designation beats the Body cell.
+  // Body: a body style named in the model designation ("Civic Hatchback")
+  // is authoritative. Otherwise the Body cell must agree with any body word
+  // in the trim ("Accord Hybrid" + trim "Sport-L Sedan" vs a stored "suv").
   const modelBody = bodyTypeFromModel(model);
-  const feedBody = parseBodyType(input.body);
-  const bodyType = modelBody ?? feedBody;
-  if (bodyType) sources.bodyType = modelBody ? "model" : "feed";
+  let bodyType: BodyType | null = modelBody;
+  if (modelBody) {
+    sources.bodyType = "model";
+  } else {
+    const bodyPick = resolveCandidates<BodyType>(
+      "bodyType",
+      [
+        { source: "feed", value: parseBodyType(input.body) },
+        { source: "trim", value: bodyTypeFromModel(trim) },
+      ],
+      (a, b) => a === b,
+      (v) => v,
+      conflicts
+    );
+    bodyType = bodyPick?.value ?? null;
+    if (bodyPick) sources.bodyType = bodyPick.source;
+  }
 
   return {
     version: SPECS_VERSION,
