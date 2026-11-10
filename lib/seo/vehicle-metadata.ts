@@ -8,6 +8,9 @@ import type { Vehicle } from "@/lib/types/vehicle";
 
 const MAX_DESCRIPTION = 160;
 
+/** Dealer comments such as "CASH DEAL ONLY !." rule out a financing claim. */
+const CASH_ONLY = /\bcash[\s-]+(deal|only|sale|buyers?)\b|\bno financing\b/i;
+
 /**
  * Unique, accurate metadata for a vehicle page. Built from the same verified
  * specs the page shows; unknown values are left out rather than guessed.
@@ -27,7 +30,8 @@ export function vehicleMetaDescription(vehicle: Vehicle): string {
     specs.engine?.label ?? null,
     specs.exteriorColor,
   ].filter((part): part is string => Boolean(part));
-  const extras = ["Financing available.", dealerConfig.features.nationwideShipping ? "Nationwide shipping on request." : null].filter(
+  const cashOnly = [vehicle.dealerNote, vehicle.description].some((text) => text && CASH_ONLY.test(text));
+  const extras = [cashOnly ? null : "Financing available.", dealerConfig.features.nationwideShipping ? "Nationwide shipping on request." : null].filter(
     (part): part is string => Boolean(part)
   );
 

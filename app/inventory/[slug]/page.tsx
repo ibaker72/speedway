@@ -62,15 +62,20 @@ export async function generateStaticParams() {
   return [];
 }
 
-/** Same make first, then same body style; never the vehicle itself. */
+/**
+ * Same make first, then same body style, then the newest arrivals (so a
+ * one-of-a-kind make with an unknown body style still links to inventory);
+ * never the vehicle itself.
+ */
 async function getRelatedVehicles(vehicle: Vehicle, limit = 4): Promise<Vehicle[]> {
-  const [sameMake, sameBody] = await Promise.all([
+  const [sameMake, sameBody, newest] = await Promise.all([
     getInventory({ make: vehicle.make, perPage: limit + 1, sortBy: "date-added" }),
     vehicle.bodyType ? getInventory({ bodyType: vehicle.bodyType, perPage: limit + 1 }) : Promise.resolve({ vehicles: [] as Vehicle[] }),
+    getInventory({ perPage: limit + 1, sortBy: "date-added" }),
   ]);
   const seen = new Set([vehicle.id]);
   const related: Vehicle[] = [];
-  for (const candidate of [...sameMake.vehicles, ...sameBody.vehicles]) {
+  for (const candidate of [...sameMake.vehicles, ...sameBody.vehicles, ...newest.vehicles]) {
     if (seen.has(candidate.id)) continue;
     seen.add(candidate.id);
     related.push(candidate);

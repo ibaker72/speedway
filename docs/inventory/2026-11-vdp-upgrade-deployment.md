@@ -50,7 +50,9 @@ production data was written during development (only read-only `SELECT`s).
 - `/inventory/2012-jeep-wrangler-unlimited-4wd-4dr-sport`: drivetrain
   "Four-wheel drive (4WD)", no transmission row (feed says automatic,
   decoded options say 6-speed manual), overview text present.
-- A sold vehicle URL returns HTTP 404 with a single `noindex` robots tag.
+- A sold vehicle URL returns HTTP 404 with `noindex`. (Next.js adds its own
+  `noindex` tag to every 404 next to the page's `noindex, follow`, so two
+  robots tags, both `noindex`, are expected.)
 - Submit a test "Check Availability" inquiry and a shipping quote; confirm
   the sales email arrives and a row appears in `public.leads` with
   `source = 'vehicle-inquiry'` / `'shipping'`. **The `leads` table had zero
@@ -82,6 +84,28 @@ production data was written during development (only read-only `SELECT`s).
   therefore writes nothing at all for unchanged rows.
 - **Deploy the new code before the next 07:00 UTC sync**: the old importer
   resets `date_added` on every run.
+
+## Release record (2026-11-10)
+
+- Merged PR #1 → `main` at `bd09600`; production deployment
+  `dpl_EcJs4QaRwnoFQpsC3Kx8m1rUMw8g` (READY, aliased to
+  www.speedwaymotorsllc.com). Previous production deployment for instant
+  rollback: `dpl_6fgNHxdrxUoF6DuqRNLyQ1mVQ6Kw`.
+- The 2026-11-10 07:00 UTC sync ran on the old code, so `sync_hash`, stored
+  `specs` and generated descriptions are first written by the 2026-11-11
+  07:00 UTC sync; until then pages derive them at render time from `raw_data`.
+- Lead test (two rows in `public.leads`, name "TEST - website deployment
+  check, please ignore", email deployment-test@example.com): both stored with
+  the server-resolved vehicle, consent and UTM attribution.
+- **Lead emails are not delivered.** Resend rejects every notification with
+  `validation_error: The speedwaymotorsllc.com domain is not verified`. The
+  domain has no SPF/DKIM records (DNS is on Vercel DNS). This affects every
+  form that emails sales, not only the vehicle page, and predates this
+  release. Fix: Resend → Domains → add `speedwaymotorsllc.com`, add the DNS
+  records it lists in Vercel → Domains → speedwaymotorsllc.com, verify; or set
+  `LEAD_FROM_EMAIL` to an address on a domain already verified in Resend.
+  Leads are stored either way; until email works, read them with
+  `SELECT created_at, source, name, email, phone, payload FROM public.leads ORDER BY created_at DESC;`
 
 ## Rollback
 

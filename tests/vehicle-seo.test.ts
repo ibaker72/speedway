@@ -58,6 +58,22 @@ describe("vehicle metadata", () => {
     expect(meta.robots).toEqual({ index: true, follow: true });
   });
 
+  it("does not claim financing when the dealer's own note says cash only", () => {
+    expect(vehicleMetaDescription(WRANGLER)).toContain("Financing available.");
+    // Production: the 2010 Odyssey's Autofunds comment is "CASH DEAL ONLY !."
+    for (const cashOnly of [
+      { ...WRANGLER, description: "CASH DEAL ONLY !." },
+      { ...WRANGLER, dealerNote: "Cash buyers only" },
+      { ...WRANGLER, description: "Sold as-is. No financing on this unit." },
+    ]) {
+      const description = vehicleMetaDescription(cashOnly);
+      expect(description).not.toMatch(/financing/i);
+      expect(description).toContain("$8,987");
+    }
+    // A cash *price* is not a cash-only restriction.
+    expect(vehicleMetaDescription({ ...WRANGLER, description: "Ask about our cash price and financing." })).toContain("Financing available.");
+  });
+
   it("says 'call for price' instead of publishing $0", () => {
     const meta = vehicleMetadata({ ...WRANGLER, price: 0 });
     expect(meta.title).toBe("2012 Jeep Wrangler Unlimited 4WD 4dr Sport for Sale");

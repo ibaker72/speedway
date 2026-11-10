@@ -161,6 +161,20 @@ describe("vehicle detail page layout", () => {
     expect(links).toContain("/inventory?type=sedan");
   });
 
+  it("still links similar inventory for a one-of-a-kind make whose body style is unknown", async () => {
+    // Production: the only Porsche (Cayenne Coupe) and only Mercedes (CLA) have a
+    // body-style conflict, so neither the make nor the body query finds anything.
+    getVehicleBySlug.mockResolvedValueOnce({ ...WRANGLER, id: "solo", slug: "2022-lotus-emira-first-edition", make: "Lotus", model: "Emira", trim: "First Edition", bodyType: undefined });
+    await renderPage("2022-lotus-emira-first-edition");
+    const related = screen.getByRole("region", { name: "Similar Vehicles" });
+    const vehicleLinks = within(related)
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"))
+      .filter((href) => /^\/inventory\/\d{4}-/.test(href ?? ""));
+    expect(vehicleLinks.length).toBeGreaterThan(0);
+    expect(vehicleLinks).not.toContain("/inventory/2022-lotus-emira-first-edition");
+  });
+
   it("has no detectable accessibility violations", async () => {
     const { container } = await renderPage("2022-toyota-camry-se");
     fireEvent.click(screen.getByRole("button", { name: "Check Availability" }));
