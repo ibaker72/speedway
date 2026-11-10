@@ -124,7 +124,7 @@ describe("Autofunds sync", () => {
     expect(String(odyssey.description)).not.toContain("CASH DEAL");
   });
 
-  it("is idempotent: an unchanged feed rewrites nothing except last_seen_at", async () => {
+  it("is idempotent: an unchanged feed writes nothing", async () => {
     await setup();
     await importVehicles(feed(JEEP, VAN, ODYSSEY));
     const before = await row("1C4HJWDG3CL174156");
@@ -133,13 +133,36 @@ describe("Autofunds sync", () => {
     const summary = await importVehicles(feed(JEEP, VAN, ODYSSEY));
     expect(summary).toMatchObject({ inserted: 0, updated: 0, unchanged: 3, markedInactive: 0, descriptionsGenerated: 0 });
     expect(log.filter((l) => l.method === "POST")).toHaveLength(0);
-    expect(log.filter((l) => l.method === "PATCH")).toEqual([{ method: "PATCH", path: "/rest/v1/inventory", rows: 3 }]);
+    expect(log.filter((l) => l.method === "PATCH")).toHaveLength(0);
 
     const after = await row("1C4HJWDG3CL174156");
-    for (const col of ["date_added", "date_modified", "description", "description_generated_at", "sync_hash"]) {
+    for (const col of ["date_added", "date_modified", "last_seen_at", "description", "description_generated_at", "sync_hash"]) {
       expect(after[col]).toEqual(before[col]);
     }
-    expect(new Date(after.last_seen_at as string).getTime()).toBeGreaterThanOrEqual(new Date(before.last_seen_at as string).getTime());
+  });
+
+  it("leaves date_modified untouched on an unchanged sync even with production's timestamp trigger", async () => {
+    await setup();
+    // Production's trigger (differs from the repo migration) stamps
+    // updated_at/date_modified on every UPDATE.
+    await db.exec(`
+      ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+      CREATE OR REPLACE FUNCTION public.inventory_search_update() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN
+        NEW.search_vector :=
+          setweight(to_tsvector('english', coalesce(NEW.make, '')), 'A') ||
+          setweight(to_tsvector('english', coalesce(NEW.description, '')), 'C');
+        NEW.updated_at := now();
+        NEW.date_modified := now();
+        RETURN NEW;
+      END $$;`);
+    await importVehicles(feed(JEEP, VAN));
+    const before = await row("1C4HJWDG3CL174156");
+    await new Promise((r) => setTimeout(r, 20));
+    await importVehicles(feed(JEEP, VAN));
+    const after = await row("1C4HJWDG3CL174156");
+    expect(after.date_modified).toEqual(before.date_modified);
+    expect(after.updated_at).toEqual(before.updated_at);
   });
 
   it("regenerates a description only when the facts change (mileage), not on a price change", async () => {

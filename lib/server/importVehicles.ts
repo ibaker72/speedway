@@ -23,7 +23,7 @@ export interface ImportSummary {
   upserted: number;
   inserted: number;
   updated: number;
-  /** Rows already identical to the feed — not rewritten (only last_seen_at is touched). */
+  /** Rows already identical to the feed — not written at all. */
   unchanged: number;
   skipped: number;
   markedInactive: number;
@@ -187,7 +187,8 @@ function safeRevalidate(): void {
  * Upserts the Autofunds feed into `inventory`.
  *
  * Idempotent: a row whose content hash (`sync_hash`) is unchanged is not
- * rewritten — the only write is a bulk `last_seen_at` touch. `date_added` and
+ * written at all, so `last_seen_at` is the last sync that wrote the row
+ * (feed membership is tracked by `is_sold`/`status`, not by this column). `date_added` and
  * the merchandising flags (is_featured, is_new_arrival, is_commercial) are
  * set on insert only, so staff curation and "newest" sorting survive syncs.
  */
@@ -351,16 +352,9 @@ export async function importVehicles(vehicles: AutofundsVehicle[], dryRun = fals
   }
   summary.upserted = summary.inserted + summary.updated;
 
-  // Unchanged rows: record that the feed still lists them, nothing else.
-  const unchangedVins = planned.filter((p) => !p.changed).map((p) => p.vin);
-  for (const vins of chunk(unchangedVins, 100)) {
-    const res = await fetch(`${config.url}/rest/v1/inventory?vin=in.${encodeURIComponent(inList(vins))}`, {
-      method: "PATCH",
-      headers: restHeaders(config, "return=minimal"),
-      body: JSON.stringify({ last_seen_at: now }),
-    });
-    if (!res.ok) summary.errors.push(`last_seen_at update failed: ${res.status}`);
-  }
+  // Unchanged rows get no write at all. (The production inventory trigger
+  // stamps date_modified/updated_at on every UPDATE, so even a last_seen_at
+  // touch would make every vehicle look modified daily in the sitemap.)
 
   // Vehicles from this source that are no longer in the feed → inactive.
   const active = existingRows.filter((r) => r.vin && (r.source ?? SOURCE) === SOURCE && !r.is_sold);

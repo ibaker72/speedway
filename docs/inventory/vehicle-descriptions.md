@@ -48,7 +48,7 @@ text changes (year/make/model/trim, mileage, body, engine, transmission,
 drivetrain, fuel, colors, seating, highlighted equipment), or when the
 template version is bumped. **Price is not an input**: it changes often and is
 shown beside the description. A nightly sync of an unchanged feed writes
-nothing except one bulk `last_seen_at` update.
+nothing.
 
 ## What a generated description may say
 

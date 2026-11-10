@@ -197,8 +197,8 @@ description provenance system — see `docs/inventory/vehicle-descriptions.md`.
 ## Sync behavior (since 2026-11)
 
 - **Idempotent:** each row's content hash is stored in `sync_hash`; unchanged
-  rows are not rewritten (only one bulk `last_seen_at` update per run), so
-  `date_modified` and sitemap `lastmod` reflect real changes.
+  rows are not written at all, so `date_modified` (stamped by the production
+  trigger on every UPDATE) and sitemap `lastmod` reflect real changes.
 - **Insert-only fields:** `date_added`, `is_featured`, `is_new_arrival`,
   `is_commercial` are set when a VIN is first imported and never reset.
 - **Truncated-feed guard:** if more than half of the active lot (and more
