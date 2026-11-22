@@ -18,7 +18,7 @@ import {
   VehicleSpecsSection,
 } from "@/components/inventory/vdp/VehicleSections";
 import { dealerConfig } from "@/dealer.config";
-import { getVehicleBySlug, getInventory, getMakeSummaries, makeSlug } from "@/lib/data/inventory-source";
+import { getVehicleBySlug, getInventoryOrEmpty, getMakeSummaries, makeSlug } from "@/lib/data/inventory-source";
 import { dealerDescriptionContext } from "@/lib/descriptions/dealer";
 import { MIN_VEHICLES_FOR_MAKE_PAGE, makePagePath } from "@/lib/inventory/make-pages";
 import { bodyTypeLabel } from "@/lib/inventory/specs";
@@ -69,9 +69,9 @@ export async function generateStaticParams() {
  */
 async function getRelatedVehicles(vehicle: Vehicle, limit = 4): Promise<Vehicle[]> {
   const [sameMake, sameBody, newest] = await Promise.all([
-    getInventory({ make: vehicle.make, perPage: limit + 1, sortBy: "date-added" }),
-    vehicle.bodyType ? getInventory({ bodyType: vehicle.bodyType, perPage: limit + 1 }) : Promise.resolve({ vehicles: [] as Vehicle[] }),
-    getInventory({ perPage: limit + 1, sortBy: "date-added" }),
+    getInventoryOrEmpty({ make: vehicle.make, perPage: limit + 1, sortBy: "date-added" }),
+    vehicle.bodyType ? getInventoryOrEmpty({ bodyType: vehicle.bodyType, perPage: limit + 1 }) : Promise.resolve({ vehicles: [] as Vehicle[] }),
+    getInventoryOrEmpty({ perPage: limit + 1, sortBy: "date-added" }),
   ]);
   const seen = new Set([vehicle.id]);
   const related: Vehicle[] = [];

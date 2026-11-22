@@ -44,12 +44,10 @@ function vehicleLastModified(vehicle: Vehicle): Date | undefined {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  let vehicles: Vehicle[] = [];
-  try {
-    ({ vehicles } = await getInventory({ perPage: 999 }));
-  } catch {
-    // Inventory unavailable — publish the rest of the sitemap without vehicles.
-  }
+  // When inventory is unavailable this throws on purpose: the last good
+  // sitemap keeps being served (revalidate) instead of one that drops every
+  // vehicle URL because of a brief database outage.
+  const { vehicles } = await getInventory({ perPage: 999 });
   const makes = await getMakeSummaries().catch(() => []);
 
   const newestInventoryChange = vehicles

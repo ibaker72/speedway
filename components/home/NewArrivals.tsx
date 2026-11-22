@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { getInventory } from "@/lib/data/inventory-source";
+import { getInventoryOrEmpty } from "@/lib/data/inventory-source";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatMileage, formatVehiclePrice } from "@/lib/data/vehicles-full";
 
 export async function NewArrivals() {
-  const { vehicles: all } = await getInventory({ perPage: 20, sortBy: "date-added" });
+  const { vehicles: all } = await getInventoryOrEmpty({ perPage: 20, sortBy: "date-added" });
   const newArrivals = all.filter((v) => v.isNewArrival).slice(0, 8);
 
   if (newArrivals.length === 0) return null;
