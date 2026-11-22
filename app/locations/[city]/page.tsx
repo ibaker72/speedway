@@ -10,7 +10,7 @@ import { LocationIntro } from "@/components/geo/LocationIntro";
 import { LocationTrustSection } from "@/components/geo/LocationTrustSection";
 import { NearbyInventory } from "@/components/geo/NearbyInventory";
 import { BUSINESS } from "@/lib/constants";
-import { getInventory } from "@/lib/data/inventory-source";
+import { getInventoryOrEmpty } from "@/lib/data/inventory-source";
 import { FAQPageJsonLd } from "@/components/seo/JsonLd";
 import { buildDirectionsUrl, buildFaqs, buildLocationIntro, buildLocationMetaDescription } from "@/lib/geo/geo-copy";
 import { getGeoInventoryHeading, getGeoPrimaryTitle, getLocationUrl, pickNearbyInventory, pickNearbyLocations } from "@/lib/geo/geo-helpers";
@@ -57,7 +57,8 @@ export default async function LocationPage({ params }: PageProps) {
     notFound();
   }
 
-  const { vehicles } = await getInventory({ perPage: 36, sortBy: "date-added" });
+  // The local inventory strip is secondary: the city page still renders without it.
+  const { vehicles } = await getInventoryOrEmpty({ perPage: 36, sortBy: "date-added" });
   const localInventory = pickNearbyInventory(location, vehicles);
   const nearbyLocations = pickNearbyLocations(location, geoLocations);
   const faqs = buildFaqs(location);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createLead } from "@/lib/leads/store";
+import { createLead, type Lead } from "@/lib/leads/store";
 import { notifyLead } from "@/lib/leads/notify";
+import { deliverLeadNotification } from "@/lib/leads/notifications";
 import { BUSINESS } from "@/lib/constants";
 
 export interface LeadSubmission {
@@ -15,7 +16,14 @@ export interface LeadSubmissionResult {
   ok: boolean;
   leadId?: string;
   stored: boolean;
+  /** Resend accepted the sales email during this request. */
   notified: boolean;
+  /**
+   * sent   — accepted by Resend now
+   * queued — stored; not accepted yet, the retry job will try again
+   * failed — not accepted and nothing will retry it (untracked fallback)
+   */
+  notification: "sent" | "queued" | "failed";
 }
 
 /**
@@ -43,29 +51,47 @@ export function redactLeadError(message: string): string {
 }
 
 /**
- * Stores a lead and emails the sales team. The two steps are independent: if
- * the database write fails (for example, the `leads` table is missing), the
- * email notification is still sent so the customer's inquiry is not lost.
- * The submission only fails when neither step succeeds.
+ * Stores a lead, then notifies the sales team.
+ *
+ * The lead is persisted first. A stored lead is notified through the tracked
+ * delivery job (attempt history, retries with backoff, no duplicates), so a
+ * Resend failure never loses the notification — it stays queued and shows in
+ * the admin dashboard. If the database write fails, the sales team is emailed
+ * directly so the inquiry is not lost. The submission fails only when neither
+ * step succeeds.
  */
 export async function submitLead(input: LeadSubmission): Promise<LeadSubmissionResult> {
-  let leadId: string | undefined;
-  let stored = false;
+  let lead: Lead | undefined;
   try {
-    const lead = await createLead(input);
-    leadId = lead?.id;
-    stored = true;
+    lead = await createLead(input);
   } catch (err) {
     // Log the failure without customer details.
     console.error(`[leads] failed to store ${input.source} lead: ${redactLeadError(err instanceof Error ? err.message : String(err))}`);
   }
+  const stored = Boolean(lead);
 
-  const notified = await notifyLead(input);
+  let notified: boolean;
+  let notification: LeadSubmissionResult["notification"];
+  if (lead?.tracked) {
+    try {
+      const outcome = await deliverLeadNotification(lead.id, "submit");
+      notified = outcome.status === "sent";
+    } catch (err) {
+      // The lead is stored as pending; the retry job delivers it.
+      console.error(`[leads] notification for lead ${lead.id} deferred to the retry job: ${redactLeadError(err instanceof Error ? err.message : String(err))}`);
+      notified = false;
+    }
+    notification = notified ? "sent" : "queued";
+  } else {
+    notified = await notifyLead({ ...input, leadId: lead?.id });
+    notification = notified ? "sent" : "failed";
+  }
+
   if (!stored && !notified) {
     console.error(`[leads] ${input.source} lead was neither stored nor emailed`);
   }
 
-  return { ok: stored || notified, leadId, stored, notified };
+  return { ok: stored || notified, leadId: lead?.id, stored, notified, notification };
 }
 
 export function leadFailureResponse() {

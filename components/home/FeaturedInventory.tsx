@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Gauge, Fuel, Cog } from "lucide-react";
-import { getInventory } from "@/lib/data/inventory-source";
+import { getInventoryOrEmpty } from "@/lib/data/inventory-source";
 import { VehicleImage } from "@/components/shared/VehicleImage";
 import { SectionWrapper } from "@/components/shared/SectionWrapper";
 import { SectionHeading } from "@/components/shared/SectionHeading";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { formatMileage, estimateMonthlyPayment, formatVehiclePrice } from "@/lib/data/vehicles-full";
 
 export async function FeaturedInventory() {
-  const { vehicles: all } = await getInventory({ perPage: 6 });
+  const { vehicles: all } = await getInventoryOrEmpty({ perPage: 6 });
   const featured = all.filter((v) => v.isFeatured);
   const vehicles = featured.length >= 6 ? featured.slice(0, 6) : all.slice(0, 6);
 

@@ -1,4 +1,6 @@
+import { cache } from "react";
 import type { Vehicle, VehicleImage, InventoryFilters, InventoryResponse } from "@/lib/types/vehicle";
+import { resilientFetch } from "@/lib/server/resilient-fetch";
 import { normalizeVehicleImageUrl } from "@/lib/images/vehicle-image-url";
 import { dealerNoteFrom } from "@/lib/descriptions/assess";
 import { specInputFromRow } from "@/lib/inventory/spec-input";
@@ -91,6 +93,41 @@ function getSupabaseRuntimeConfig(strict = false): SupabaseRuntimeConfig | null 
   }
 
   return { url, key };
+}
+
+/**
+ * Inventory could not be read (network failure after retries, or an error
+ * response from Supabase). Pages whose main content is inventory let this
+ * propagate: ISR keeps serving the last good page, and an uncached request
+ * shows the inventory error boundary — never an empty "0 vehicles" page or a
+ * false "no longer available" 404. Secondary sections use getInventoryOrEmpty.
+ */
+export class InventoryUnavailableError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "InventoryUnavailableError";
+  }
+}
+
+export function emptyInventory(filters: InventoryFilters = {}): InventoryResponse {
+  return {
+    vehicles: [],
+    total: 0,
+    page: filters.page || 1,
+    perPage: filters.perPage || 24,
+    totalPages: 0,
+    filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } },
+  };
+}
+
+function supabaseHeaders(key: string, extra?: Record<string, string>): HeadersInit {
+  return { apikey: key, Authorization: `Bearer ${key}`, ...extra };
+}
+
+/** Total row count from a PostgREST `content-range` header, e.g. "0-23/105"; a "*" total means unknown. */
+function countFromRange(res: Response, fallback: number): number {
+  const total = res.headers.get("content-range")?.split("/")[1];
+  return total && total !== "*" ? Number(total) : fallback;
 }
 
 async function fetchFromLocalJson(): Promise<Vehicle[]> {
@@ -222,8 +259,6 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
   const query = new URLSearchParams();
   query.set("select", "*");
   query.set("is_sold", "eq.false");
-  query.set("offset", String(from));
-  query.set("limit", String(perPage));
 
   if (filters.isCommercial !== undefined) query.set("is_commercial", `eq.${filters.isCommercial}`);
   if (filters.make) query.set("make", `eq.${filters.make}`);
@@ -247,70 +282,86 @@ async function fetchFromSupabase(filters: InventoryFilters): Promise<InventoryRe
     }
   }
 
+  // `id` breaks ties so pages never repeat or skip vehicles with equal values.
   switch (filters.sortBy) {
-    case "price-asc": query.set("order", "price.asc"); break;
-    case "price-desc": query.set("order", "price.desc"); break;
-    case "year-asc": query.set("order", "year.asc"); break;
-    case "year-desc": query.set("order", "year.desc"); break;
-    case "mileage-asc": query.set("order", "mileage.asc"); break;
-    case "date-added": query.set("order", "date_added.desc"); break;
-    default: query.set("order", "year.desc");
+    case "price-asc": query.set("order", "price.asc,id.asc"); break;
+    case "price-desc": query.set("order", "price.desc,id.asc"); break;
+    case "year-asc": query.set("order", "year.asc,id.asc"); break;
+    case "year-desc": query.set("order", "year.desc,id.asc"); break;
+    case "mileage-asc": query.set("order", "mileage.asc,id.asc"); break;
+    case "date-added": query.set("order", "date_added.desc,id.asc"); break;
+    default: query.set("order", "year.desc,id.asc");
   }
 
-  const headers: HeadersInit = {
-    apikey: key,
-    Authorization: `Bearer ${key}`,
-    Prefer: "count=exact",
+  const headers = supabaseHeaders(key, { Prefer: "count=exact" });
+  const read = (label: string, params: URLSearchParams) =>
+    resilientFetch(`${url}/rest/v1/inventory?${params.toString()}`, { headers, next: { revalidate: 60 } }, { label });
+
+  /** One page of rows plus the total; PostgREST's 416 (page past the end) is an empty page, not a failure. */
+  const readPage = async (label: string, params: URLSearchParams, offset: number, limit: number) => {
+    const paged = new URLSearchParams(params);
+    paged.set("offset", String(offset));
+    paged.set("limit", String(limit));
+    const res = await read(label, paged);
+    if (res.status === 416) return { rows: [] as SupabaseVehicleRow[], total: countFromRange(res, 0) };
+    if (!res.ok) throw new InventoryUnavailableError(`${label}: Supabase responded ${res.status}`);
+    const rows = (await res.json()) as SupabaseVehicleRow[];
+    return { rows, total: countFromRange(res, rows.length) };
   };
 
-  let dataRes: Response;
-  let allRes: Response;
-  try {
-    [dataRes, allRes] = await Promise.all([
-      fetch(`${url}/rest/v1/inventory?${query.toString()}`, { headers, next: { revalidate: 60 } }),
-      // Only fetch columns needed to build filter options — avoids pulling all image/description data
-      fetch(`${url}/rest/v1/inventory?select=make,model,${encodeURIComponent(bodyTypeColumn)},price,year,mileage,drivetrain&is_sold=eq.false`, { headers, next: { revalidate: 60 } }),
-    ]);
-  } catch (err) {
-    const host = (() => {
-      try {
-        return new URL(url).hostname;
-      } catch {
-        return "<invalid NEXT_PUBLIC_SUPABASE_URL>";
-      }
-    })();
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(
-      `[inventory-source] Supabase fetch failed for host ${host}. Check NEXT_PUBLIC_SUPABASE_URL in deployment env. ${message}`
+  /**
+   * Price, low to high: priced vehicles first, then "Call for Price" ones
+   * (price 0 or missing) — otherwise they would lead the list as "$0".
+   * Two queries, stitched so pagination stays consistent across the boundary.
+   */
+  const readPricedFirst = async () => {
+    const priced = new URLSearchParams(query);
+    priced.append("price", "gt.0");
+    const unpriced = new URLSearchParams(query);
+    unpriced.set("order", "id.asc");
+    // Combine with any existing logical filter (search, price/year ranges) instead of replacing it.
+    const callForPrice = "or(price.is.null,price.lte.0)";
+    const existingAnd = unpriced.get("and");
+    const existingOr = unpriced.get("or");
+    unpriced.delete("or");
+    unpriced.set(
+      "and",
+      `(${[existingAnd?.slice(1, -1), existingOr ? `or${existingOr}` : null, callForPrice].filter(Boolean).join(",")})`
     );
-    return {
-      vehicles: [],
-      total: 0,
-      page,
-      perPage,
-      totalPages: 0,
-      filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } },
-    };
-  }
 
-  // PostgREST answers 416 when the requested page starts past the last row
-  // (e.g. a stale "?page=5" link after inventory shrinks). That is an empty
-  // page, not a failure: keep the real total so pagination still renders.
-  const outOfRange = dataRes.status === 416;
-  if (!dataRes.ok && !outOfRange) {
-    console.error(`[inventory-source] Supabase query failed: ${dataRes.status} ${await dataRes.text()}`);
-    return { vehicles: [], total: 0, page, perPage, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
+    const first = await readPage("inventory.list", priced, from, perPage);
+    const remaining = perPage - first.rows.length;
+    const unpricedOffset = Math.max(0, from - first.total);
+    // limit=1 when no rows are needed still returns the count.
+    const second = await readPage("inventory.list.call-for-price", unpriced, unpricedOffset, Math.max(remaining, 1));
+    return { rows: [...first.rows, ...(remaining > 0 ? second.rows.slice(0, remaining) : [])], total: first.total + second.total };
+  };
+
+  // allSettled, not all: when one read fails, wait for the other to finish
+  // instead of leaving its retries running after this function has returned.
+  const [pageResult, allResult] = await Promise.allSettled([
+    filters.sortBy === "price-asc" ? readPricedFirst() : readPage("inventory.list", query, from, perPage),
+    // Only fetch columns needed to build filter options — avoids pulling all image/description data
+    read(
+      "inventory.filters",
+      new URLSearchParams({ select: `make,model,${bodyTypeColumn},price,year,mileage,drivetrain`, is_sold: "eq.false" })
+    ),
+  ]);
+  for (const result of [pageResult, allResult]) {
+    if (result.status === "rejected") {
+      const err = result.reason;
+      if (err instanceof InventoryUnavailableError) throw err;
+      throw new InventoryUnavailableError(`Inventory read failed: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
+    }
   }
+  const page$ = (pageResult as PromiseFulfilledResult<{ rows: SupabaseVehicleRow[]; total: number }>).value;
+  const allRes = (allResult as PromiseFulfilledResult<Response>).value;
   if (!allRes.ok) {
-    console.error(`[inventory-source] Supabase filter options query failed: ${allRes.status}`);
-    return { vehicles: [], total: 0, page, perPage, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
+    throw new InventoryUnavailableError(`inventory.filters: Supabase responded ${allRes.status}`);
   }
 
-  const rows = outOfRange ? [] : ((await dataRes.json()) as SupabaseVehicleRow[]);
+  const { rows, total } = page$;
   const allRows = (await allRes.json()) as Pick<SupabaseVehicleRow, "make" | "model" | "body_type" | "body_style" | "price" | "year" | "mileage" | "drivetrain">[];
-  const totalHeader = dataRes.headers.get("content-range");
-  const totalPart = totalHeader?.split("/")[1];
-  const total = totalPart && totalPart !== "*" ? Number(totalPart) : rows.length;
 
   const vehicles = rows.map(mapSupabaseVehicle);
   // Build filter options from lightweight rows — avoids full Vehicle mapping overhead
@@ -360,6 +411,22 @@ function ensureImages(images: VehicleImage[], thumbnailUrl: string | null | unde
   return [];
 }
 
+/** De-duplicates identical reads within one render (an AbortSignal turns off fetch memoization). */
+const readInventoryCached = cache((key: string) => fetchFromSupabase(JSON.parse(key) as InventoryFilters));
+
+/**
+ * For secondary sections (home page strips, related vehicles, city pages):
+ * when inventory is unavailable, render the rest of the page without it.
+ */
+export async function getInventoryOrEmpty(filters: InventoryFilters = {}): Promise<InventoryResponse> {
+  try {
+    return await getInventory(filters);
+  } catch (err) {
+    if (err instanceof InventoryUnavailableError) return emptyInventory(filters);
+    throw err;
+  }
+}
+
 export async function getInventory(filters: InventoryFilters = {}): Promise<InventoryResponse> {
   const source = process.env.INVENTORY_SOURCE || "local";
 
@@ -367,11 +434,11 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
     // Fail fast on malformed/missing env to avoid silently publishing empty inventory.
     getSupabaseRuntimeConfig(true);
     try {
-      return await fetchFromSupabase(filters);
+      return await readInventoryCached(JSON.stringify(filters));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[inventory-source] fetchFromSupabase threw unexpectedly: ${message}`);
-      return { vehicles: [], total: 0, page: filters.page || 1, perPage: filters.perPage || 24, totalPages: 0, filters: { makes: [], models: [], bodyTypes: [], priceRanges: [], yearRange: { min: 0, max: 0 } } };
+      console.error(`[inventory-source] inventory unavailable: ${message}`);
+      throw err instanceof InventoryUnavailableError ? err : new InventoryUnavailableError(message, { cause: err });
     }
   }
 
@@ -399,7 +466,8 @@ export async function getInventory(filters: InventoryFilters = {}): Promise<Inve
 
   const filterOptions = buildFilterOptions(vehicles);
   switch (filters.sortBy) {
-    case "price-asc": vehicles.sort((a, b) => a.price - b.price); break;
+    // "Call for Price" (no positive price) goes after every priced vehicle.
+    case "price-asc": vehicles.sort((a, b) => (a.price > 0 ? 0 : 1) - (b.price > 0 ? 0 : 1) || a.price - b.price); break;
     case "price-desc": vehicles.sort((a, b) => b.price - a.price); break;
     case "year-asc": vehicles.sort((a, b) => a.year - b.year); break;
     case "year-desc": vehicles.sort((a, b) => b.year - a.year); break;
@@ -452,12 +520,13 @@ export async function getHeroVehicleImages(limit = 5): Promise<HeroVehicleImage[
     query.set("limit", String(safeLimit * 3));
 
     try {
-      const res = await fetch(`${url}/rest/v1/inventory?${query.toString()}`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-        next: { revalidate: 60 },
-      });
+      const res = await resilientFetch(
+        `${url}/rest/v1/inventory?${query.toString()}`,
+        { headers: supabaseHeaders(key), next: { revalidate: 60 } },
+        { label: "inventory.hero-images" }
+      );
       if (!res.ok) {
-        console.error(`[inventory-source] getHeroVehicleImages failed: ${res.status} ${await res.text()}`);
+        console.error(`[inventory-source] getHeroVehicleImages failed: ${res.status}`);
         return [];
       }
       const rows = (await res.json()) as Array<{
@@ -508,20 +577,29 @@ export async function getHeroVehicleImages(limit = 5): Promise<HeroVehicleImage[
   }
 }
 
-export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
+/**
+ * The listing for a slug, or null when no active vehicle has it (sold or
+ * never existed → the page's 404). A failed lookup throws
+ * InventoryUnavailableError instead, so an outage is never reported to
+ * shoppers (or search engines) as "no longer available".
+ */
+export const getVehicleBySlug = cache(async (slug: string): Promise<Vehicle | null> => {
   const source = process.env.INVENTORY_SOURCE || "local";
 
   if (source === "supabase") {
     const { url, key } = getSupabaseRuntimeConfig(true);
 
-    const res = await fetch(
-      `${url}/rest/v1/inventory?select=*&slug=eq.${encodeURIComponent(slug)}&is_sold=eq.false&limit=1`,
-      {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-        next: { revalidate: 60 },
-      }
-    );
-    if (!res.ok) return null;
+    let res: Response;
+    try {
+      res = await resilientFetch(
+        `${url}/rest/v1/inventory?select=*&slug=eq.${encodeURIComponent(slug)}&is_sold=eq.false&limit=1`,
+        { headers: supabaseHeaders(key), next: { revalidate: 60 } },
+        { label: "inventory.vehicle" }
+      );
+    } catch (err) {
+      throw new InventoryUnavailableError(`Vehicle lookup failed: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
+    }
+    if (!res.ok) throw new InventoryUnavailableError(`inventory.vehicle: Supabase responded ${res.status}`);
     const rows = (await res.json()) as SupabaseVehicleRow[];
     return rows.length > 0 ? mapSupabaseVehicle(rows[0]) : null;
   }
@@ -529,7 +607,7 @@ export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
   // Non-Supabase sources: filter from full list
   const { vehicles } = await getInventory({ perPage: 999 });
   return vehicles.find((v) => v.slug === slug) || null;
-}
+});
 
 export interface MakeSummary {
   name: string;
@@ -542,7 +620,7 @@ export function makeSlug(make: string): string {
 }
 
 /** In-stock vehicle counts per make, most common first. */
-export async function getMakeSummaries(): Promise<MakeSummary[]> {
+export const getMakeSummaries = cache(async (): Promise<MakeSummary[]> => {
   const source = process.env.INVENTORY_SOURCE || "local";
   let makes: string[] = [];
 
@@ -552,10 +630,11 @@ export async function getMakeSummaries(): Promise<MakeSummary[]> {
       // break the pages that show the live stock figure.
       const config = getSupabaseRuntimeConfig();
       if (!config) return [];
-      const res = await fetch(`${config.url}/rest/v1/inventory?select=make&is_sold=eq.false`, {
-        headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
-        next: { revalidate: 300 },
-      });
+      const res = await resilientFetch(
+        `${config.url}/rest/v1/inventory?select=make&is_sold=eq.false`,
+        { headers: supabaseHeaders(config.key), next: { revalidate: 300 } },
+        { label: "inventory.makes" }
+      );
       if (!res.ok) {
         console.error(`[inventory-source] getMakeSummaries failed: ${res.status}`);
         return [];
@@ -580,7 +659,7 @@ export async function getMakeSummaries(): Promise<MakeSummary[]> {
     counts.set(slug, entry);
   }
   return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-}
+});
 
 /** Live number of in-stock vehicles, or null when inventory is unavailable. */
 export async function getLiveInventoryCount(): Promise<number | null> {
