@@ -60,7 +60,12 @@ function whereClause(params: URLSearchParams, values: unknown[]): string {
     } else if ((match = raw.match(/^(eq|neq|gt|gte|lt|lte)\.(.*)$/))) {
       const op = { eq: "=", neq: "<>", gt: ">", gte: ">=", lt: "<", lte: "<=" }[match[1] as "eq"];
       values.push(match[2]);
-      clauses.push(`${col}::text ${op} $${values.length}::text`);
+      // ISO timestamps compare as timestamps (text order differs from Postgres' timestamptz text format).
+      clauses.push(
+        /^\d{4}-\d{2}-\d{2}T/.test(match[2])
+          ? `${col} ${op} $${values.length}::timestamptz`
+          : `${col}::text ${op} $${values.length}::text`
+      );
     } else {
       throw new Error(`unsupported filter ${key}=${raw}`);
     }
@@ -74,9 +79,9 @@ function selectList(select: string | null): string {
     .split(",")
     .map((item) => {
       const [alias, expr] = item.includes(":") ? item.split(":") : [null, item];
-      const json = expr.match(/^([a-z_]+)->>([a-z_A-Z]+)$/);
-      const sql = json ? `(${ident(json[1])}->>'${json[2]}')` : ident(expr);
-      return `${sql} AS ${ident(alias ?? (json ? json[2] : expr))}`;
+      const json = expr.match(/^([a-z_]+)(->>?)([a-z_A-Z]+)$/);
+      const sql = json ? `(${ident(json[1])}${json[2]}'${json[3]}')` : ident(expr);
+      return `${sql} AS "${(alias ?? (json ? json[3] : expr)).replace(/"/g, "")}"`;
     })
     .join(", ");
 }
@@ -134,7 +139,9 @@ export function inventoryPostgrest(db: PGlite, log: RequestLog[] = []): typeof f
         const upsert =
           conflict && prefer.includes("resolution=merge-duplicates")
             ? `ON CONFLICT (${ident(conflict)}) DO UPDATE SET ${cols.map((c) => `${ident(c)} = EXCLUDED.${ident(c)}`).join(", ")}`
-            : "";
+            : conflict && prefer.includes("resolution=ignore-duplicates")
+              ? `ON CONFLICT (${ident(conflict)}) DO NOTHING`
+              : "";
         const result = await db.query(
           `INSERT INTO ${table} (${colSql}) SELECT ${colSql} FROM jsonb_populate_recordset(NULL::${table}, $1::jsonb) ${upsert} RETURNING *`,
           [JSON.stringify(rows)]

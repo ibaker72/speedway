@@ -82,7 +82,7 @@ describe("lead delivery resilience", () => {
     createLeadMock.mockRejectedValue(new Error('relation "leads" does not exist'));
     notifyLeadMock.mockResolvedValue(true);
     const result = await submitLead({ source: "contact", name: "A", email: "a@b.co" });
-    expect(result).toEqual({ ok: true, leadId: undefined, stored: false, notified: true });
+    expect(result).toEqual({ ok: true, leadId: undefined, stored: false, notified: true, notification: "sent" });
   });
 
   it("fails only when neither storage nor email succeeds", async () => {
